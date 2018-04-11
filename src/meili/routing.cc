@@ -156,7 +156,7 @@ inline bool IsEdgeAllowed(const baldr::DirectedEdge* edge,
 /**
  * Set origin.
  */
-void set_origin(baldr::GraphReader& reader,
+static void set_origin(baldr::GraphReader& reader,
                 const std::vector<baldr::PathLocation>& destinations,
                 uint16_t origin_idx, labelset_ptr_t labelset,
                 const sif::TravelMode travelmode, sif::cost_ptr_t costing,
@@ -203,7 +203,7 @@ void set_origin(baldr::GraphReader& reader,
 /**
  * Set destinations.
  */
-void set_destinations(baldr::GraphReader& reader,
+static void set_destinations(baldr::GraphReader& reader,
                       const std::vector<baldr::PathLocation>& destinations,
                       std::unordered_map<baldr::GraphId, std::unordered_set<uint16_t>>& node_dests,
                       std::unordered_map<baldr::GraphId, std::unordered_set<uint16_t>>& edge_dests)

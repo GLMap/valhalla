@@ -64,7 +64,7 @@ Logger* LoggerFactory::Produce(const LoggingConfig& config) const {
 }
 
 //statically get a factory
-LoggerFactory& GetFactory() {
+static LoggerFactory& GetFactory() {
   static LoggerFactory factory_singleton{};
   return factory_singleton;
 }

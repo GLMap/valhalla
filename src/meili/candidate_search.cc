@@ -120,7 +120,7 @@ CandidateQuery::WithinSquaredDistance(const midgard::PointLL& location,
 
 // Add each road linestring's line segments into grid. Only one side
 // of directed edges is added
-void IndexBin(const baldr::GraphTile& tile, const int32_t bin_index,
+static void IndexBin(const baldr::GraphTile& tile, const int32_t bin_index,
                baldr::GraphReader& reader, CandidateGridQuery::grid_t& grid)
 {
   // Get the edges within the specified bin.

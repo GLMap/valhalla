@@ -12,7 +12,7 @@ using namespace valhalla::thor;
 
 namespace osrm_serializers {
 
-  json::ArrayPtr serialize_duration(const std::vector<TimeDistance>& tds, size_t start_td, const size_t td_count) {
+  static json::ArrayPtr serialize_duration(const std::vector<TimeDistance>& tds, size_t start_td, const size_t td_count) {
     auto time = json::array({});
     for(size_t i = start_td; i < start_td + td_count; ++i) {
      //check to make sure a route was found; if not, return null for time in matrix result
@@ -25,7 +25,7 @@ namespace osrm_serializers {
     return time;
   }
 
-  json::ArrayPtr serialize_distance(const std::vector<TimeDistance>& tds,
+  static json::ArrayPtr serialize_distance(const std::vector<TimeDistance>& tds,
      size_t start_td, const size_t td_count, const size_t source_index, const size_t target_index, double distance_scale) {
     auto distance = json::array({});
     for(size_t i = start_td; i < start_td + td_count; ++i) {
@@ -40,7 +40,7 @@ namespace osrm_serializers {
    }
 
   // Serialize route response in OSRM compatible format.
-  json::MapPtr serialize(const valhalla_request_t& request, const std::vector<TimeDistance>& time_distances, double distance_scale) {
+  static json::MapPtr serialize(const valhalla_request_t& request, const std::vector<TimeDistance>& time_distances, double distance_scale) {
     auto json = json::map({});
     auto time = json::array({});
     auto distance = json::array({});
@@ -69,7 +69,7 @@ namespace valhalla_serializers {
 
   */
 
-json::ArrayPtr locations(const google::protobuf::RepeatedPtrField<odin::Location>& correlated) {
+static json::ArrayPtr locations(const google::protobuf::RepeatedPtrField<odin::Location>& correlated) {
     auto input_locs = json::array({});
     for(size_t i = 0; i < correlated.size(); i++) {
       input_locs->emplace_back(
@@ -82,7 +82,7 @@ json::ArrayPtr locations(const google::protobuf::RepeatedPtrField<odin::Location
     return input_locs;
   }
 
-  json::ArrayPtr serialize_row(const std::vector<TimeDistance>& tds,
+  static json::ArrayPtr serialize_row(const std::vector<TimeDistance>& tds,
       size_t start_td, const size_t td_count, const size_t source_index, const size_t target_index, double distance_scale) {
     auto row = json::array({});
     for(size_t i = start_td; i < start_td + td_count; ++i) {
@@ -106,7 +106,7 @@ json::ArrayPtr locations(const google::protobuf::RepeatedPtrField<odin::Location
     return row;
   }
 
-  json::MapPtr serialize(const valhalla_request_t& request, const std::vector<TimeDistance>& time_distances, double distance_scale) {
+  static json::MapPtr serialize(const valhalla_request_t& request, const std::vector<TimeDistance>& time_distances, double distance_scale) {
     json::ArrayPtr matrix = json::array({});
     for(size_t source_index = 0; source_index < request.options.sources_size(); ++source_index) {
         matrix->emplace_back(

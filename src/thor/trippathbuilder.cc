@@ -443,7 +443,7 @@ void SetHeadings(TripPath_Edge* trip_edge, const AttributesController& controlle
  * @param controller  Controller specifying attributes to add to trip edge.
  *
  */
-void AddTransitNodes(TripPath_Node* trip_node, const NodeInfo* node,
+static void AddTransitNodes(TripPath_Node* trip_node, const NodeInfo* node,
                      const GraphId& startnode, const GraphTile* start_tile,
                      const GraphTile* graphtile, const AttributesController& controller)
 {

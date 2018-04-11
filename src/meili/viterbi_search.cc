@@ -295,7 +295,7 @@ void ViterbiSearch::ClearSearch()
 void ViterbiSearch::InitQueue(const std::vector<StateId>& column)
 {
   queue_.clear();
-  for (const auto stateid : column) {
+  for (const auto &stateid : column) {
     const auto emission_cost = EmissionCost(stateid);
     if (IsInvalidCost(emission_cost)) {
       continue;
