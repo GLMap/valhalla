@@ -113,6 +113,103 @@ private:
   std::unordered_map<uint64_t, std::pair<char*, size_t> > tiles_;
 };
 
+
+  class GraphReader::tile_source_rt_t : public GraphReader::tile_source_t {
+  public:
+    tile_source_rt_t(const std::string &file_path):
+    _file_path(file_path)
+    {
+      struct stat stat;
+      if (lstat(file_path.c_str(), &stat) != 0)
+        return;
+
+      std::ifstream stream(file_path);
+      uint32_t count;
+      stream.read((char *)&count, sizeof(count));
+
+      _headerSize = sizeof(count) + count * (sizeof(uint32_t)+sizeof(uint32_t));
+
+      GraphId prevID;
+      uint32_t prevOffset=std::numeric_limits<uint32_t>::max();
+
+      for(uint32_t i=0; i<count; ++i)
+      {
+        uint32_t id, offset;
+        stream.read((char *)&id, sizeof(id));
+        stream.read((char *)&offset, sizeof(offset));
+        offset += _headerSize;
+
+        if(offset > stat.st_size)
+        {
+          _tileOffsets.clear();
+          return;
+        }
+
+        uint32_t level = (id >> 22) & 0x7;
+        uint32_t tileid = id & 0x3FFFFF;
+        if(prevOffset < offset)
+        {
+          _tileOffsets.emplace(prevID, std::make_pair(prevOffset, offset-prevOffset));
+        }
+        prevID = GraphId(tileid, level, 0);
+        prevOffset = offset;
+      }
+
+      if(prevOffset < stat.st_size)
+      {
+        _tileOffsets.emplace(prevID, std::make_pair(prevOffset, stat.st_size-prevOffset));
+      }
+
+      if(_tileOffsets.empty())
+        LOG_WARN("Tile extract could not be loaded");
+      else
+        LOG_INFO("Tile extract successfully loaded");
+    }
+
+    virtual ~tile_source_rt_t(){
+    }
+
+    virtual size_t getAverageTileSize(){
+      return AVERAGE_MM_TILE_SIZE;
+    }
+
+    virtual bool DoesTileExist(const GraphId& graphid){
+      return _tileOffsets.find(graphid) != _tileOffsets.end() ? true : tile_source_t::DoesTileExist(graphid);
+    }
+
+    virtual void FillTileSet(std::unordered_set<GraphId> &result){
+      for(const auto& t : _tileOffsets)
+        result.emplace(t.first);
+    }
+
+    virtual void FillTileSet(std::unordered_set<GraphId> &result, const uint8_t level){
+      for(const auto& t : _tileOffsets)
+        if(GraphId(t.first).level() == level)
+          result.emplace(t.first);
+    }
+
+    virtual std::pair<GraphTile, uint32_t> GetGraphTile(const GraphId& base){
+      auto it = _tileOffsets.find(base);
+      if(it == _tileOffsets.cend())
+        return std::make_pair(GraphTile(), (uint32_t)0);
+
+      GraphTile tile(base, _file_path, it->second.first, it->second.second);
+      if (!tile.header())
+        return std::make_pair(GraphTile(), (uint32_t)0);
+      return std::make_pair(tile, it->second.second);
+    }
+
+    const std::unordered_map<GraphId, std::pair<uint32_t, uint32_t>> &getTiles(){
+      return _tileOffsets;
+    }
+  private:
+    std::unordered_map<GraphId, std::pair<uint32_t, uint32_t>> _tileOffsets;
+    std::string _file_path;
+    uint32_t _headerSize;
+  };
+
+
+
 class GraphReader::tile_source_files_t : public GraphReader::tile_source_t
 {
 public:
@@ -321,18 +418,18 @@ TileCache* TileCacheFactory::createTileCache(const boost::property_tree::ptree& 
   return new SimpleTileCache(max_cache_size);
 }
 
-std::shared_ptr<GraphReader::tile_source_extract_t> GraphReader::getSourceForTar(const std::string &path)
+std::shared_ptr<GraphReader::tile_source_rt_t> GraphReader::getSourceForRT(const std::string &path)
 {
   static std::mutex mutex;
-  static std::map<std::string, std::shared_ptr<tile_source_extract_t> > cachedSources;
+  static std::map<std::string, std::shared_ptr<tile_source_rt_t> > cachedSources;
 
-  std::shared_ptr<tile_source_extract_t> rv;
+  std::shared_ptr<tile_source_rt_t> rv;
   mutex.lock();
   auto it = cachedSources.find(path);
   if(it!=cachedSources.end()){
     rv = it->second;
   } else {
-    rv = std::make_shared<GraphReader::tile_source_extract_t>(path);
+    rv = std::make_shared<GraphReader::tile_source_rt_t>(path);
     //Does something readed from tar ?
     if(rv->getTiles().size() != 0){
       cachedSources[path] = rv;
@@ -352,7 +449,7 @@ GraphReader::GraphReader(const boost::property_tree::ptree& pt)
   auto tile_extract = pt.get_optional<std::string>("tile_extract");
   if(tile_extract)
   {
-    auto tile_source_extract = getSourceForTar(tile_extract.get());
+    auto tile_source_extract = getSourceForRT(tile_extract.get());
     //Does something readed from tar ?
     if(tile_source_extract)
       tile_sources_.emplace_back(tile_source_extract);
@@ -363,7 +460,7 @@ GraphReader::GraphReader(const boost::property_tree::ptree& pt)
   {
     for(const auto &p : tile_extracts.get())
     {
-      auto tile_source_extract = getSourceForTar(p.second.get_value<std::string>());
+      auto tile_source_extract = getSourceForRT(p.second.get_value<std::string>());
       //Does something readed from tar ?
       if(tile_source_extract)
         tile_sources_.emplace_back(tile_source_extract);

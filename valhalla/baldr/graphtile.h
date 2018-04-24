@@ -51,6 +51,9 @@ class GraphTile {
    */
   GraphTile(const std::string& tile_dir, const GraphId& graphid);
 
+
+  GraphTile(const GraphId& graphid, const std::string& file, uint32_t offset, uint32_t size);
+
   /**
    * Constructor given the graph Id, pointer to the tile data, and the
    * size of the tile data. This is used for memory mapped (mmap) tiles.

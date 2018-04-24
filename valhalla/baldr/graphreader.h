@@ -559,12 +559,14 @@ class GraphReader {
   class tile_source_t;
   // Tiles in tar file (or files)
   class tile_source_extract_t;
+  // Tiles in rt file
+  class tile_source_rt_t;
   // Tiles in separate files
   class tile_source_files_t;
   // Tiles dowloaded by curl
   class tile_source_curl_t;
 
-  static std::shared_ptr<tile_source_extract_t> getSourceForTar(const std::string &path);
+  static std::shared_ptr<tile_source_rt_t> getSourceForRT(const std::string &path);
 
   std::vector<std::shared_ptr<tile_source_t>> tile_sources_;
   // Information about where the tiles are kept

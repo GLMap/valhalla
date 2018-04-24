@@ -69,6 +69,24 @@ GraphTile::GraphTile()
       edge_elevation_(nullptr) {
 }
 
+GraphTile::GraphTile(const GraphId& graphid, const std::string& file, uint32_t offset, uint32_t size) :
+  header_(nullptr)
+{
+  // Don't bother with invalid ids
+  if (!graphid.Is_Valid() || graphid.level() > TileHierarchy::get_max_level())
+    return;
+
+  std::ifstream is(file, std::ios::in | std::ios::binary | std::ios::ate);
+  graphtile_.reset(new std::vector<char>(size));
+  is.seekg(offset, std::ios::beg);
+  is.read(&(*graphtile_)[0], size);
+  is.close();
+  
+  // Set pointers to internal data structures
+  Initialize(graphid, &(*graphtile_)[0], graphtile_->size());
+}
+
+
 // Constructor given a filename. Reads the graph data into memory.
 GraphTile::GraphTile(const std::string& tile_dir, const GraphId& graphid)
       : header_(nullptr) {
