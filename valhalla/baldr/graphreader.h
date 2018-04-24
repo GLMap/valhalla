@@ -564,8 +564,9 @@ class GraphReader {
   // Tiles dowloaded by curl
   class tile_source_curl_t;
 
-  static std::shared_ptr<tile_source_t> get_source_instance(const boost::property_tree::ptree& pt);
-  std::shared_ptr<tile_source_t> tile_source_;
+  static std::shared_ptr<tile_source_extract_t> getSourceForTar(const std::string &path);
+
+  std::vector<std::shared_ptr<tile_source_t>> tile_sources_;
   // Information about where the tiles are kept
   std::string tile_dir_;
   std::unique_ptr<TileCache> cache_;
