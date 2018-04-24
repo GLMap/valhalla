@@ -1273,8 +1273,6 @@ void ManeuversBuilder::SetSimpleDirectionalManeuverType(
       if (trip_path_) {
         auto* man_begin_edge = trip_path_->GetCurrEdge(
             maneuver.begin_node_index());
-        auto* node = trip_path_->GetEnhancedNode(maneuver.begin_node_index());
-        bool prev_edge_has_names = (prev_edge ? !prev_edge->IsUnnamed() : false);
 
         ////////////////////////////////////////////////////////////////////
         // If the maneuver begin edge is a turn channel

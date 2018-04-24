@@ -156,7 +156,7 @@ class PointLL : public Point2 {
    */
   static float HeadingAlongPolyline(const std::vector<PointLL>& pts,
                                     const float dist) {
-    return HeadingAlongPolyline(pts, dist, 0, pts.size() - 1);
+    return HeadingAlongPolyline(pts, dist, 0, static_cast<uint32_t>(pts.size() - 1));
   }
 
   /**
@@ -181,7 +181,7 @@ class PointLL : public Point2 {
    */
   static float HeadingAtEndOfPolyline(const std::vector<PointLL>& pts,
                                       const float dist) {
-    return HeadingAtEndOfPolyline(pts, dist, 0, pts.size() - 1);
+    return HeadingAtEndOfPolyline(pts, dist, 0, static_cast<uint32_t>(pts.size() - 1));
   }
 
   /**

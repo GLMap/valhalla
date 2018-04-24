@@ -41,7 +41,7 @@ std::vector<PathInfo> TrafficAlgorithm::GetBestPath(odin::Location& origin,
 
   // Initialize the origin and destination locations. Initialize the
   // destination first in case the origin edge includes a destination edge.
-  uint32_t density = SetDestination(graphreader, destination);
+  SetDestination(graphreader, destination);
   SetOrigin(graphreader, origin, destination);
 
   // Find shortest path
@@ -183,7 +183,7 @@ std::vector<PathInfo> TrafficAlgorithm::GetBestPath(odin::Location& origin,
       }
 
       // Add to the adjacency list and edge labels.
-      uint32_t idx = edgelabels_.size();
+      uint32_t idx = static_cast<uint32_t>(edgelabels_.size());
       edgelabels_.emplace_back(predindex, edgeid, directededge,
                           newcost, sortcost, dist, mode_, 0);
       *es = { EdgeSet::kTemporary, idx };
@@ -204,7 +204,7 @@ std::vector<uint8_t>& TrafficAlgorithm::GetRealTimeSpeeds(const uint32_t tileid,
     std::string fname = traffic_dir + std::to_string(tileid) + ".spd";
     rtsfile.open(fname, std::ios::binary | std::ios::in | std::ios::ate);
     if (rtsfile.is_open()) {
-      uint32_t count = rtsfile.tellg();
+      uint32_t count = static_cast<uint32_t>(rtsfile.tellg());
       LOG_INFO("Load real time speeds: count = " + std::to_string(count));
       rtsfile.seekg(0, rtsfile.beg);
       std::vector<uint8_t> spds(count);

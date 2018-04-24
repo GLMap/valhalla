@@ -107,7 +107,7 @@ uint32_t GetAdminIndex(
   if (existing_admin == admin_info_map.end()) {
 
     // Assign new admin index
-    admin_index = admin_info_list.size();
+    admin_index = static_cast<uint32_t>(admin_info_list.size());
 
     // Add admin info to list
     admin_info_list.emplace_back(admin_info);
@@ -423,11 +423,11 @@ void SetHeadings(TripPath_Edge* trip_edge, const AttributesController& controlle
     float offset = GetOffsetForHeading(edge->classification(), edge->use());
     if (controller.attributes.at(kEdgeBeginHeading)) {
       trip_edge->set_begin_heading(std::round(PointLL::HeadingAlongPolyline(shape,
-                          offset, begin_index, shape.size() - 1)));
+                          offset, begin_index, static_cast<uint32_t>(shape.size() - 1))));
     }
     if (controller.attributes.at(kEdgeEndHeading)) {
       trip_edge->set_end_heading(std::round(PointLL::HeadingAtEndOfPolyline(shape,
-                          offset, begin_index, shape.size() - 1)));
+                          offset, begin_index, static_cast<uint32_t>(shape.size() - 1))));
     }
   }
 }

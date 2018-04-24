@@ -13,12 +13,9 @@ class EmissionCostModel
   using StateGetter = std::function<const State&(const StateId& stateid)>;
 
  public:
-  EmissionCostModel(
-      baldr::GraphReader& graphreader,
-      const StateContainer& container,
+  EmissionCostModel(const StateContainer& container,
       float sigma_z)
-      : graphreader_(graphreader),
-        container_(container),
+      : container_(container),
         sigma_z_(sigma_z),
         inv_double_sq_sigma_z_(1.f / (sigma_z_ * sigma_z_ * 2.f))
   {
@@ -28,10 +25,9 @@ class EmissionCostModel
   }
 
   EmissionCostModel(
-      baldr::GraphReader& graphreader,
       const StateContainer& container,
       const boost::property_tree::ptree& config)
-      : EmissionCostModel(graphreader, container, config.get<float>("sigma_z")) {}
+      : EmissionCostModel(container, config.get<float>("sigma_z")) {}
 
   // given the *squared* great circle distance between a measurement and its candidate,
   // return the emission cost of the candidate
@@ -43,8 +39,6 @@ class EmissionCostModel
   { return CalculateEmissionCost(container_.state(stateid).candidate().edges.front().distance); }
 
  private:
-  baldr::GraphReader& graphreader_;
-
   const StateContainer& container_;
 
   float sigma_z_;

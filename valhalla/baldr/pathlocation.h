@@ -98,7 +98,7 @@ struct PathLocation : public Location {
     if(pl.node_snap_tolerance_) l->set_node_snap_tolerance(*pl.node_snap_tolerance_);
     if(pl.way_id_) l->set_way_id(*pl.way_id_);
     l->set_minimum_reachability(pl.minimum_reachability_);
-    l->set_radius(pl.radius_);
+    l->set_radius(static_cast<uint32_t>(pl.radius_));
 
     auto* path_edges = l->mutable_path_edges();
     for(const auto& e : pl.edges) {

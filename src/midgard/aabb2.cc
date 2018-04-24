@@ -162,7 +162,7 @@ uint32_t AABB2<coord_t>::Clip(std::vector<coord_t>& pts, const bool closed) cons
   }
 
   // Return number of vertices in the clipped shape
-  return pts.size();
+  return static_cast<uint32_t>(pts.size());
 }
 
 // Clips the polyline/polygon against a single edge.
@@ -176,7 +176,7 @@ uint32_t AABB2<coord_t>::ClipAgainstEdge(const ClipEdge bdry,
 
   // Special case for the 1st vertex. For polygons (closed) connect
   // last vertex to first vertex. For polylines repeat the first vertex
-  uint32_t n  = vin.size();
+  uint32_t n  = static_cast<uint32_t>(vin.size());
   uint32_t v1 = closed ? n - 1 : 0;
 
   // Loop through all vertices (edges are created from v1 to v2).
@@ -200,7 +200,7 @@ uint32_t AABB2<coord_t>::ClipAgainstEdge(const ClipEdge bdry,
     }
     // Both are outside - do nothing
   }
-  return vout.size();
+  return static_cast<uint32_t>(vout.size());
 }
 
 // Finds the intersection of the segment from insidept to outsidept with the

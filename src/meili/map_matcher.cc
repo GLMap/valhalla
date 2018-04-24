@@ -318,7 +318,6 @@ MapMatcher::MapMatcher(
       ts_(vs_),
       container_(),
       emission_cost_model_(
-          graphreader_,
           container_,
           config_),
       transition_cost_model_(

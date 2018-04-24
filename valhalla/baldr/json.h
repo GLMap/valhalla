@@ -24,7 +24,7 @@ class Jarray;
 using ArrayPtr = std::shared_ptr<Jarray>;
 struct fp_t {
   long double value;
-  size_t precision;
+  int precision;
   //and be able to spit out text
   friend std::ostream& operator<<(std::ostream& stream, const fp_t&);
 };

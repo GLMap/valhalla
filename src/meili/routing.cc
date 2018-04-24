@@ -35,7 +35,7 @@ void LabelSet::put(const baldr::GraphId& nodeid, const baldr::GraphId& edgeid,
   // it to the queue
   const auto it = node_status_.find(nodeid);
   if (it == node_status_.end()) {
-    const uint32_t idx = labels_.size();
+    const uint32_t idx = static_cast<uint32_t>(labels_.size());
     labels_.emplace_back(nodeid, kInvalidDestination, edgeid, source, target,
               cost, turn_cost, sortcost, predecessor, edge, mode);
     queue_->add(idx);
@@ -67,7 +67,7 @@ void LabelSet::put(const uint16_t dest, const baldr::GraphId& edgeid,
   baldr::GraphId inv;
   const auto it = dest_status_.find(dest);
   if (it == dest_status_.end()) {
-    const uint32_t idx = labels_.size();
+    const uint32_t idx = static_cast<uint32_t>(labels_.size());
     labels_.emplace_back(inv, dest, edgeid, source, target, cost, turn_cost,
                          sortcost, predecessor, edge, travelmode);
     queue_->add(idx);

@@ -23,7 +23,7 @@ uint32_t GetOperatorId(const GraphTile* tile, uint32_t routeid,
     auto operator_itr = operators.find(operator_name);
     if (operator_itr == operators.end()) {
       // Operator not found - add to the map
-      uint32_t id = operators.size() + 1;
+      uint32_t id = static_cast<uint32_t>(operators.size() + 1);
       operators[operator_name] = id;
       return id;
     } else {
@@ -330,7 +330,7 @@ std::vector<PathInfo> MultiModalPathAlgorithm::GetBestPath(
         // Add the transition edge to the adjacency list and edge labels
         // using the predecessor information. Transition edges have
         // no length.
-        uint32_t idx = edgelabels_.size();
+        uint32_t idx = static_cast<uint32_t>(edgelabels_.size());
         *es = { EdgeSet::kTemporary, idx };
         edgelabels_.emplace_back(predindex, edgeid, directededge->endnode(), pred);
         adjacencylist_->add(idx);
@@ -510,7 +510,7 @@ std::vector<PathInfo> MultiModalPathAlgorithm::GetBestPath(
       }
 
       // Add edge label, add to the adjacency list and set edge status
-      uint32_t idx = edgelabels_.size();
+      uint32_t idx = static_cast<uint32_t>(edgelabels_.size());
       *es = { EdgeSet::kTemporary, idx };
       edgelabels_.emplace_back(predindex, edgeid, directededge,
                     newcost, sortcost, dist, mode_, walking_distance_,
@@ -602,7 +602,7 @@ void MultiModalPathAlgorithm::SetOrigin(GraphReader& graphreader,
     edge_label.set_origin();
 
     // Add EdgeLabel to the adjacency list
-    uint32_t idx = edgelabels_.size();
+    uint32_t idx =static_cast<uint32_t>(edgelabels_.size());
     edgelabels_.push_back(std::move(edge_label));
     adjacencylist_->add(idx);
     edgestatus_.Set(edgeid, EdgeSet::kTemporary, idx, tile);

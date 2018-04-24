@@ -71,7 +71,7 @@ namespace valhalla_serializers {
 
 static json::ArrayPtr locations(const google::protobuf::RepeatedPtrField<odin::Location>& correlated) {
     auto input_locs = json::array({});
-    for(size_t i = 0; i < correlated.size(); i++) {
+    for(int i = 0; i < correlated.size(); i++) {
       input_locs->emplace_back(
         json::map({
           {"lat", json::fp_t{correlated.Get(i).ll().lat(), 6}},

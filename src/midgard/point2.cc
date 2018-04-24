@@ -54,7 +54,7 @@ std::tuple<Point2, float, int> Point2::ClosestPoint(const std::vector<Point2>& p
 
   // If there are no points we are done
   if(pts.size() == 0)
-    return std::make_tuple(std::move(closest), std::move(mindist), std::move(idx));
+    return std::make_tuple(std::move(closest), std::move(mindist), 0);
   // If there is one point we are done
   if(pts.size() == 1)
     return std::make_tuple(pts.front(), sqrt(DistanceSquared(pts.front())), 0);

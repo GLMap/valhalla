@@ -654,7 +654,7 @@ void BidirectionalAStar::SetDestination(GraphReader& graphreader,
     // Add EdgeLabel to the adjacency list. Set the predecessor edge index
     // to invalid to indicate the origin of the path. Make sure the opposing
     // edge (edgeid) is set.
-    uint32_t idx = edgelabels_reverse_.size();
+    uint32_t idx = static_cast<uint32_t>(edgelabels_reverse_.size());
     edgestatus_reverse_.Set(opp_edge_id, EdgeSet::kTemporary, idx,
         graphreader.GetGraphTile(opp_edge_id));
     edgelabels_reverse_.emplace_back(kInvalidLabel, opp_edge_id, edgeid,

@@ -365,7 +365,7 @@ void CostMatrix::ForwardSearch(const uint32_t index, const uint32_t n,
       GraphId oppedge = t2->GetOpposingEdgeId(directededge);
 
       // Add edge label, add to the adjacency list and set edge status
-      uint32_t idx = edgelabels.size();
+      uint32_t idx = static_cast<uint32_t>(edgelabels.size());
       *es = { EdgeSet::kTemporary, idx };
       edgelabels.emplace_back(pred_idx, edgeid, oppedge, directededge,
                       newcost, mode_, tc, pred.path_distance() + directededge->length(),
@@ -637,7 +637,7 @@ void CostMatrix::BackwardSearch(const uint32_t index,
       }
 
       // Add edge label, add to the adjacency list and set edge status
-      uint32_t idx = edgelabels.size();
+      uint32_t idx = static_cast<uint32_t>(edgelabels.size());
       *es = { EdgeSet::kTemporary, idx };
       edgelabels.emplace_back(pred_idx, edgeid, oppedge,
          directededge, newcost, mode_, tc, pred.path_distance() + directededge->length(),
@@ -732,7 +732,7 @@ void CostMatrix::SetSources(GraphReader& graphreader,
       // Add EdgeLabel to the adjacency list (but do not set its status).
       // Set the predecessor edge index to invalid to indicate the origin
       // of the path.
-      uint32_t idx = source_edgelabel_[index].size();
+      uint32_t idx = static_cast<uint32_t>(source_edgelabel_[index].size());
       source_edgelabel_[index].push_back(std::move(edge_label));
       source_adjacency_[index]->add(idx);
       source_edgestatus_[index].Set(edgeid, EdgeSet::kUnreached, idx, tile);
@@ -813,7 +813,7 @@ void CostMatrix::SetTargets(baldr::GraphReader& graphreader,
       // Add EdgeLabel to the adjacency list (but do not set its status).
       // Set the predecessor edge index to invalid to indicate the origin
       // of the path. Set the origin flag
-      uint32_t idx = target_edgelabel_[index].size();
+      uint32_t idx = static_cast<uint32_t>(target_edgelabel_[index].size());
       target_edgelabel_[index].push_back(std::move(edge_label));
       target_adjacency_[index]->add(idx);
       target_edgestatus_[index].Set(opp_edge_id, EdgeSet::kUnreached, idx,

@@ -27,7 +27,7 @@ std::vector<coord_t>& Polyline2<coord_t>::pts() {
 // point if it is equal.
 template <class coord_t>
 void Polyline2<coord_t>::Add(const coord_t& p) {
-  uint32_t n = pts_.size();
+  auto n = pts_.size();
   if (n == 0 || !(p == pts_[n-1]))
     pts_.push_back(p);
 }
@@ -70,7 +70,7 @@ uint32_t Polyline2<coord_t>::Generalize(const float t) {
   // method to generalize the polyline. Square the error tolerance to avoid
   // sqrts.
   Generalize(pts_, t);
-  return pts_.size();
+  return static_cast<uint32_t>(pts_.size());
 }
 
 // Get a generalized polyline from this polyline. This polyline remains

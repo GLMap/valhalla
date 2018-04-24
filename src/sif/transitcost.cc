@@ -124,7 +124,7 @@ class TransitCost : public DynamicCost {
    * @param  pred           Predecessor edge information.
    * @param  opp_edge       Pointer to the opposing directed edge.
    * @param  tile           Current tile.
-   * @param  edgeid         GraphId of the opposing edge.
+   * @param  opp_edgeid     GraphId of the opposing edge.
    * @param  current_time   Current time (seconds since epoch).
    * @return  Returns true if access is allowed, false if not.
    */

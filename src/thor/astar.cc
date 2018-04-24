@@ -233,7 +233,7 @@ void AStarPathAlgorithm::ExpandForward(GraphReader& graphreader,
     }
 
     // Add to the adjacency list and edge labels.
-    uint32_t idx = edgelabels_.size();
+    uint32_t idx = static_cast<uint32_t>(edgelabels_.size());
     edgelabels_.emplace_back(pred_idx, edgeid, directededge, newcost,
                                  sortcost, dist, mode_, 0);
     *es = { EdgeSet::kTemporary, idx };
@@ -438,7 +438,7 @@ void AStarPathAlgorithm::SetOrigin(GraphReader& graphreader,
     edge_label.set_origin();
 
     // Add EdgeLabel to the adjacency list
-    uint32_t idx = edgelabels_.size();
+    uint32_t idx = static_cast<uint32_t>(edgelabels_.size());
     edgelabels_.push_back(std::move(edge_label));
     adjacencylist_->add(idx);
     edgestatus_.Set(edgeid, EdgeSet::kTemporary, idx, tile);

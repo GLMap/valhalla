@@ -99,7 +99,7 @@ NavigationStatus Navigator::OnLocationChanged(const FixLocation& fix_location) {
       nav_status.set_route_state(route_state_);
 
       // Set the instruction maneuver index for the start maneuver
-      nav_status.set_instruction_maneuver_index(curr_instruction_index);
+      nav_status.set_instruction_maneuver_index(static_cast<uint32_t>(curr_instruction_index));
 
       // Mark that the pre-transition was used
       std::get<kPreTransition>(used_instructions_.at(curr_instruction_index)) = true;
@@ -118,7 +118,7 @@ NavigationStatus Navigator::OnLocationChanged(const FixLocation& fix_location) {
       nav_status.set_route_state(route_state_);
 
       // Set the instruction maneuver index for the next maneuver
-      nav_status.set_instruction_maneuver_index(next_instruction_index);
+      nav_status.set_instruction_maneuver_index(static_cast<uint32_t>(next_instruction_index));
 
       // Mark the next pre-transition, the next final transition alert,
       // and the current post transition were used

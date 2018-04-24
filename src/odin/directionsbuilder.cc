@@ -97,7 +97,7 @@ TripDirections DirectionsBuilder::Build(
 
 // Update the heading of ~0 length edges.
 void DirectionsBuilder::UpdateHeading(EnhancedTripPath* etp) {
-  for (size_t x = 0; x < etp->node_size(); ++x) {
+  for (int x = 0; x < etp->node_size(); ++x) {
     auto* prev_edge = etp->GetPrevEdge(x);
     auto* curr_edge = etp->GetCurrEdge(x);
     auto* next_edge = etp->GetNextEdge(x);

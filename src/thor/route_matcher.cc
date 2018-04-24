@@ -128,7 +128,7 @@ bool expand_from_node(const std::shared_ptr<DynamicCost>* mode_costing,
 
     // Look back in path_infos by 1-2 edges to make sure we aren't in a loop.
     // A loop can occur if we have edges shorter than the lat,lng tolerance.
-    uint32_t n = path_infos.size();
+    auto n = path_infos.size();
     if (n > 1 &&  (edge_id == path_infos[n-2].edgeid ||
         edge_id == path_infos[n-1].edgeid)) {
       continue;

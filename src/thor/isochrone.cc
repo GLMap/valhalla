@@ -25,7 +25,7 @@ uint32_t GetOperatorId(const GraphTile* tile, uint32_t routeid,
     auto operator_itr = operators.find(operator_name);
     if (operator_itr == operators.end()) {
       // Operator not found - add to the map
-      uint32_t id = operators.size() + 1;
+      uint32_t id = static_cast<uint32_t>(operators.size() + 1);
       operators[operator_name] = id;
       return id;
     } else {
@@ -268,7 +268,7 @@ void Isochrone::ExpandForward(GraphReader& graphreader, const GraphId& node,
     }
 
     // Add edge label, add to the adjacency list and set edge status
-    uint32_t idx = edgelabels_.size();
+    uint32_t idx = static_cast<uint32_t>(edgelabels_.size());
     *es = { EdgeSet::kTemporary, idx };
     edgelabels_.emplace_back(pred_idx, edgeid, directededge,
                              newcost, newcost.cost, 0.0f, mode_, 0);
@@ -411,7 +411,7 @@ void Isochrone::ExpandReverse(GraphReader& graphreader,
     }
 
     // Add edge label, add to the adjacency list and set edge status
-    uint32_t idx = bdedgelabels_.size();
+    uint32_t idx = static_cast<uint32_t>(bdedgelabels_.size());
     *es = { EdgeSet::kTemporary, idx };
     bdedgelabels_.emplace_back(pred_idx, edgeid, oppedge,
                    directededge, newcost, newcost.cost, 0.0f,
@@ -640,7 +640,7 @@ std::shared_ptr<const GriddedData<PointLL> > Isochrone::ComputeMultiModal(
       // Handle transition edges. Add to adjacency list using predecessor
       // information.
       if (directededge->IsTransition()) {
-        uint32_t idx = mmedgelabels_.size();
+        uint32_t idx = static_cast<uint32_t>(mmedgelabels_.size());
         *es = { EdgeSet::kTemporary, idx };
         mmedgelabels_.emplace_back(predindex, edgeid, directededge->endnode(), pred);
         adjacencylist_->add(idx);
@@ -801,7 +801,7 @@ std::shared_ptr<const GriddedData<PointLL> > Isochrone::ComputeMultiModal(
       }
 
       // Add edge label, add to the adjacency list and set edge status
-      uint32_t idx = mmedgelabels_.size();
+      uint32_t idx = static_cast<uint32_t>(mmedgelabels_.size());
       *es = { EdgeSet::kTemporary, idx };
       mmedgelabels_.emplace_back(predindex, edgeid, directededge,
                     newcost, newcost.cost, 0.0f, mode_, walking_distance,
@@ -930,7 +930,7 @@ void Isochrone::SetOriginLocations(GraphReader& graphreader,
 
       // Construct the edge label. Set the predecessor edge index to invalid
       // to indicate the origin of the path.
-      uint32_t idx = edgelabels_.size();
+      uint32_t idx = static_cast<uint32_t>(edgelabels_.size());
       uint32_t d = static_cast<uint32_t>(directededge->length() * (1.0f - edge.percent_along()));
       EdgeLabel edge_label(kInvalidLabel, edgeid, directededge, cost,
                            cost.cost, 0.0f, mode_, d);
@@ -1001,7 +1001,7 @@ void Isochrone::SetOriginLocationsMM(GraphReader& graphreader,
       // Add EdgeLabel to the adjacency list (but do not set its status).
       // Set the predecessor edge index to invalid to indicate the origin
       // of the path.
-      uint32_t idx = mmedgelabels_.size();
+      uint32_t idx = static_cast<uint32_t>(mmedgelabels_.size());
       uint32_t d = static_cast<uint32_t>(directededge->length() * (1.0f - edge.percent_along()));
       edgestatus_.Set(edgeid, EdgeSet::kTemporary, idx, tile);
       MMEdgeLabel edge_label(kInvalidLabel, edgeid, directededge, cost,
@@ -1076,7 +1076,7 @@ void Isochrone::SetDestinationLocations(GraphReader& graphreader,
       // Add EdgeLabel to the adjacency list. Set the predecessor edge index
       // to invalid to indicate the origin of the path. Make sure the opposing
       // edge (edgeid) is set.
-      uint32_t idx = bdedgelabels_.size();
+      uint32_t idx = static_cast<uint32_t>(bdedgelabels_.size());
       edgestatus_.Set(opp_edge_id, EdgeSet::kTemporary, idx,
           graphreader.GetGraphTile(opp_edge_id));
       bdedgelabels_.emplace_back(kInvalidLabel, opp_edge_id, edgeid,

@@ -128,7 +128,7 @@ void TimeDistanceMatrix::ExpandForward(GraphReader& graphreader,
     }
 
     // Add to the adjacency list and edge labels.
-    uint32_t idx = edgelabels_.size();
+    uint32_t idx = static_cast<uint32_t>(edgelabels_.size());
     edgelabels_.emplace_back(pred_idx, edgeid, directededge,
                       newcost, newcost.cost, 0.0f, mode_, distance);
     *es = { EdgeSet::kTemporary, idx };
@@ -290,7 +290,7 @@ void TimeDistanceMatrix::ExpandReverse(GraphReader& graphreader,
     }
 
     // Add to the adjacency list and edge labels.
-    uint32_t idx = edgelabels_.size();
+    uint32_t idx = static_cast<uint32_t>(edgelabels_.size());
     edgelabels_.emplace_back(pred_idx, edgeid, directededge,
                       newcost, newcost.cost, 0.0f, mode_, distance);
     *es = { EdgeSet::kTemporary, idx };
@@ -457,7 +457,7 @@ void TimeDistanceMatrix::SetOriginOneToMany(GraphReader& graphreader,
                          cost.cost, 0.0f, mode_, d);
     edge_label.set_origin();
     edgelabels_.push_back(std::move(edge_label));
-    adjacencylist_->add(edgelabels_.size() - 1);
+    adjacencylist_->add(static_cast<uint32_t>(edgelabels_.size() - 1));
   }
 }
 
@@ -503,7 +503,7 @@ void TimeDistanceMatrix::SetOriginManyToOne(GraphReader& graphreader,
                          cost.cost, 0.0f, mode_, d);
     edge_label.set_origin();
     edgelabels_.push_back(std::move(edge_label));
-    adjacencylist_->add(edgelabels_.size() - 1);
+    adjacencylist_->add(static_cast<uint32_t>(edgelabels_.size() - 1));
   }
 }
 

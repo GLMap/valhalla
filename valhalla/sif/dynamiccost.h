@@ -148,7 +148,7 @@ class DynamicCost {
    * @param  pred           Predecessor edge information.
    * @param  opp_edge       Pointer to the opposing directed edge.
    * @param  tile           Current tile.
-   * @param  edgeid         GraphId of the opposing edge.
+   * @param  opp_edgeid     GraphId of the opposing edge.
    * @param  current_time   Current time (seconds since epoch). A value of 0
    *                        indicates the route is not time dependent.
    * @return  Returns true if access is allowed, false if not.
