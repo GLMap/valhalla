@@ -76,14 +76,26 @@ GraphTile::GraphTile(const GraphId& graphid, const std::string& file, uint32_t o
   if (!graphid.Is_Valid() || graphid.level() > TileHierarchy::get_max_level())
     return;
 
-  std::ifstream is(file, std::ios::in | std::ios::binary | std::ios::ate);
-  graphtile_.reset(new std::vector<char>(size));
-  is.seekg(offset, std::ios::beg);
-  is.read(&(*graphtile_)[0], size);
-  is.close();
-  
-  // Set pointers to internal data structures
-  Initialize(graphid, &(*graphtile_)[0], graphtile_->size());
+  FILE *f = ::fopen(file.c_str(), "r");
+  if(!f)
+    return;
+
+  if(::fseek(f, offset, SEEK_SET))
+  {
+    fclose(f);
+    return;
+  }
+
+  char *buf = new char[size];
+  if(::fread(buf, 1, size, f) == size)
+  {
+    graphtile_.reset(buf, std::default_delete<char[]>());
+    // Set pointers to internal data structures
+    Initialize(graphid, graphtile_.get(), size);
+  }else
+  {
+    delete [] buf;
+  }
 }
 
 
@@ -101,32 +113,34 @@ GraphTile::GraphTile(const std::string& tile_dir, const GraphId& graphid)
   if (file.is_open()) {
     // Read binary file into memory. TODO - protect against failure to
     // allocate memory
-    size_t filesize = file.tellg();
-    graphtile_.reset(new std::vector<char>(filesize));
+    size_t filesize = static_cast<size_t>(file.tellg());
+    graphtile_.reset(new char[filesize], std::default_delete<char[]>());
     file.seekg(0, std::ios::beg);
-    file.read(&(*graphtile_)[0], filesize);
+    file.read(graphtile_.get(), filesize);
     file.close();
 
     // Set pointers to internal data structures
-    Initialize(graphid, &(*graphtile_)[0], graphtile_->size());
+    Initialize(graphid, graphtile_.get(), filesize);
   }
   else {
     std::ifstream file(file_location + ".gz", std::ios::in | std::ios::binary | std::ios::ate);
     if (file.is_open()) {
       // Pre-allocate assuming 3.25:1 compression ratio (based on scanning some large NA tiles)
-      size_t filesize = file.tellg();
+      size_t filesize = static_cast<size_t>(file.tellg());
       file.seekg(0, std::ios::beg);
-      graphtile_.reset(new std::vector<char>());
-      graphtile_->reserve(filesize * 3 + filesize/4);  // TODO: read the gzip footer and get the real size?
 
       // Decompress tile into memory
+      std::vector<char> tmp; // TODO: read the gzip footer and get the real size?
+      tmp.reserve(filesize * 3 + filesize/4);
       boost::iostreams::filtering_ostream os;
       os.push(boost::iostreams::gzip_decompressor());
-      os.push(boost::iostreams::back_inserter(*graphtile_));
+      os.push(boost::iostreams::back_inserter(tmp));
       boost::iostreams::copy(file, os);
 
+      graphtile_.reset(new char[tmp.size()], std::default_delete<char[]>());
+      memcpy(graphtile_.get(), &tmp[0], tmp.size());
       // Set pointers to internal data structures
-      Initialize(graphid, &(*graphtile_)[0], graphtile_->size());
+      Initialize(graphid, graphtile_.get(), tmp.size());
     }
     else {
       LOG_DEBUG("Tile " + file_location + " was not found");
@@ -153,8 +167,9 @@ GraphTile::GraphTile(const std::string& tile_url, const GraphId& graphid, curler
 
   // If its good try to use it
   if(http_code == 200) {
-    graphtile_ = std::make_shared<std::vector<char> >(std::move(tile_data));
-    Initialize(graphid, &(*graphtile_)[0], graphtile_->size());
+    graphtile_.reset(new char[tile_data.size()], std::default_delete<char[]>());
+    memcpy(graphtile_.get(), &tile_data[0], tile_data.size());
+    Initialize(graphid, graphtile_.get(), tile_data.size());
     //TODO: optionally write the tile to disk?
   }
 }

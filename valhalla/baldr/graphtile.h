@@ -422,7 +422,7 @@ class GraphTile {
  protected:
 
   // Graph tile memory, this must be shared so that we can put it into cache
-  std::shared_ptr<std::vector<char>> graphtile_;
+  std::shared_ptr<char> graphtile_;
 
   // Header information for the tile
   GraphTileHeader* header_;
