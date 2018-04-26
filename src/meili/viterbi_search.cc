@@ -73,7 +73,7 @@ StateId NaiveViterbiSearch<Maximize>::SearchWinner(StateId::Time target)
     return winner_[target];
   }
 
-  for (StateId::Time time = winner_.size(); time <= target; ++time) {
+  for (StateId::Time time = (StateId::Time)winner_.size(); time <= target; ++time) {
     const auto& column = states_[time];
     std::vector<StateLabel> labels;
 

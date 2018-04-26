@@ -176,7 +176,7 @@ std::vector<std::tuple<float, float, std::vector<thor::MatchResult>, odin::TripP
     if (request.options.action() == odin::DirectionsOptions::trace_route &&
         request.options.format() == odin::DirectionsOptions::osrm) {
       const GraphTile* tile = nullptr;
-      for(int i = 0; i < match_results.size(); ++i) {
+      for(int i = 0; i < (int) match_results.size(); ++i) {
         // Get the match
         const auto& match = match_results[i];
         if(!match.edgeid.Is_Valid())
@@ -193,7 +193,7 @@ std::vector<std::tuple<float, float, std::vector<thor::MatchResult>, odin::TripP
         //signal how many edge candidates there were at this stateid by adding empty path edges
         if(!match.HasState())
           continue;
-        for(int j = 0; j < matcher->state_container().state(match.stateid).candidate().edges.size() - 1; ++j)
+        for(int j = 0; j < (int) matcher->state_container().state(match.stateid).candidate().edges.size() - 1; ++j)
           request.options.mutable_shape(i)->mutable_path_edges()->Add();
       }
     }

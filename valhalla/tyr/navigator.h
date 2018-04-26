@@ -351,7 +351,7 @@ class Navigator {
      * @return the time in seconds prior to the transition point when a
      * pre-transition instruction should be announced.
      */
-    uint32_t GetPreTransitionThreshold(size_t instruction_index) const;
+    uint32_t GetPreTransitionThreshold(int instruction_index) const;
 
     /**
      * Returns true if the current transition alert is close to the
@@ -365,7 +365,7 @@ class Navigator {
      * pre-transition; otherwise, return false.
      */
     bool IsAlertCloseToPre(const FixLocation& fix_location,
-        const NavigationStatus& nav_status, size_t instruction_index) const;
+        const NavigationStatus& nav_status, int instruction_index) const;
     /**
      * Returns true if the specified time in seconds is within the specified
      * lower and upper bounds; otherwise, returns false.
@@ -591,10 +591,10 @@ class Navigator {
     NavigationStatus_RouteState route_state_;
 
     // Current leg index
-    size_t leg_index_;
+    int leg_index_;
 
     // Current maneuver index
-    size_t maneuver_index_;
+    int maneuver_index_;
 
     // Boolean kilometer unit flag
     bool kilometer_units_;

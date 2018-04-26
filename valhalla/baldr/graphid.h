@@ -169,7 +169,7 @@ struct GraphId {
    * Advances the id
    */
   GraphId operator+(uint64_t offset) const {
-    return GraphId(tileid(), level(), id() + offset);
+    return GraphId(tileid(), level(), id() + static_cast<uint32_t>(offset));
   }
 
   /**
@@ -177,7 +177,7 @@ struct GraphId {
    * @param  rhs  Right hand side graph Id for comparison.
    * @return  Returns true if this GraphId is less than the right hand side.
    */
-  bool operator <(const GraphId& rhs) const{
+  bool operator <(const GraphId& rhs) const {
     return value < rhs.value;
   }
 

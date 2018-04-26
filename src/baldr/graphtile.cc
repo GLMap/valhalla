@@ -412,8 +412,8 @@ GraphId GraphTile::GetTileId(const std::string& fname) {
     TileHierarchy::GetTransitLevel() : found->second;
 
   //get the number of sub directories that we should have
-  auto max_id = tile_level.tiles.ncolumns() * tile_level.tiles.nrows() - 1;
-  size_t parts = static_cast<size_t>(std::log10(std::max(1, max_id))) + 1;
+  uint32_t max_id = tile_level.tiles.ncolumns() * tile_level.tiles.nrows() - 1;
+  size_t parts = static_cast<size_t>(std::log10(std::max(1u, max_id))) + 1;
   if(parts % 3 != 0)
     parts += 3 - (parts % 3);
   parts /= 3;
@@ -571,10 +571,10 @@ std::vector<SignInfo> GraphTile::GetSigns(const uint32_t idx) const {
 
   // Signs are sorted by edge index.
   // Binary search to find a sign with matching edge index.
-  int32_t low = 0;
-  int32_t high = count-1;
-  int32_t mid;
-  int32_t found = count;
+  uint32_t low = 0;
+  uint32_t high = count-1;
+  uint32_t mid;
+  uint32_t found = count;
   while (low <= high) {
     mid = (low + high) / 2;
     const auto& sign = signs_[mid];

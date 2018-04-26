@@ -266,7 +266,7 @@ void Navigator::InitializeShapeLengthTime() {
 
 void Navigator::InitializeUsedInstructions() {
   used_instructions_.clear();
-  for (size_t i = 0; i < route_.trip().legs(leg_index_).maneuvers_size(); ++i) {
+  for (int i = 0; i < route_.trip().legs(leg_index_).maneuvers_size(); ++i) {
     used_instructions_.emplace_back(false, false, false, false);
   }
 }
@@ -518,7 +518,7 @@ uint32_t Navigator::GetRemainingManeuverTime(const FixLocation& fix_location,
   return nav_status.remaining_maneuver_time();
 }
 
-uint32_t Navigator::GetPreTransitionThreshold(size_t instruction_index) const {
+uint32_t Navigator::GetPreTransitionThreshold(int instruction_index) const {
   const auto& maneuver = route_.trip().legs(leg_index_).maneuvers(instruction_index);
 
   // TODO: do we need to adjust time for destination?
@@ -537,7 +537,7 @@ uint32_t Navigator::GetPreTransitionThreshold(size_t instruction_index) const {
 }
 
 bool Navigator::IsAlertCloseToPre(const FixLocation& fix_location,
-    const NavigationStatus& nav_status, size_t instruction_index) const {
+    const NavigationStatus& nav_status, int instruction_index) const {
   const auto& maneuver = route_.trip().legs(leg_index_).maneuvers(instruction_index);
 
   // TODO handle the transition alert pre-phrase of "In 500 feet..."
@@ -579,8 +579,8 @@ bool Navigator::IsPostTransition(const FixLocation& fix_location,
 bool Navigator::IsInitialTransitionAlert(const FixLocation& fix_location,
     const NavigationStatus& nav_status, float& alert_length) const {
 
-  size_t curr_instruction_index = maneuver_index_;
-  size_t next_instruction_index = (maneuver_index_ + 1);
+  int curr_instruction_index = maneuver_index_;
+  int next_instruction_index = (maneuver_index_ + 1);
 
   // Verify that the current maneuver is not a destination maneuver
   // and the next maneuver has a transition alert instruction
@@ -713,8 +713,8 @@ float Navigator::GetInitialShortTransitionAlertMinManeuverLength() const {
 bool Navigator::IsFinalTransitionAlert(const FixLocation& fix_location,
     const NavigationStatus& nav_status, float& alert_length) const {
 
-  size_t curr_instruction_index = maneuver_index_;
-  size_t next_instruction_index = (maneuver_index_ + 1);
+  int curr_instruction_index = maneuver_index_;
+  int next_instruction_index = (maneuver_index_ + 1);
 
   // Verify that the current maneuver is not a destination maneuver
   // and the next maneuver has a transition alert instruction
