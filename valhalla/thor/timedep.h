@@ -163,7 +163,7 @@ class TimeDepReverse : public AStarPathAlgorithm {
    * destination to the adjacency list to start the reverse path search.
    * @param  graphreader  Graph tile reader.
    * @param  origin       Location information of the origin.
-   * @param  dest         Location information of the destination.
+   * @param  destination  Location information of the destination.
    */
   void SetOrigin(baldr::GraphReader& graphreader, odin::Location& origin,
                  odin::Location& destination);

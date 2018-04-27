@@ -53,9 +53,9 @@ namespace valhalla {
 
       // Validate walking distances (make sure they are in the accepted range)
       if (costing == "multimodal" || costing == "transit") {
-        auto transit_start_end_max_distance = rapidjson::get_optional<int>(request.document,
+        auto transit_start_end_max_distance = rapidjson::get_optional<uint64_t>(request.document,
             "/costing_options/pedestrian/transit_start_end_max_distance").get_value_or(min_transit_walking_dis);
-        auto transit_transfer_max_distance = rapidjson::get_optional<int>(request.document,
+        auto transit_transfer_max_distance = rapidjson::get_optional<uint64_t>(request.document,
             "/costing_options/pedestrian/transit_transfer_max_distance").get_value_or(min_transit_walking_dis);
 
         if (transit_start_end_max_distance < min_transit_walking_dis || transit_start_end_max_distance > max_transit_walking_dis) {

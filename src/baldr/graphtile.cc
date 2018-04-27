@@ -609,7 +609,7 @@ std::vector<SignInfo> GraphTile::GetSigns(const uint32_t idx) const {
 
 // Get lane connections ending on this edge.
 std::vector<LaneConnectivity> GraphTile::GetLaneConnectivity(const uint32_t idx) const {
-  uint32_t count = lane_connectivity_size_ / sizeof(LaneConnectivity);
+  uint32_t count = static_cast<uint32_t>(lane_connectivity_size_ / sizeof(LaneConnectivity));
   std::vector<LaneConnectivity> lcs;
   if (count == 0) {
     LOG_ERROR("No lane connections found for idx = " + std::to_string(idx));

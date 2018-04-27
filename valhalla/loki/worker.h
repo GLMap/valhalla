@@ -76,8 +76,8 @@ namespace valhalla {
       unsigned long default_radius;
       float long_request;
       // Minimum and maximum walking distances (to validate input).
-      size_t min_transit_walking_dis;
-      size_t max_transit_walking_dis;
+      uint64_t min_transit_walking_dis;
+      uint64_t max_transit_walking_dis;
       size_t max_contours;
       size_t max_time;
       size_t max_trace_shape;

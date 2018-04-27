@@ -36,7 +36,7 @@ namespace valhalla {
           if(location.minimum_reachability() > max_reachability)
             location.set_minimum_reachability(max_reachability);
           if(location.radius() > max_radius)
-            location.set_radius(max_radius);
+            location.set_radius(static_cast<uint32_t>(max_radius));
         }
       }
       else if(required_exception)

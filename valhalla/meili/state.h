@@ -138,14 +138,12 @@ class StateContainer
     return ss.str();
   }
 
-  StateId
-  NewStateId() const
-  { return columns_.empty() ? StateId() : StateId(columns_.size() - 1, columns_.back().size()); }
+  StateId NewStateId() const
+  { return columns_.empty() ? StateId() : StateId(static_cast<StateId::Time>(columns_.size() - 1), static_cast<StateId::Id>(columns_.back().size())); }
 
-  StateId::Time
-  AppendMeasurement(const Measurement& measurement)
+  StateId::Time AppendMeasurement(const Measurement& measurement)
   {
-    const auto time = measurements_.size();
+    const auto time = static_cast<StateId::Time>(measurements_.size());
 
     measurements_.push_back(measurement);
     leave_times_.push_back(measurement.epoch_time());
@@ -168,15 +166,13 @@ class StateContainer
     if (columns_.empty()) {
       throw std::runtime_error("add measurement first");
     }
-    const auto expected_time = columns_.size() - 1;
-    const auto expected_id = columns_.back().size();
+    const auto expected_time = static_cast<StateId::Time>(columns_.size() - 1);
+    const auto expected_id = static_cast<StateId::Id>(columns_.back().size());
     if (state.stateid() != StateId(expected_time, expected_id)) {
-      throw std::runtime_error(
-          "state's stateid should be "                                  \
-          + std::to_string(expected_time) + "/" + std::to_string(expected_id) + \
-          " but got " + std::to_string(state.stateid().time()) + "/" + std::to_string(state.stateid().id()));
+      throw std::runtime_error( "state's stateid should be " + std::to_string(expected_time) + "/" +
+        std::to_string(expected_id) + " but got " + std::to_string(state.stateid().time()) + "/" +
+        std::to_string(state.stateid().id()));
     }
-
     columns_.back().push_back(state);
   }
 

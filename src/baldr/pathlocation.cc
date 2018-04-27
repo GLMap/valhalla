@@ -40,8 +40,8 @@ namespace baldr{
     rapidjson::Value array{rapidjson::kArrayType};
     rapidjson::Value filtered_edges_array{rapidjson::kArrayType};
 
-    array.Reserve(edges.size(), allocator);
-    filtered_edges_array.Reserve(filtered_edges.size(), allocator);
+    array.Reserve(static_cast<uint32_t>(edges.size()), allocator);
+    filtered_edges_array.Reserve(static_cast<uint32_t>(filtered_edges.size()), allocator);
 
     for(const auto& edge : edges) {
       rapidjson::Value e = PathEdgeToRapidJson(edge, allocator);
