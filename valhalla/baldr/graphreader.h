@@ -2,14 +2,14 @@
 #define VALHALLA_BALDR_GRAPHREADER_H_
 
 #include <cstdint>
+#include <mutex>
 #include <string>
 #include <unordered_map>
-#include <mutex>
 
+#include <boost/property_tree/ptree.hpp>
 #include <valhalla/baldr/graphid.h>
 #include <valhalla/baldr/graphtile.h>
 #include <valhalla/baldr/tilehierarchy.h>
-#include <boost/property_tree/ptree.hpp>
 
 namespace valhalla {
 namespace baldr {
@@ -18,10 +18,10 @@ namespace baldr {
  * Tile cache interface.
  */
 class TileCache {
- public:
+public:
   /**
-  * Destructor.
-  */
+   * Destructor.
+   */
   virtual ~TileCache() = default;
 
   /**
@@ -69,11 +69,11 @@ class TileCache {
  * It is NOT thread-safe!
  */
 class SimpleTileCache : public TileCache {
- public:
+public:
   /**
-  * Constructor.
-  * @param max_size  maximum size of the cache
-  */
+   * Constructor.
+   * @param max_size  maximum size of the cache
+   */
   SimpleTileCache(size_t max_size);
 
   /**
@@ -115,7 +115,7 @@ class SimpleTileCache : public TileCache {
    */
   virtual void Clear();
 
- protected:
+protected:
   // The actual cached GraphTile objects
   std::unordered_map<GraphId, GraphTile> cache_;
 
@@ -131,12 +131,12 @@ class SimpleTileCache : public TileCache {
  * It is thread-safe.
  */
 class SynchronizedTileCache : public TileCache {
- public:
+public:
   /**
-  * Constructor.
-  * @param cache reference to an external cache
-  * @param mutex reference to an external mutex
-  */
+   * Constructor.
+   * @param cache reference to an external cache
+   * @param mutex reference to an external mutex
+   */
   SynchronizedTileCache(TileCache& cache, std::mutex& mutex);
   /**
    * Reserves enough cache to hold (max_cache_size / tile_size) items.
@@ -177,7 +177,7 @@ class SynchronizedTileCache : public TileCache {
    */
   void Clear() override;
 
- private:
+private:
   TileCache& cache_;
   std::mutex& mutex_ref_;
 };
@@ -187,7 +187,8 @@ class SynchronizedTileCache : public TileCache {
  */
 class TileCacheFactory final {
   TileCacheFactory() = delete;
- public:
+
+public:
   /**
    * Constructs tile cache.
    * @param pt  Property tree listing the configuration for the cahce configuration
@@ -200,7 +201,7 @@ class TileCacheFactory final {
  * Uses TileCache to keep a cache of tiles.
  */
 class GraphReader {
- public:
+public:
   /**
    * Constructor using tiles as separate files.
    * @param pt  Property tree listing the configuration for the tile storage.
@@ -230,8 +231,9 @@ class GraphReader {
    * @return GraphTile* a pointer to the graph tile
    */
   const GraphTile* GetGraphTile(const GraphId& graphid, const GraphTile*& tile) {
-    if (!tile || tile->id() != graphid.Tile_Base())
+    if (!tile || tile->id() != graphid.Tile_Base()) {
       tile = GetGraphTile(graphid);
+    }
     return tile;
   }
 
@@ -241,7 +243,7 @@ class GraphReader {
    * @param level    the hierarchy level to use when getting the tile
    * @return GraphTile* a pointer to the graph tile
    */
-  const GraphTile* GetGraphTile(const PointLL& pointll, const uint8_t level){
+  const GraphTile* GetGraphTile(const PointLL& pointll, const uint8_t level) {
     GraphId id = TileHierarchy::GetGraphId(pointll, level);
     return id.Is_Valid() ? GetGraphTile(id) : nullptr;
   }
@@ -252,7 +254,7 @@ class GraphReader {
    * @param pointll  the lat,lng that the tile covers
    * @return GraphTile* a pointer to the graph tile
    */
-  const GraphTile* GetGraphTile(const PointLL& pointll){
+  const GraphTile* GetGraphTile(const PointLL& pointll) {
     return GetGraphTile(pointll, TileHierarchy::levels().rbegin()->second.level);
   }
 
@@ -348,8 +350,7 @@ class GraphReader {
    * @return  Returns true if the directed edges are directly connected
    *          at a node, false if not.
    */
-  bool AreEdgesConnectedForward(const GraphId& edge1, const GraphId& edge2,
-                                const GraphTile*& tile);
+  bool AreEdgesConnectedForward(const GraphId& edge1, const GraphId& edge2, const GraphTile*& tile);
 
   /**
    * Convenience method to determine if 2 directed edges are connected from
@@ -363,7 +364,6 @@ class GraphReader {
     const GraphTile* NO_TILE = nullptr;
     return AreEdgesConnectedForward(edge1, edge2, NO_TILE);
   }
-
 
   /**
    * Gets the shortcut edge that includes the specified edge.
@@ -388,8 +388,7 @@ class GraphReader {
    * @param  tile    Reference to a pointer to a const tile.
    * @return Returns a pointer to the node information.
    */
-  const NodeInfo* nodeinfo(const GraphId& nodeid,
-                const GraphTile*& tile) {
+  const NodeInfo* nodeinfo(const GraphId& nodeid, const GraphTile*& tile) {
     return GetGraphTile(nodeid, tile) ? tile->node(nodeid) : nullptr;
   }
 
@@ -409,8 +408,7 @@ class GraphReader {
    * @param  tile    Reference to a pointer to a const tile.
    * @return Returns a pointer to the directed edge.
    */
-  const DirectedEdge* directededge(const GraphId& edgeid,
-                                   const GraphTile*& tile) {
+  const DirectedEdge* directededge(const GraphId& edgeid, const GraphTile*& tile) {
     return GetGraphTile(edgeid, tile) ? tile->directededge(edgeid) : nullptr;
   }
 
@@ -433,8 +431,7 @@ class GraphReader {
    *         can occur in regional extracts (where the end node tile
    *         is not available).
    */
-  std::pair<GraphId, GraphId> GetDirectedEdgeNodes(const GraphTile* tile,
-                       const DirectedEdge* edge);
+  std::pair<GraphId, GraphId> GetDirectedEdgeNodes(const GraphTile* tile, const DirectedEdge* edge);
 
   /**
    * Get the end nodes of a directed edge.
@@ -445,8 +442,7 @@ class GraphReader {
    *         can occur in regional extracts (where the end node tile
    *         is not available).
    */
-  std::pair<GraphId, GraphId> GetDirectedEdgeNodes(const GraphId& edgeid,
-                 const GraphTile*& tile) {
+  std::pair<GraphId, GraphId> GetDirectedEdgeNodes(const GraphId& edgeid, const GraphTile*& tile) {
     if (tile && tile->id().Tile_Base() == edgeid.Tile_Base()) {
       return GetDirectedEdgeNodes(tile, tile->directededge(edgeid));
     } else {
@@ -515,8 +511,9 @@ class GraphReader {
    */
   EdgeInfo edgeinfo(const GraphId& edgeid, const GraphTile*& tile) {
     auto* edge = directededge(edgeid, tile);
-    if(edge == nullptr)
+    if (edge == nullptr) {
       throw std::runtime_error("Cannot find edgeinfo for edge: " + std::to_string(edgeid));
+    }
     return tile->edgeinfo(edge->edgeinfo_offset());
   }
 
@@ -574,7 +571,7 @@ class GraphReader {
   std::unique_ptr<TileCache> cache_;
 };
 
-}
-}
+} // namespace baldr
+} // namespace valhalla
 
-#endif  // VALHALLA_BALDR_GRAPHREADER_H_
+#endif // VALHALLA_BALDR_GRAPHREADER_H_

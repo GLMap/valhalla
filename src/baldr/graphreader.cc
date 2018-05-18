@@ -1,11 +1,11 @@
 #include "baldr/graphreader.h"
 
-#include <string>
-#include <thread>
-#include <iostream>
-#include <fstream>
-#include <sys/stat.h>
 #include <boost/filesystem.hpp>
+#include <thread>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <sys/stat.h>
 
 #include "midgard/logging.h"
 #include "midgard/sequence.h"
@@ -17,10 +17,10 @@
 using namespace valhalla::baldr;
 
 namespace {
-  constexpr size_t DEFAULT_MAX_CACHE_SIZE = 1073741824; //1 gig
-  constexpr size_t AVERAGE_TILE_SIZE = 2097152; //2 megs
-  constexpr size_t AVERAGE_MM_TILE_SIZE = 1024; //1k
-}
+constexpr size_t DEFAULT_MAX_CACHE_SIZE = 1073741824; // 1 gig
+constexpr size_t AVERAGE_TILE_SIZE = 2097152;         // 2 megs
+constexpr size_t AVERAGE_MM_TILE_SIZE = 1024;         // 1k
+} // namespace
 
 namespace valhalla {
 namespace baldr {
@@ -304,104 +304,89 @@ private:
 };
 
 // Constructor.
-SimpleTileCache::SimpleTileCache(size_t max_size)
-      : cache_size_(0), max_cache_size_(max_size)
-{
+SimpleTileCache::SimpleTileCache(size_t max_size) : cache_size_(0), max_cache_size_(max_size) {
 }
 
 // Reserves enough cache to hold (max_cache_size / tile_size) items.
-void SimpleTileCache::Reserve(size_t tile_size)
-{
+void SimpleTileCache::Reserve(size_t tile_size) {
   cache_.reserve(max_cache_size_ / tile_size);
 }
 
 // Checks if tile exists in the cache.
-bool SimpleTileCache::Contains(const GraphId& graphid) const
-{
+bool SimpleTileCache::Contains(const GraphId& graphid) const {
   return cache_.find(graphid) != cache_.end();
 }
 
 // Lets you know if the cache is too large.
-bool SimpleTileCache::OverCommitted() const
-{
+bool SimpleTileCache::OverCommitted() const {
   return max_cache_size_ < cache_size_;
 }
 
 // Clears the cache.
-void SimpleTileCache::Clear()
-{
+void SimpleTileCache::Clear() {
   cache_size_ = 0;
   cache_.clear();
 }
 
 // Get a pointer to a graph tile object given a GraphId.
-const GraphTile* SimpleTileCache::Get(const GraphId& graphid) const
-{
+const GraphTile* SimpleTileCache::Get(const GraphId& graphid) const {
   auto cached = cache_.find(graphid);
-  if(cached != cache_.end()) {
+  if (cached != cache_.end()) {
     return &cached->second;
   }
   return nullptr;
 }
 
 // Puts a copy of a tile of into the cache.
-const GraphTile* SimpleTileCache::Put(const GraphId& graphid, const GraphTile& tile, size_t size)
-{
+const GraphTile* SimpleTileCache::Put(const GraphId& graphid, const GraphTile& tile, size_t size) {
   cache_size_ += size;
   return &cache_.emplace(graphid, tile).first->second;
 }
 
 // Constructor.
 SynchronizedTileCache::SynchronizedTileCache(TileCache& cache, std::mutex& mutex)
-      : cache_(cache), mutex_ref_(mutex)
-{
+    : cache_(cache), mutex_ref_(mutex) {
 }
 
 // Reserves enough cache to hold (max_cache_size / tile_size) items.
-void SynchronizedTileCache::Reserve(size_t tile_size)
-{
+void SynchronizedTileCache::Reserve(size_t tile_size) {
   std::lock_guard<std::mutex> lock(mutex_ref_);
   cache_.Reserve(tile_size);
 }
 
 // Checks if tile exists in the cache.
-bool SynchronizedTileCache::Contains(const GraphId& graphid) const
-{
+bool SynchronizedTileCache::Contains(const GraphId& graphid) const {
   std::lock_guard<std::mutex> lock(mutex_ref_);
   return cache_.Contains(graphid);
 }
 
 // Lets you know if the cache is too large.
-bool SynchronizedTileCache::OverCommitted() const
-{
+bool SynchronizedTileCache::OverCommitted() const {
   std::lock_guard<std::mutex> lock(mutex_ref_);
   return cache_.OverCommitted();
 }
 
 // Clears the cache.
-void SynchronizedTileCache::Clear()
-{
+void SynchronizedTileCache::Clear() {
   std::lock_guard<std::mutex> lock(mutex_ref_);
   cache_.Clear();
 }
 
 // Get a pointer to a graph tile object given a GraphId.
-const GraphTile* SynchronizedTileCache::Get(const GraphId& graphid) const
-{
+const GraphTile* SynchronizedTileCache::Get(const GraphId& graphid) const {
   std::lock_guard<std::mutex> lock(mutex_ref_);
   return cache_.Get(graphid);
 }
 
 // Puts a copy of a tile of into the cache.
-const GraphTile* SynchronizedTileCache::Put(const GraphId& graphid, const GraphTile& tile, size_t size)
-{
+const GraphTile*
+SynchronizedTileCache::Put(const GraphId& graphid, const GraphTile& tile, size_t size) {
   std::lock_guard<std::mutex> lock(mutex_ref_);
   return cache_.Put(graphid, tile, size);
 }
 
 // Constructs tile cache.
-TileCache* TileCacheFactory::createTileCache(const boost::property_tree::ptree& pt)
-{
+TileCache* TileCacheFactory::createTileCache(const boost::property_tree::ptree& pt) {
   static std::mutex globalCacheMutex_;
   static std::shared_ptr<TileCache> globalTileCache_;
 
@@ -409,8 +394,9 @@ TileCache* TileCacheFactory::createTileCache(const boost::property_tree::ptree& 
 
   // wrap tile cache with thread-safe version
   if (pt.get<bool>("global_synchronized_cache", false)) {
-    if (!globalTileCache_)
+    if (!globalTileCache_) {
       globalTileCache_.reset(new SimpleTileCache(max_cache_size));
+    }
     return new SynchronizedTileCache(*globalTileCache_, globalCacheMutex_);
   }
 
@@ -512,7 +498,7 @@ bool GraphReader::DoesTileExist(const boost::property_tree::ptree& pt, const Gra
 // Get a pointer to a graph tile object given a GraphId. Return nullptr
 // if the tile is not found/empty
 const GraphTile* GraphReader::GetGraphTile(const GraphId& graphid) {
-  //TODO: clear the cache automatically once we become overcommitted by a certain amount
+  // TODO: clear the cache automatically once we become overcommitted by a certain amount
 
   // Return nullptr if not a valid tile
   if (!graphid.Is_Valid()) {
@@ -521,7 +507,7 @@ const GraphTile* GraphReader::GetGraphTile(const GraphId& graphid) {
 
   // Check if the level/tileid combination is in the cache
   auto base = graphid.Tile_Base();
-  if(auto cached = cache_->Get(base)) {
+  if (auto cached = cache_->Get(base)) {
     return cached;
   }
 
@@ -539,17 +525,20 @@ const GraphTile* GraphReader::GetGraphTile(const GraphId& graphid) {
 GraphId GraphReader::GetOpposingEdgeId(const GraphId& edgeid, const GraphTile*& tile) {
   // If you cant get the tile you get an invalid id
   tile = GetGraphTile(edgeid);
-  if(!tile)
+  if (!tile) {
     return {};
+  };
   // For now return an invalid Id if this is a transit edge
   const auto* directededge = tile->directededge(edgeid);
-  if (directededge->IsTransitLine())
+  if (directededge->IsTransitLine()) {
     return {};
+  };
 
   // If edge leaves the tile get the end node's tile
   GraphId id = directededge->endnode();
-  if (!GetGraphTile(id, tile))
+  if (!GetGraphTile(id, tile)) {
     return {};
+  };
 
   // Get the opposing edge
   id.set_id(tile->node(id)->edge_index() + directededge->opp_index());
@@ -577,25 +566,21 @@ bool GraphReader::AreEdgesConnected(const GraphId& edge1, const GraphId& edge2) 
   // Get both directed edges
   const GraphTile* t1 = GetGraphTile(edge1);
   const DirectedEdge* de1 = t1->directededge(edge1);
-  const GraphTile* t2 = (edge2.Tile_Base() == edge1.Tile_Base()) ?
-                          t1 : GetGraphTile(edge2);
+  const GraphTile* t2 = (edge2.Tile_Base() == edge1.Tile_Base()) ? t1 : GetGraphTile(edge2);
   const DirectedEdge* de2 = t2->directededge(edge2);
-  if (de1->endnode() == de2->endnode() ||
-      is_transition(de1->endnode(), de2->endnode())) {
+  if (de1->endnode() == de2->endnode() || is_transition(de1->endnode(), de2->endnode())) {
     return true;
   }
 
   // Get opposing edge to de1
   const DirectedEdge* de1_opp = GetOpposingEdge(edge1, t1);
-  if (de1_opp->endnode() == de2->endnode() ||
-      is_transition(de1_opp->endnode(), de2->endnode())) {
+  if (de1_opp->endnode() == de2->endnode() || is_transition(de1_opp->endnode(), de2->endnode())) {
     return true;
   }
 
   // Get opposing edge to de2 and compare to both edge1 endnodes
   const DirectedEdge* de2_opp = GetOpposingEdge(edge2, t2);
-  if (de2_opp->endnode() == de1->endnode() ||
-      de2_opp->endnode() == de1_opp->endnode() ||
+  if (de2_opp->endnode() == de1->endnode() || de2_opp->endnode() == de1_opp->endnode() ||
       is_transition(de2_opp->endnode(), de1->endnode()) ||
       is_transition(de2_opp->endnode(), de1_opp->endnode())) {
     return true;
@@ -605,7 +590,8 @@ bool GraphReader::AreEdgesConnected(const GraphId& edge1, const GraphId& edge2) 
 
 // Convenience method to determine if 2 directed edges are connected from
 // end node of edge1 to the start node of edge2.
-bool GraphReader::AreEdgesConnectedForward(const GraphId& edge1, const GraphId& edge2,
+bool GraphReader::AreEdgesConnectedForward(const GraphId& edge1,
+                                           const GraphId& edge2,
                                            const GraphTile*& tile) {
   // Get end node of edge1
   GraphId endnode = edge_endnode(edge1, tile);
@@ -647,8 +633,7 @@ GraphId GraphReader::GetShortcut(const GraphId& id) {
     const DirectedEdge* continuing_edge = static_cast<const DirectedEdge*>(nullptr);
     const DirectedEdge* directededge = tile->directededge(idx);
     for (uint32_t i = 0; i < nodeinfo->edge_count(); i++, directededge++, idx++) {
-      if (directededge->IsTransition() ||
-          idx == edgeid.id() || directededge->is_shortcut() ||
+      if (directededge->IsTransition() || idx == edgeid.id() || directededge->is_shortcut() ||
           directededge->use() == Use::kTransitConnection ||
           directededge->use() == Use::kEgressConnection ||
           directededge->use() == Use::kPlatformConnection) {
@@ -664,7 +649,7 @@ GraphId GraphReader::GetShortcut(const GraphId& id) {
 
   // No shortcuts on the local level or transit level.
   if (id.level() >= TileHierarchy::levels().rbegin()->second.level) {
-    return { };
+    return {};
   }
 
   // If this edge is a shortcut return this edge Id
@@ -684,10 +669,9 @@ GraphId GraphReader::GetShortcut(const GraphId& id) {
   while (true) {
     // Get the continuing directed edge. Initial case is to use the opposing
     // directed edge.
-    cont_de = (node == nullptr) ? GetOpposingEdge(id) :
-                continuing_edge(tile, edgeid, node);
+    cont_de = (node == nullptr) ? GetOpposingEdge(id) : continuing_edge(tile, edgeid, node);
     if (cont_de == nullptr) {
-      return { };
+      return {};
     }
 
     // Get the end node and end node tile
@@ -699,7 +683,7 @@ GraphId GraphReader::GetShortcut(const GraphId& id) {
 
     // Get the opposing edge Id and its directed edge
     uint32_t idx = node->edge_index() + cont_de->opp_index();
-    edgeid = { endnode.tileid(), endnode.level(), idx };
+    edgeid = {endnode.tileid(), endnode.level(), idx};
     directededge = tile->directededge(edgeid);
     if (directededge->superseded()) {
       // Get the shortcut edge Id that supersedes this edge
@@ -707,7 +691,7 @@ GraphId GraphReader::GetShortcut(const GraphId& id) {
       return GraphId(endnode.tileid(), endnode.level(), idx);
     }
   }
-  return { };
+  return {};
 }
 
 // Convenience method to get the relative edge density (from the
@@ -726,7 +710,7 @@ uint32_t GraphReader::GetEdgeDensity(const GraphId& edgeid) {
 
 // Get the end nodes of a directed edge.
 std::pair<GraphId, GraphId> GraphReader::GetDirectedEdgeNodes(const GraphTile* tile,
-                     const DirectedEdge* edge) {
+                                                              const DirectedEdge* edge) {
   GraphId end_node = edge->endnode();
   GraphId start_node;
   const GraphTile* t2 = (edge->leaves_tile()) ? GetGraphTile(end_node) : tile;
@@ -755,5 +739,5 @@ std::unordered_set<GraphId> GraphReader::GetTileSet(const uint8_t level) const {
   return rv;
 }
 
-}
-}
+} // namespace baldr
+} // namespace valhalla
