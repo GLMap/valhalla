@@ -96,6 +96,18 @@ inline int munmap(void* addr, size_t length) {
 
 #endif // _MSC_VER
 
+#ifndef POSIX_MADV_NORMAL
+# define POSIX_MADV_NORMAL 0
+#endif
+
+#ifndef POSIX_MADV_SEQUENTIAL
+# define POSIX_MADV_SEQUENTIAL 2
+#endif
+
+#ifndef posix_madvise
+#define posix_madvise(...)
+#endif
+
 namespace valhalla {
 namespace midgard {
 
