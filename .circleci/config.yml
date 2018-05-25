@@ -2,21 +2,16 @@ version: 2
 jobs:
   lint:
     docker:
-      - image: ubuntu:16.04
-        environment:
-          PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-          LD_LIBRARY_PATH: /usr/local/lib:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:/lib32:/usr/lib32
+      - image: valhalla/docker:build-2.5.0
     steps:
       - checkout
-      - run: apt-get update && apt-get -y install clang-format clang-tidy-5.0 clang-5.0 git
+      - run: apt-get update && apt-get -y install clang-tidy-5.0 clang-5.0 curl git
       - run: ./scripts/format.sh && ./scripts/error_on_dirty.sh
       - run: ./.circleci/make_test.sh && run-clang-tidy-5.0.py -header-filter "^$(pwd)/(src|valhalla/(baldr|midgard|sif|odin|thor|skadi|tyr|loki|mjolnir)/.*" && ./scripts/error_on_dirty.sh
+
   build:
     docker:
-      - image: ubuntu:16.04
-        environment:
-          PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-          LD_LIBRARY_PATH: /usr/local/lib:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:/lib32:/usr/lib32
+      - image: valhalla/docker:build-2.5.0
     steps:
       - checkout
       - run: apt-get update && apt-get -y install git && git submodule sync && git submodule update --init
@@ -37,9 +32,83 @@ jobs:
       - run: (if [ $(cat test/logs/* | grep -cF FAIL) -ne 0 ]; then exit 1; fi)
       #make sure installer works
       - run: make install
+
+
+  build-debug:
+    docker:
+      - image: valhalla/docker:build-2.5.0
+    steps:
+      - checkout
+      - run: git submodule sync && git submodule update --init
+      - run: cd locales && for loc in $(jq ".posix_locale" *.json | sed -e 's/"//g'); do localedef -i "${loc%.*}" -f "${loc##*.}" "./${loc}" ; done
+      - restore_cache:
+          keys:
+            - ccache
+      - run: mkdir build
+      - run: cd build && cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=On -DCPACK_GENERATOR=DEB
+      - run: make -C build -j4
+      - run: make -C build -j2 tests
+      - run: make -C build -j2 check
+      - run: make -C build install
+      - run: make -C build package
+      - run: make -C build coverage
+      - run: /bin/bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"
+      - save_cache:
+          key: ccache
+          paths:
+            - ~/.ccache
+
+  build-release:
+    docker:
+      - image: valhalla/docker:build-2.5.0
+    steps:
+      - checkout
+      - run: git submodule sync && git submodule update --init
+      - run: cd locales && for loc in $(jq ".posix_locale" *.json | sed -e 's/"//g'); do localedef -i "${loc%.*}" -f "${loc##*.}" "./${loc}" ; done
+      - restore_cache:
+          keys:
+            - ccache
+      - run: mkdir build
+      - run: |
+          cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=On -DENABLE_PYTHON_BINDINGS=On \
+          -DCPACK_GENERATOR=DEB -DCPACK_PACKAGE_VERSION_SUFFIX="-0ubuntu1-$(lsb_release -sc)"
+      - run: make -C build -j4
+      - run: make -C build -j2 tests
+      - run: make -C build -j2 check
+      - run: make -C build install
+      - run: make -C build package
+      - save_cache:
+          key: ccache
+          paths:
+            - ~/.ccache
+
+  build-osx:
+    macos:
+      xcode: "9.2.0"
+    steps:
+      - run: brew install autoconf automake libtool protobuf-c boost-python libspatialite pkg-config sqlite3 lua jq curl czmq lz4
+      - checkout
+      - run: git submodule sync && git submodule update --init
+      - run: cd locales && for loc in $(jq ".posix_locale" *.json | sed -e 's/"//g'); do localedef -i "${loc%.*}" -f "${loc##*.}" "./${loc}" ; done
+      - restore_cache:
+          keys:
+            - ccache
+      - run: mkdir build
+      - run: cd build && cmake ..
+      - run: make -C build -j4
+      - run: make -C build -j2 tests
+      - run: make -C build -j2 check
+      - run: make -C build install
+      - save_cache:
+          key: ccache
+          paths:
+            - ~/.ccache
+
 workflows:
   version: 2
   build_and_test:
     jobs:
       - lint
       - build
+      - build-debug
+      - build-release

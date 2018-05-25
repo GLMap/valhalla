@@ -618,8 +618,7 @@ bool GraphReader::AreEdgesConnectedForward(const GraphId& edge1,
 
   // Check if edge2's Id is an outgoing directed edge of the node
   const NodeInfo* node = tile->node(endnode);
-  return (node->edge_index() <= edge2.id() &&
-          edge2.id() < (node->edge_index() + node->edge_count()));
+  return (node->edge_index() <= edge2.id() && edge2.id() < (node->edge_index() + node->edge_count()));
 }
 
 // Get the shortcut edge that includes this edge.
@@ -627,8 +626,7 @@ GraphId GraphReader::GetShortcut(const GraphId& id) {
   // Lambda to get continuing edge at a node. Skips the specified edge Id
   // transition edges, shortcut edges, and transit connections. Returns
   // nullptr if more than one edge remains or no continuing edge is found.
-  auto continuing_edge = [](const GraphTile* tile, const GraphId& edgeid,
-                            const NodeInfo* nodeinfo) {
+  auto continuing_edge = [](const GraphTile* tile, const GraphId& edgeid, const NodeInfo* nodeinfo) {
     uint32_t idx = nodeinfo->edge_index();
     const DirectedEdge* continuing_edge = static_cast<const DirectedEdge*>(nullptr);
     const DirectedEdge* directededge = tile->directededge(idx);

@@ -13,6 +13,7 @@
 #include "midgard/logging.h"
 #include "sif/autocost.h"
 #include "sif/bicyclecost.h"
+#include "sif/motorcyclecost.h"
 #include "sif/motorscootercost.h"
 #include "sif/pedestriancost.h"
 #include "tyr/actor.h"
@@ -41,7 +42,7 @@ void loki_worker_t::parse_locations(google::protobuf::RepeatedPtrField<odin::Loc
       }
     }
   } else if (required_exception) {
-    throw * required_exception;
+    throw *required_exception;
   }
 }
 
@@ -67,8 +68,7 @@ void loki_worker_t::parse_costing(valhalla_request_t& request) {
 
   // Get the costing options if in the config or make a blank one.
   // Creates the cost in the cost factory
-  auto* method_options_ptr =
-      rapidjson::Pointer{"/costing_options/" + costing}.Get(request.document);
+  auto* method_options_ptr = rapidjson::Pointer{"/costing_options/" + costing}.Get(request.document);
   auto& allocator = request.document.GetAllocator();
   if (!method_options_ptr) {
     auto* costing_options = rapidjson::Pointer{"/costing_options"}.Get(request.document);
@@ -161,10 +161,10 @@ loki_worker_t::loki_worker_t(const boost::property_tree::ptree& config)
                            config.get<float>("service_limits." + kv.first + ".max_distance"));
     }
     if (kv.first != "skadi" && kv.first != "trace" && kv.first != "isochrone") {
-      max_matrix_distance.emplace(
-          kv.first, config.get<float>("service_limits." + kv.first + ".max_matrix_distance"));
-      max_matrix_locations.emplace(
-          kv.first, config.get<float>("service_limits." + kv.first + ".max_matrix_locations"));
+      max_matrix_distance.emplace(kv.first, config.get<float>("service_limits." + kv.first +
+                                                              ".max_matrix_distance"));
+      max_matrix_locations.emplace(kv.first, config.get<float>("service_limits." + kv.first +
+                                                               ".max_matrix_locations"));
     }
   }
   // this should never happen
@@ -199,17 +199,8 @@ loki_worker_t::loki_worker_t(const boost::property_tree::ptree& config)
   max_best_paths = config.get<unsigned int>("service_limits.trace.max_best_paths");
   max_best_paths_shape = config.get<size_t>("service_limits.trace.max_best_paths_shape");
 
-  // Register edge/node costing methods
-  // TODO: move this into the loop above
-  factory.Register("auto", sif::CreateAutoCost);
-  factory.Register("auto_shorter", sif::CreateAutoShorterCost);
-  factory.Register("bus", sif::CreateBusCost);
-  factory.Register("bicycle", sif::CreateBicycleCost);
-  factory.Register("hov", sif::CreateHOVCost);
-  factory.Register("motor_scooter", sif::CreateMotorScooterCost);
-  factory.Register("pedestrian", sif::CreatePedestrianCost);
-  factory.Register("truck", sif::CreateTruckCost);
-  factory.Register("transit", sif::CreateTransitCost);
+  // Register standard edge/node costing methods
+  factory.RegisterStandardCostingModels();
 }
 
 void loki_worker_t::cleanup() {
@@ -240,8 +231,8 @@ worker_t::result_t loki_worker_t::work(const std::list<zmq::message_t>& job,
   valhalla_request_t request;
   try {
     // request parsing
-    auto http_request = http_request_t::from_string(static_cast<const char*>(job.front().data()),
-                                                    job.front().size());
+    auto http_request =
+        http_request_t::from_string(static_cast<const char*>(job.front().data()), job.front().size());
     request.parse(http_request);
 
     // check there is a valid action
@@ -330,11 +321,12 @@ void run_service(const boost::property_tree::ptree& config) {
   // listen for requests
   zmq::context_t context;
   loki_worker_t loki_worker(config);
-  prime_server::worker_t worker(
-      context, upstream_endpoint, downstream_endpoint, loopback_endpoint, interrupt_endpoint,
-      std::bind(&loki_worker_t::work, std::ref(loki_worker), std::placeholders::_1,
-                std::placeholders::_2, std::placeholders::_3),
-      std::bind(&loki_worker_t::cleanup, std::ref(loki_worker)));
+  prime_server::worker_t worker(context, upstream_endpoint, downstream_endpoint, loopback_endpoint,
+                                interrupt_endpoint,
+                                std::bind(&loki_worker_t::work, std::ref(loki_worker),
+                                          std::placeholders::_1, std::placeholders::_2,
+                                          std::placeholders::_3),
+                                std::bind(&loki_worker_t::cleanup, std::ref(loki_worker)));
   worker.work();
 
   // TODO: should we listen for SIGINT and terminate gracefully/exit(0)?

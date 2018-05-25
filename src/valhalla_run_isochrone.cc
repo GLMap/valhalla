@@ -19,15 +19,16 @@
 #include "midgard/logging.h"
 #include "odin/directionsbuilder.h"
 #include "odin/util.h"
-#include "proto/directions_options.pb.h"
-#include "proto/tripdirections.pb.h"
-#include "proto/trippath.pb.h"
 #include "sif/costfactory.h"
 #include "thor/bidirectional_astar.h"
 #include "thor/isochrone.h"
 #include "thor/pathalgorithm.h"
 #include "thor/trippathbuilder.h"
 #include "tyr/serializers.h"
+
+#include <valhalla/proto/directions_options.pb.h>
+#include <valhalla/proto/tripdirections.pb.h>
+#include <valhalla/proto/trippath.pb.h>
 
 #include "config.h"
 
@@ -69,8 +70,8 @@ int main(int argc, char* argv[]) {
   std::string origin, routetype, json, config, filename;
   float denoise = 1.f;
   float generalize = kOptimalGeneralization;
-  options.add_options()("help,h", "Print this help message.")(
-      "version,v", "Print the version of this software.")(
+  options.add_options()("help,h", "Print this help message.")("version,v",
+                                                              "Print the version of this software.")(
       "origin,o", boost::program_options::value<std::string>(&origin),
       "Origin: "
       "lat,lng,[through|stop],[name],[street],[city/town/village],[state/province/canton/district/"
@@ -89,14 +90,17 @@ int main(int argc, char* argv[]) {
       // positional arguments
       ("reverse,r", bpo::value<bool>(&reverse),
        "Reverse direction.")("ncontours,n", bpo::value<size_t>(&n_contours), "Number of contours.")(
-          "minutes,m", bpo::value<unsigned int>(&max_minutes), "Maximum minutes.")(
-          "config,c", bpo::value<std::string>(&config), "Valhalla configuration file")(
-          "file,f", bpo::value<std::string>(&filename), "Geojson output file name.")(
-          "polygons,p", bpo::value<bool>(&polygons), "Return as polygons or lines.")(
-          "show_locations,l", bpo::value<bool>(&show_locations),
-          "Include locations in the final geojson.")("denoise,d", bpo::value<float>(&denoise),
-                                                     "Denoise value. Must be between 0 and 1.")(
-          "generalize,g", bpo::value<float>(&generalize), "Generalize value.");
+          "minutes,m", bpo::value<unsigned int>(&max_minutes),
+          "Maximum minutes.")("config,c", bpo::value<std::string>(&config),
+                              "Valhalla configuration file")("file,f",
+                                                             bpo::value<std::string>(&filename),
+                                                             "Geojson output file name.")(
+          "polygons,p", bpo::value<bool>(&polygons),
+          "Return as polygons or lines.")("show_locations,l", bpo::value<bool>(&show_locations),
+                                          "Include locations in the final geojson.")(
+          "denoise,d", bpo::value<float>(&denoise),
+          "Denoise value. Must be between 0 and 1.")("generalize,g", bpo::value<float>(&generalize),
+                                                     "Generalize value.");
 
   bpo::positional_options_description pos_options;
   pos_options.add("config", 1);
@@ -229,9 +233,9 @@ int main(int argc, char* argv[]) {
   boost::optional<boost::property_tree::ptree&> logging_subtree =
       pt.get_child_optional("thor.logging");
   if (logging_subtree) {
-    auto logging_config = valhalla::midgard::ToMap<const boost::property_tree::ptree&,
-                                                   std::unordered_map<std::string, std::string>>(
-        logging_subtree.get());
+    auto logging_config =
+        valhalla::midgard::ToMap<const boost::property_tree::ptree&,
+                                 std::unordered_map<std::string, std::string>>(logging_subtree.get());
     valhalla::midgard::logging::Configure(logging_config);
   }
 
@@ -240,13 +244,7 @@ int main(int argc, char* argv[]) {
 
   // Construct costing
   CostFactory<DynamicCost> factory;
-  factory.Register("auto", CreateAutoCost);
-  factory.Register("auto_shorter", CreateAutoShorterCost);
-  factory.Register("bus", CreateBusCost);
-  factory.Register("bicycle", CreateBicycleCost);
-  factory.Register("pedestrian", CreatePedestrianCost);
-  factory.Register("truck", CreateTruckCost);
-  factory.Register("transit", CreateTransitCost);
+  factory.RegisterStandardCostingModels();
 
   // Figure out the route type
   for (auto& c : routetype) {
@@ -341,8 +339,8 @@ int main(int argc, char* argv[]) {
       }
     }
   }
-  LOG_INFO("Marked " + std::to_string(nv) + " cells in the isotile" + " size= " +
-           std::to_string(iso_data.size()));
+  LOG_INFO("Marked " + std::to_string(nv) + " cells in the isotile" +
+           " size= " + std::to_string(iso_data.size()));
   LOG_INFO("Rows = " + std::to_string(isotile->nrows()) + " min = " + std::to_string(min_row) +
            " max = " + std::to_string(max_row));
   LOG_INFO("Cols = " + std::to_string(isotile->ncolumns()) + " min = " + std::to_string(min_col) +

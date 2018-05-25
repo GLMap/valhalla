@@ -85,15 +85,7 @@ void walk_edges(const std::string& shape,
                 boost::property_tree::ptree& pt) {
   // Register edge/node costing methods
   CostFactory<DynamicCost> factory;
-  factory.Register("auto", CreateAutoCost);
-  factory.Register("auto_shorter", CreateAutoShorterCost);
-  factory.Register("bus", CreateBusCost);
-  factory.Register("bicycle", CreateBicycleCost);
-  factory.Register("hov", CreateHOVCost);
-  factory.Register("motor_scooter", CreateMotorScooterCost);
-  factory.Register("pedestrian", CreatePedestrianCost);
-  factory.Register("transit", CreateTransitCost);
-  factory.Register("truck", CreateTruckCost);
+  factory.RegisterStandardCostingModels();
 
   std::string method_options = "costing_options." + routetype;
   auto costing_options = pt.get_child(method_options, {});
@@ -180,11 +172,13 @@ int main(int argc, char* argv[]) {
 
   std::string routetype, json, shape, config;
 
-  options.add_options()("help,h", "Print this help message.")(
-      "version,v", "Print the version of this software.")(
+  options.add_options()("help,h", "Print this help message.")("version,v",
+                                                              "Print the version of this software.")(
       "type,t", boost::program_options::value<std::string>(&routetype),
-      "Route Type: auto|bicycle|pedestrian|auto-shorter")(
-      "shape,s", boost::program_options::value<std::string>(&shape), "")(
+      "Route Type: auto|bicycle|pedestrian|auto-shorter")("shape,s",
+                                                          boost::program_options::value<std::string>(
+                                                              &shape),
+                                                          "")(
       "json,j", boost::program_options::value<std::string>(&json),
       R"(JSON Example: {"paths":[[{"lat":12.47,"lon":15.2},{"lat":12.46,"lon":15.21}],[{"lat":12.36,"lon":15.17},{"lat":12.37,"lon":15.18}]],"costing":"bicycle","costing_options":{"bicycle":{"use_roads":0.55,"use_hills":0.1}}})")
       // positional arguments
@@ -235,9 +229,7 @@ int main(int argc, char* argv[]) {
           locations.emplace_back(std::move(valhalla::baldr::Location::FromPtree(location.second)));
         }
       }
-    } catch (...) {
-      throw std::runtime_error("insufficiently specified required parameter 'paths'");
-    }
+    } catch (...) { throw std::runtime_error("insufficiently specified required parameter 'paths'"); }
     // Parse out the type of route - this provides the costing method to use
     try {
       routetype = json_ptree.get<std::string>("costing");
@@ -265,10 +257,7 @@ int main(int argc, char* argv[]) {
 
   // Construct costing
   CostFactory<DynamicCost> factory;
-  factory.Register("auto", CreateAutoCost);
-  factory.Register("bicycle", CreateBicycleCost);
-  factory.Register("pedestrian", CreatePedestrianCost);
-  factory.Register("motor_scooter", CreateMotorScooterCost);
+  factory.RegisterStandardCostingModels();
   std::string method_options = "costing_options." + routetype;
   auto costing_options = json_ptree.get_child(method_options, {});
   cost_ptr_t costing = factory.Create(routetype, costing_options);

@@ -32,10 +32,7 @@ MapMatcherFactory::MapMatcherFactory(const boost::property_tree::ptree& root)
                       local_tile_size() / root.get<size_t>("meili.grid.size"),
                       local_tile_size() / root.get<size_t>("meili.grid.size")),
       max_grid_cache_size_(root.get<float>("meili.grid.cache_size")) {
-  cost_factory_.Register("auto", sif::CreateAutoCost);
-  cost_factory_.Register("bicycle", sif::CreateBicycleCost);
-  cost_factory_.Register("motor_scooter", sif::CreateMotorScooterCost);
-  cost_factory_.Register("pedestrian", sif::CreatePedestrianCost);
+  cost_factory_.RegisterStandardCostingModels();
   cost_factory_.Register("multimodal", CreateUniversalCost);
 }
 

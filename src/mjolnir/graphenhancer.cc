@@ -108,9 +108,7 @@ struct enhancer_stats {
  * @param  density       Relative road density.
  * @param  urban_rc_speed Array of default speeds vs. road class for urban areas
  */
-void UpdateSpeed(DirectedEdge& directededge,
-                 const uint32_t density,
-                 const uint32_t* urban_rc_speed) {
+void UpdateSpeed(DirectedEdge& directededge, const uint32_t density, const uint32_t* urban_rc_speed) {
 
   // Update speed on ramps (if not a tagged speed) and turn channels
   if (directededge.link()) {
@@ -122,8 +120,7 @@ void UpdateSpeed(DirectedEdge& directededge,
       // If no tagged speed set ramp speed to slightly lower than speed
       // for roads of this classification
       RoadClass rc = directededge.classification();
-      if ((rc == RoadClass::kMotorway) || (rc == RoadClass::kTrunk) ||
-          (rc == RoadClass::kPrimary)) {
+      if ((rc == RoadClass::kMotorway) || (rc == RoadClass::kTrunk) || (rc == RoadClass::kPrimary)) {
         speed = (density > 8) ? static_cast<uint32_t>((speed * kRampDensityFactor) + 0.5f)
                               : static_cast<uint32_t>((speed * kRampFactor) + 0.5f);
       } else {
@@ -328,6 +325,7 @@ bool IsIntersectionInternal(const GraphTile* start_tile,
   // Also they must be a road use (not footway, cycleway, etc.).
   // TODO - consider whether alleys, cul-de-sacs, and other road uses
   // are candidates to be marked as internal intersection edges.
+  // Returns false if any connecting edge is a roundabout.
   if (directededge.length() > kMaxInternalLength || directededge.roundabout() ||
       directededge.use() > Use::kCycleway) {
     return false;
@@ -344,10 +342,26 @@ bool IsIntersectionInternal(const GraphTile* start_tile,
            turn_types.find(Turn::Type::kSharpLeft) != turn_types.end();
   };
 
+  // Get the tile at the startnode
+  const GraphTile* tile = start_tile;
+
+  // Exclude trivial "loops" where only 2 edges at start of candidate edge and
+  // the end of the candidate edge is the start of the incoming edge to the
+  // candidate
+  if (startnodeinfo.edge_count() == 2) {
+    const DirectedEdge* diredge = tile->directededge(startnodeinfo.edge_index());
+    for (uint32_t i = 0; i < startnodeinfo.edge_count(); i++, diredge++) {
+      // This is a loop if the non-candidate edge ends at the end node of the
+      // candidate directed edge
+      if (i != idx && diredge->endnode() == directededge.endnode()) {
+        return false;
+      }
+    }
+  }
+
   // Iterate through inbound edges and get turn degrees from driveable inbound
   // edges onto the candidate edge.
   bool oneway_inbound = false;
-  const GraphTile* tile = start_tile;
   uint32_t heading = startnodeinfo.heading(idx);
   std::set<Turn::Type> incoming_turn_type;
   const DirectedEdge* diredge = tile->directededge(startnodeinfo.edge_index());
@@ -356,6 +370,11 @@ bool IsIntersectionInternal(const GraphTile* start_tile,
     // that are not driveable inbound.
     if (i == idx || diredge->use() != Use::kRoad || !(diredge->reverseaccess() & kAutoAccess)) {
       continue;
+    }
+
+    // Return false if this is a roundabout connection.
+    if (diredge->roundabout()) {
+      return false;
     }
 
     // Store the turn type of incoming driveable edges.
@@ -393,8 +412,9 @@ bool IsIntersectionInternal(const GraphTile* start_tile,
       if (!diredge->forward()) {
         std::reverse(shape.begin(), shape.end());
       }
-      uint32_t hdg = std::round(PointLL::HeadingAlongPolyline(
-          shape, GetOffsetForHeading(diredge->classification(), diredge->use())));
+      uint32_t hdg = std::round(
+          PointLL::HeadingAlongPolyline(shape, GetOffsetForHeading(diredge->classification(),
+                                                                   diredge->use())));
 
       // Convert to inbound heading
       heading = ((hdg + 180) % 360);
@@ -415,14 +435,20 @@ bool IsIntersectionInternal(const GraphTile* start_tile,
       continue;
     }
 
+    // Return false if this is a roundabout connection.
+    if (diredge->roundabout()) {
+      return false;
+    }
+
     // Get the heading of the outbound edge (unfortunately GraphEnhancer may
     // not have yet computed and stored headings for this node).
     auto shape = tile->edgeinfo(diredge->edgeinfo_offset()).shape();
     if (!diredge->forward()) {
       std::reverse(shape.begin(), shape.end());
     }
-    uint32_t to_heading = std::round(PointLL::HeadingAlongPolyline(
-        shape, GetOffsetForHeading(diredge->classification(), diredge->use())));
+    uint32_t to_heading =
+        std::round(PointLL::HeadingAlongPolyline(shape, GetOffsetForHeading(diredge->classification(),
+                                                                            diredge->use())));
 
     // Store outgoing turn type for any driveable edges
     uint32_t turndegree = GetTurnDegree(heading, to_heading);
@@ -443,9 +469,11 @@ bool IsIntersectionInternal(const GraphTile* start_tile,
   }
 
   // A further rejection case is if there are incoming edges that
-  // have "opposite" turn degrees than outgoing edges
+  // have "opposite" turn degrees than outgoing edges or if the outgoing
+  // edges have opposing turn degrees.
   if ((has_turn_left(incoming_turn_type) && has_turn_right(outgoing_turn_type)) ||
-      (has_turn_right(incoming_turn_type) && has_turn_left(outgoing_turn_type))) {
+      (has_turn_right(incoming_turn_type) && has_turn_left(outgoing_turn_type)) ||
+      (has_turn_left(outgoing_turn_type) && has_turn_right(outgoing_turn_type))) {
     return false;
   }
 
@@ -1063,8 +1091,9 @@ void enhance(const boost::property_tree::ptree& pt,
         if (!directededge.forward()) {
           std::reverse(shape.begin(), shape.end());
         }
-        heading[j] = std::round(PointLL::HeadingAlongPolyline(
-            shape, GetOffsetForHeading(directededge.classification(), directededge.use())));
+        heading[j] = std::round(
+            PointLL::HeadingAlongPolyline(shape, GetOffsetForHeading(directededge.classification(),
+                                                                     directededge.use())));
 
         // Set heading in NodeInfo. TODO - what if 2 edges have nearly the
         // same heading - should one be "adjusted" so the relative direction
@@ -1160,6 +1189,7 @@ void enhance(const boost::property_tree::ptree& pt,
                      ((forward & kTaxiAccess) && !(reverse & kTaxiAccess)) ||
                      ((forward & kHOVAccess) && !(reverse & kHOVAccess)) ||
                      ((forward & kMopedAccess) && !(reverse & kMopedAccess)) ||
+                     ((forward & kMotorcycleAccess) && !(reverse & kMotorcycleAccess)) ||
                      ((forward & kBusAccess) && !(reverse & kBusAccess)));
 
                 bool r_oneway_vehicle =
@@ -1169,6 +1199,7 @@ void enhance(const boost::property_tree::ptree& pt,
                      (!(forward & kTaxiAccess) && (reverse & kTaxiAccess)) ||
                      (!(forward & kHOVAccess) && (reverse & kHOVAccess)) ||
                      (!(forward & kMopedAccess) && (reverse & kMopedAccess)) ||
+                     (!(forward & kMotorcycleAccess) && (reverse & kMotorcycleAccess)) ||
                      (!(forward & kBusAccess) && (reverse & kBusAccess)));
 
                 bool f_oneway_bicycle = ((forward & kBicycleAccess) && !(reverse & kBicycleAccess));
@@ -1176,13 +1207,13 @@ void enhance(const boost::property_tree::ptree& pt,
 
                 // motorroad defaults remove ped, wheelchair, moped, and bike access.
                 // still check for user tags via access.
-                forward = GetAccess(forward, (forward &
-                                              ~(kPedestrianAccess | kWheelchairAccess |
-                                                kMopedAccess | kBicycleAccess)),
+                forward = GetAccess(forward,
+                                    (forward & ~(kPedestrianAccess | kWheelchairAccess |
+                                                 kMopedAccess | kBicycleAccess)),
                                     r_oneway_vehicle, r_oneway_bicycle, access);
-                reverse = GetAccess(reverse, (reverse &
-                                              ~(kPedestrianAccess | kWheelchairAccess |
-                                                kMopedAccess | kBicycleAccess)),
+                reverse = GetAccess(reverse,
+                                    (reverse & ~(kPedestrianAccess | kWheelchairAccess |
+                                                 kMopedAccess | kBicycleAccess)),
                                     f_oneway_vehicle, f_oneway_bicycle, access);
 
                 directededge.set_forwardaccess(forward);
@@ -1284,8 +1315,8 @@ void enhance(const boost::property_tree::ptree& pt,
       LOG_ERROR("Mismatch in access restriction count before " + std::to_string(ar_before) +
                 ""
                 " and after " +
-                std::to_string(access_restrictions.size()) + " tileid = " +
-                std::to_string(tile_id.tileid()));
+                std::to_string(access_restrictions.size()) +
+                " tileid = " + std::to_string(tile_id.tileid()));
     }
     tilebuilder.AddAccessRestrictions(access_restrictions);
 
@@ -1345,8 +1376,8 @@ void GraphEnhancer::Enhance(const boost::property_tree::ptree& pt, const std::st
   for (auto& thread : threads) {
     results.emplace_back();
     thread.reset(new std::thread(enhance, std::cref(hierarchy_properties), std::cref(access_file),
-                                 std::ref(hierarchy_properties), std::ref(tilequeue),
-                                 std::ref(lock), std::ref(results.back())));
+                                 std::ref(hierarchy_properties), std::ref(tilequeue), std::ref(lock),
+                                 std::ref(results.back())));
   }
 
   // Wait for them to finish up their work

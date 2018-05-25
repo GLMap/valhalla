@@ -15,10 +15,11 @@
 #include "midgard/encoded.h"
 #include "midgard/logging.h"
 #include "midgard/pointll.h"
-#include "proto/navigator.pb.h"
-#include "proto/route.pb.h"
 #include "tyr/navigator.h"
 #include "tyr/serializers.h"
+
+#include <valhalla/proto/navigator.pb.h>
+#include <valhalla/proto/route.pb.h>
 
 using namespace valhalla::baldr;
 using namespace valhalla::midgard;
@@ -303,8 +304,7 @@ size_t Navigator::FindManeuverIndex(size_t begin_search_index, size_t shape_inde
   // the maneuver index that contains the specified shape index
   for (size_t i = begin_search_index; i < destination_maneuver_index; ++i) {
     const auto& maneuver = route_.trip().legs(leg_index_).maneuvers(i);
-    if ((shape_index >= maneuver.begin_shape_index()) &&
-        (shape_index < maneuver.end_shape_index())) {
+    if ((shape_index >= maneuver.begin_shape_index()) && (shape_index < maneuver.end_shape_index())) {
       return i;
     }
   }
@@ -334,8 +334,7 @@ size_t Navigator::RfindManeuverIndex(size_t rbegin_search_index, size_t shape_in
   // and return the maneuver index that contains the specified shape index
   for (size_t i = rbegin_search_index; i < maneuver_count; --i) {
     const auto& maneuver = route_.trip().legs(leg_index_).maneuvers(i);
-    if ((shape_index >= maneuver.begin_shape_index()) &&
-        (shape_index < maneuver.end_shape_index())) {
+    if ((shape_index >= maneuver.begin_shape_index()) && (shape_index < maneuver.end_shape_index())) {
       return i;
     }
   }
@@ -410,8 +409,8 @@ NavigationStatus Navigator::SnapToRoute(const FixLocation& fix_location) {
   nav_status.set_remaining_leg_length(remaining_leg_length);
   nav_status.set_remaining_leg_time(remaining_leg_time);
   nav_status.set_maneuver_index(maneuver_index_);
-  nav_status.set_remaining_maneuver_length(
-      remaining_leg_length - remaining_leg_values_.at(maneuver_end_shape_index).first);
+  nav_status.set_remaining_maneuver_length(remaining_leg_length -
+                                           remaining_leg_values_.at(maneuver_end_shape_index).first);
   nav_status.set_remaining_maneuver_time(remaining_leg_time -
                                          remaining_leg_values_.at(maneuver_end_shape_index).second);
 
@@ -570,9 +569,7 @@ bool Navigator::IsAlertCloseToPre(const FixLocation& fix_location,
   return (remaining_time_after_alert < GetPreTransitionThreshold(instruction_index));
 }
 
-bool Navigator::IsTimeWithinBounds(uint32_t time,
-                                   uint32_t lower_bound,
-                                   uint32_t upper_bound) const {
+bool Navigator::IsTimeWithinBounds(uint32_t time, uint32_t lower_bound, uint32_t upper_bound) const {
   return ((time > lower_bound) && (time < upper_bound));
 }
 

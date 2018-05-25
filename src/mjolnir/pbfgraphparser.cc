@@ -180,10 +180,11 @@ public:
     }
 
     // find a node we need to update
-    current_way_node_index_ = way_nodes_->find_first_of(
-        OSMWayNode{{osmid}},
-        [](const OSMWayNode& a, const OSMWayNode& b) { return a.node.osmid == b.node.osmid; },
-        current_way_node_index_);
+    current_way_node_index_ = way_nodes_->find_first_of(OSMWayNode{{osmid}},
+                                                        [](const OSMWayNode& a, const OSMWayNode& b) {
+                                                          return a.node.osmid == b.node.osmid;
+                                                        },
+                                                        current_way_node_index_);
     // we found the first one
     if (current_way_node_index_ < way_nodes_->size()) {
       // update all the nodes that match it
@@ -384,6 +385,9 @@ public:
       } else if (tag.first == "moped_tag") {
         access.set_moped_tag(true);
         has_user_tags = true;
+      } else if (tag.first == "motorcycle_tag") {
+        access.set_motorcycle_tag(true);
+        has_user_tags = true;
       } else if (tag.first == "hov_tag") {
         access.set_hov_tag(true);
         has_user_tags = true;
@@ -423,6 +427,8 @@ public:
         w.set_hov_forward(tag.second == "true" ? true : false);
       } else if (tag.first == "moped_forward") {
         w.set_moped_forward(tag.second == "true" ? true : false);
+      } else if (tag.first == "motorcycle_forward") {
+        w.set_motorcycle_forward(tag.second == "true" ? true : false);
       } else if (tag.first == "auto_backward") {
         w.set_auto_backward(tag.second == "true" ? true : false);
       } else if (tag.first == "truck_backward") {
@@ -437,6 +443,8 @@ public:
         w.set_hov_backward(tag.second == "true" ? true : false);
       } else if (tag.first == "moped_backward") {
         w.set_moped_backward(tag.second == "true" ? true : false);
+      } else if (tag.first == "motorcycle_backward") {
+        w.set_motorcycle_backward(tag.second == "true" ? true : false);
       } else if (tag.first == "pedestrian") {
         w.set_pedestrian(tag.second == "true" ? true : false);
       } else if (tag.first == "private" && tag.second == "true") {
@@ -609,12 +617,12 @@ public:
 
       // motor_vehicle:conditional=no @ (16:30-07:00)
       else if (tag.first == "motorcar:conditional" || tag.first == "motor_vehicle:conditional" ||
-               tag.first == "bicycle:conditional" || tag.first == "foot:conditional" ||
-               tag.first == "pedestrian:conditional" || tag.first == "hgv:conditional" ||
-               tag.first == "moped:conditional" || tag.first == "mofa:conditional" ||
-               tag.first == "psv:conditional" || tag.first == "taxi:conditional" ||
-               tag.first == "bus:conditional" || tag.first == "hov:conditional" ||
-               tag.first == "emergency:conditional") {
+               tag.first == "bicycle:conditional" || tag.first == "motorcycle:conditional" ||
+               tag.first == "foot:conditional" || tag.first == "pedestrian:conditional" ||
+               tag.first == "hgv:conditional" || tag.first == "moped:conditional" ||
+               tag.first == "mofa:conditional" || tag.first == "psv:conditional" ||
+               tag.first == "taxi:conditional" || tag.first == "bus:conditional" ||
+               tag.first == "hov:conditional" || tag.first == "emergency:conditional") {
 
         std::vector<std::string> tokens = GetTagTokens(tag.second, '@');
         std::string tmp = tokens.at(0);
@@ -632,7 +640,7 @@ public:
           uint16_t mode = 0;
           if (tag.first == "motorcar:conditional" || tag.first == "motor_vehicle:conditional") {
             mode = (kAutoAccess | kTruckAccess | kEmergencyAccess | kTaxiAccess | kBusAccess |
-                    kHOVAccess | kMopedAccess);
+                    kHOVAccess | kMopedAccess | kMotorcycleAccess);
           } else if (tag.first == "bicycle:conditional") {
             mode = kBicycleAccess;
           } else if (tag.first == "foot:conditional" || tag.first == "pedestrian:conditional") {
@@ -641,6 +649,8 @@ public:
             mode = kTruckAccess;
           } else if (tag.first == "moped:conditional" || tag.first == "mofa:conditional") {
             mode = kMopedAccess;
+          } else if (tag.first == "motorcycle:conditional") {
+            mode = kMotorcycleAccess;
           } else if (tag.first == "psv:conditional") {
             mode = (kTaxiAccess | kBusAccess);
           } else if (tag.first == "taxi:conditional") {
@@ -940,8 +950,7 @@ public:
 
     // if no surface and tracktype but we have a sac_scale, set surface to path.
     if (!has_surface) {
-      if (results.find("sac_scale") != results.end() ||
-          results.find("mtb:scale") != results.end() ||
+      if (results.find("sac_scale") != results.end() || results.find("mtb:scale") != results.end() ||
           results.find("mtb:scale:imba") != results.end() ||
           results.find("mtb:scale:uphill") != results.end() ||
           results.find("mtb:description") != results.end()) {
@@ -1129,11 +1138,11 @@ public:
       } else if (tag.first == "except") {
         except = tag.second;
       } else if ((tag.first == "restriction" || tag.first == "restriction:motorcar" ||
-                  tag.first == "restriction:taxi" || tag.first == "restriction:bus" ||
-                  tag.first == "restriction:bicycle" || tag.first == "restriction:hgv" ||
-                  tag.first == "restriction:hazmat" || tag.first == "restriction:emergency") &&
+                  tag.first == "restriction:motorcycle" || tag.first == "restriction:taxi" ||
+                  tag.first == "restriction:bus" || tag.first == "restriction:bicycle" ||
+                  tag.first == "restriction:hgv" || tag.first == "restriction:hazmat" ||
+                  tag.first == "restriction:emergency") &&
                  !tag.second.empty()) {
-
         isRestriction = true;
         if (tag.first != "restriction") {
           isTypeRestriction = true;
@@ -1141,6 +1150,8 @@ public:
 
         if (tag.first == "restriction:motorcar") {
           modes |= (kAutoAccess | kMopedAccess);
+        } else if (tag.first == "restriction:motorcycle") {
+          modes |= kMotorcycleAccess;
         } else if (tag.first == "restriction:taxi") {
           modes |= kTaxiAccess;
         } else if (tag.first == "restriction:bus") {
@@ -1290,9 +1301,11 @@ public:
       }
 
       if (from_way_id && to_way_id) {
-        osmdata_.lane_connectivity_map.insert(OSMLaneConnectivityMultiMap::value_type(
-            to_way_id, OSMLaneConnectivity{to_way_id, from_way_id, std::max(to, to_lanes),
-                                           std::max(from, from_lanes)}));
+        osmdata_.lane_connectivity_map.insert(
+            OSMLaneConnectivityMultiMap::value_type(to_way_id,
+                                                    OSMLaneConnectivity{to_way_id, from_way_id,
+                                                                        std::max(to, to_lanes),
+                                                                        std::max(from, from_lanes)}));
       }
     } else if (isRestriction && hasRestriction) {
       std::vector<uint64_t> vias;
@@ -1337,12 +1350,14 @@ public:
         if (!isTypeRestriction) {
 
           modes = (kAutoAccess | kMopedAccess | kTaxiAccess | kBusAccess | kBicycleAccess |
-                   kTruckAccess | kEmergencyAccess);
+                   kTruckAccess | kEmergencyAccess | kMotorcycleAccess);
           // remove access as the restriction does not apply to these modes.
           std::vector<std::string> tokens = GetTagTokens(except);
           for (const auto& t : tokens) {
             if (t == "motorcar") {
               modes = modes & ~(kAutoAccess | kMopedAccess);
+            } else if (t == "motorcycle") {
+              modes = modes & ~kMotorcycleAccess;
             } else if (t == "psv") {
               modes = modes & ~(kTaxiAccess | kBusAccess);
             } else if (t == "taxi") {
@@ -1549,8 +1564,9 @@ OSMData PBFGraphParser::Parse(const boost::property_tree::ptree& pt,
   for (auto& file_handle : file_handles) {
     callback.current_way_node_index_ = callback.last_node_ = callback.last_way_ =
         callback.last_relation_ = 0;
-    OSMPBF::Parser::parse(file_handle, static_cast<OSMPBF::Interest>(OSMPBF::Interest::WAYS |
-                                                                     OSMPBF::Interest::CHANGESETS),
+    OSMPBF::Parser::parse(file_handle,
+                          static_cast<OSMPBF::Interest>(OSMPBF::Interest::WAYS |
+                                                        OSMPBF::Interest::CHANGESETS),
                           callback);
   }
   callback.output_loops();
@@ -1569,8 +1585,9 @@ OSMData PBFGraphParser::Parse(const boost::property_tree::ptree& pt,
   for (auto& file_handle : file_handles) {
     callback.current_way_node_index_ = callback.last_node_ = callback.last_way_ =
         callback.last_relation_ = 0;
-    OSMPBF::Parser::parse(file_handle, static_cast<OSMPBF::Interest>(OSMPBF::Interest::RELATIONS |
-                                                                     OSMPBF::Interest::CHANGESETS),
+    OSMPBF::Parser::parse(file_handle,
+                          static_cast<OSMPBF::Interest>(OSMPBF::Interest::RELATIONS |
+                                                        OSMPBF::Interest::CHANGESETS),
                           callback);
   }
   LOG_INFO("Finished with " + std::to_string(osmdata.restrictions.size()) + " simple restrictions");
@@ -1582,8 +1599,7 @@ OSMData PBFGraphParser::Parse(const boost::property_tree::ptree& pt,
   LOG_INFO("Sorting complex restrictions by from id...");
   {
     sequence<OSMRestriction> complex_restrictions(complex_restriction_file, false);
-    complex_restrictions.sort(
-        [](const OSMRestriction& a, const OSMRestriction& b) { return a < b; });
+    complex_restrictions.sort([](const OSMRestriction& a, const OSMRestriction& b) { return a < b; });
   }
 
   // we need to sort the refs so that we can easily (sequentially) update them
@@ -1607,8 +1623,9 @@ OSMData PBFGraphParser::Parse(const boost::property_tree::ptree& pt,
     callback.reset(nullptr, new sequence<OSMWayNode>(way_nodes_file, false), nullptr, nullptr);
     callback.current_way_node_index_ = callback.last_node_ = callback.last_way_ =
         callback.last_relation_ = 0;
-    OSMPBF::Parser::parse(file_handle, static_cast<OSMPBF::Interest>(OSMPBF::Interest::NODES |
-                                                                     OSMPBF::Interest::CHANGESETS),
+    OSMPBF::Parser::parse(file_handle,
+                          static_cast<OSMPBF::Interest>(OSMPBF::Interest::NODES |
+                                                        OSMPBF::Interest::CHANGESETS),
                           callback);
   }
   callback.reset(nullptr, nullptr, nullptr, nullptr);

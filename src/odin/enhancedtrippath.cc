@@ -9,7 +9,8 @@
 
 #include "odin/enhancedtrippath.h"
 #include "odin/util.h"
-#include "proto/trippath.pb.h"
+
+#include <valhalla/proto/trippath.pb.h>
 
 using namespace valhalla::midgard;
 
@@ -814,8 +815,7 @@ void EnhancedTripPath_Node::CalculateRightLeftIntersectingEdgeCounts(
         if (xedge_traversable_outbound) {
           ++xedge_counts.right_traversable_outbound;
         }
-      } else if ((intersecting_turn_degree < path_turn_degree) &&
-                 (intersecting_turn_degree > 180)) {
+      } else if ((intersecting_turn_degree < path_turn_degree) && (intersecting_turn_degree > 180)) {
         ++xedge_counts.left;
         if (IsSimilarTurnDegree(path_turn_degree, intersecting_turn_degree, false)) {
           ++xedge_counts.left_similar;
@@ -839,8 +839,7 @@ void EnhancedTripPath_Node::CalculateRightLeftIntersectingEdgeCounts(
         if (xedge_traversable_outbound) {
           ++xedge_counts.right_traversable_outbound;
         }
-      } else if ((intersecting_turn_degree < path_turn_degree) ||
-                 (intersecting_turn_degree > 180)) {
+      } else if ((intersecting_turn_degree < path_turn_degree) || (intersecting_turn_degree > 180)) {
         ++xedge_counts.left;
         if (IsSimilarTurnDegree(path_turn_degree, intersecting_turn_degree, false)) {
           ++xedge_counts.left_similar;
