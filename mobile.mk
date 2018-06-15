@@ -58,6 +58,7 @@ SRC = \
 	src/midgard/polyline2.cc \
 	src/worker.cc \
 	src/skadi/util.cc \
+	src/skadi/sample.cc \
 	src/tyr/height_serializer.cc \
 	src/tyr/isochrone_serializer.cc \
 	src/tyr/route_serializer.cc \
