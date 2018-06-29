@@ -1,7 +1,4 @@
-set(headers
-  ${VALHALLA_SOURCE_DIR}/valhalla/loki/worker.h
-  ${VALHALLA_SOURCE_DIR}/valhalla/loki/search.h
-  ${VALHALLA_SOURCE_DIR}/valhalla/loki/node_search.h)
+file(GLOB headers ${VALHALLA_SOURCE_DIR}/valhalla/loki/*.h)
 
 set(sources
   search.cc
@@ -19,14 +16,14 @@ valhalla_module(NAME loki
   SOURCES ${sources}
   HEADERS ${headers}
   INCLUDE_DIRECTORIES
-  PUBLIC
-    ${VALHALLA_SOURCE_DIR}
-    ${VALHALLA_SOURCE_DIR}/valhalla
-  PRIVATE
-    ${CMAKE_BINARY_DIR}
+    PUBLIC
+      ${VALHALLA_SOURCE_DIR}
+      ${VALHALLA_SOURCE_DIR}/valhalla
+    PRIVATE
+      ${VALHALLA_SOURCE_DIR}/third_party/rapidjson/include
+      ${CMAKE_BINARY_DIR}
   DEPENDS
-    valhalla::tyr
     valhalla::skadi
     valhalla::baldr
-    valhalla::protobuf
+    valhalla::proto
     libprime_server)
