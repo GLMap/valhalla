@@ -39,6 +39,7 @@ SRC = \
 	src/meili/candidate_search.cc \
 	src/meili/match_route.cc \
 	src/sif/pedestriancost.cc \
+	src/sif/motorcyclecost.cc \
 	src/sif/motorscootercost.cc \
 	src/sif/autocost.cc \
 	src/sif/bicyclecost.cc \
