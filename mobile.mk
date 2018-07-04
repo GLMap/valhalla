@@ -126,7 +126,7 @@ SRC := $(GENERATED_SOURCES) $(SRC)
 OBJ = $(SRC:.cc=.o)
 LIB = libvalhalla.a
 FLAGS = -std=c++17 -DNDEBUG=1 -DUSE_STD_REGEX=1 -DNO_LZ4=1 -DRAPIDJSON_HAS_STDSTRING=1 -DPACKAGE_VERSION="\"2.6.2\"" \
- -I. -Ivalhalla -Igenfiles
+ -I. -Ivalhalla -Igenfiles -Ithird_party/rapidjson/include
 
 .cc.o:
 	$(CXX) $(FLAGS) ${CXXFLAGS} -c $< -o $@
