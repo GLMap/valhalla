@@ -64,7 +64,7 @@ GraphTile::GraphTile(const GraphId& graphid, const std::string& file, uint32_t o
 
   if(::fseek(f, offset, SEEK_SET))
   {
-    fclose(f);
+    ::fclose(f);
     return;
   }
 
@@ -78,6 +78,8 @@ GraphTile::GraphTile(const GraphId& graphid, const std::string& file, uint32_t o
   {
     delete [] buf;
   }
+    
+  ::fclose(f);
 }
 
 

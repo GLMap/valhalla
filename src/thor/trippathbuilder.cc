@@ -1138,6 +1138,9 @@ TripPathBuilder::Build(const AttributesController& controller,
             // Get the end node tile and its directed edges
             GraphId endnode = de->endnode();
             const GraphTile* endtile = graphreader.GetGraphTile(endnode);
+            if (!endtile)
+                continue;
+              
             const NodeInfo* nodeinfo2 = endtile->node(endnode);
             const DirectedEdge* de2 = endtile->directededge(nodeinfo2->edge_index());
             for (uint32_t idx2 = 0; idx2 < nodeinfo2->edge_count(); ++idx2, de2++) {
