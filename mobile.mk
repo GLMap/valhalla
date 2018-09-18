@@ -35,7 +35,6 @@ SRC = \
 	src/meili/routing.cc \
 	src/meili/transition_cost_model.cc \
 	src/meili/viterbi_search.cc \
-	src/meili/universal_cost.cc \
 	src/meili/candidate_search.cc \
 	src/meili/match_route.cc \
 	src/sif/pedestriancost.cc \
@@ -86,12 +85,12 @@ SRC = \
 	src/baldr/verbal_text_formatter_us_co.cc \
 	src/baldr/pathlocation.cc \
 	src/baldr/streetnames_us.cc \
-	src/baldr/transitstop.cc \
 	src/baldr/graphtile.cc \
 	src/baldr/graphtileheader.cc \
 	src/baldr/verbal_text_formatter.cc \
 	src/baldr/verbal_text_formatter_factory.cc \
 	src/baldr/admin.cc \
+	src/baldr/curler.cc \
 	src/baldr/directededge.cc \
 	src/baldr/location.cc \
 	src/baldr/transitdeparture.cc \
@@ -115,22 +114,41 @@ SRC = \
 	src/baldr/graphreader.cc \
 	src/baldr/connectivity_map.cc
 
-GENERATED_HEADERS = genfiles/valhalla/valhalla.h genfiles/config.h \
- genfiles/date_time_zonespec.h genfiles/graph_lua_proc.h genfiles/admin_lua_proc.h genfiles/locales.h \
- genfiles/valhalla/proto/tripcommon.pb.h genfiles/valhalla/proto/trippath.pb.h genfiles/valhalla/proto/directions_options.pb.h \
- genfiles/valhalla/proto/tripdirections.pb.h genfiles/valhalla/proto/route.pb.h genfiles/valhalla/proto/navigator.pb.h
-GENERATED_SOURCES = genfiles/proto/tripcommon.pb.cc genfiles/proto/trippath.pb.cc genfiles/proto/directions_options.pb.cc \
- genfiles/proto/tripdirections.pb.cc genfiles/proto/route.pb.cc genfiles/proto/navigator.pb.cc
+GENERATED_HEADERS = \
+	genfiles/valhalla/valhalla.h \
+	genfiles/config.h \
+	genfiles/date_time_zonespec.h \
+	genfiles/graph_lua_proc.h \
+	genfiles/admin_lua_proc.h \
+	genfiles/locales.h \
+	genfiles/valhalla/proto/tripcommon.pb.h \
+	genfiles/valhalla/proto/trippath.pb.h \
+	genfiles/valhalla/proto/directions_options.pb.h \
+	genfiles/valhalla/proto/tripdirections.pb.h \
+	genfiles/valhalla/proto/directions.pb.h
+
+GENERATED_SOURCES = \
+	genfiles/proto/tripcommon.pb.cc \
+	genfiles/proto/trippath.pb.cc \
+	genfiles/proto/directions_options.pb.cc \
+	genfiles/proto/tripdirections.pb.cc \
+	genfiles/proto/directions.pb.cc
+
+THRID_PARTY_SOURCES = \
+	third_party/date/src/tz.cpp
 
 SRC := $(GENERATED_SOURCES) $(SRC)
 
-OBJ = $(SRC:.cc=.o)
+OBJ = $(SRC:.cc=.o) $(THRID_PARTY_SOURCES:.cpp=.o)
 LIB = libvalhalla.a
-FLAGS = -std=c++17 -DNDEBUG=1 -DUSE_STD_REGEX=1 -DNO_LZ4=1 -DRAPIDJSON_HAS_STDSTRING=1 -DPACKAGE_VERSION="\"2.6.2\"" \
- -I. -Ivalhalla -Igenfiles -Ithird_party/rapidjson/include
+FLAGS = -std=c++14 -DNDEBUG=1 -DUSE_STD_REGEX=1 -DRAPIDJSON_HAS_STDSTRING=1 -DPACKAGE_VERSION="\"2.7.0\"" \
+ -I. -Ivalhalla -Igenfiles -Ithird_party/rapidjson/include -Ithird_party/date/include
 
 .cc.o:
 	$(CXX) $(FLAGS) ${CXXFLAGS} -c $< -o $@
+
+.cpp.o:
+	$(CXX) $(FLAGS) ${CXXFLAGS} -DUSE_SHELL_API=0 -DUSE_OS_TZDB=1 -c $< -o $@
 
 all: $(LIB)
 
@@ -169,10 +187,8 @@ genfiles/proto/directions_options.pb.cc: genfiles/proto
 	protoc -Iproto --cpp_out=genfiles/proto proto/directions_options.proto
 genfiles/proto/tripdirections.pb.cc: genfiles/proto
 	protoc -Iproto --cpp_out=genfiles/proto proto/tripdirections.proto
-genfiles/proto/route.pb.cc: genfiles/proto
-	protoc -Iproto --cpp_out=genfiles/proto proto/route.proto
-genfiles/proto/navigator.pb.cc: genfiles/proto
-	protoc -Iproto --cpp_out=genfiles/proto proto/navigator.proto
+genfiles/proto/directions.pb.cc: genfiles/proto
+	protoc -Iproto --cpp_out=genfiles/proto proto/directions.proto
 
 genfiles/valhalla/proto:
 	mkdir -p genfiles/valhalla/proto
@@ -185,10 +201,8 @@ genfiles/valhalla/proto/directions_options.pb.h: genfiles/valhalla/proto genfile
 	cp genfiles/proto/directions_options.pb.h genfiles/valhalla/proto
 genfiles/valhalla/proto/tripdirections.pb.h: genfiles/valhalla/proto genfiles/proto/tripdirections.pb.cc
 	cp genfiles/proto/tripdirections.pb.h genfiles/valhalla/proto
-genfiles/valhalla/proto/route.pb.h: genfiles/valhalla/proto genfiles/proto/route.pb.cc
-	cp genfiles/proto/route.pb.h genfiles/valhalla/proto
-genfiles/valhalla/proto/navigator.pb.h: genfiles/valhalla/proto genfiles/proto/navigator.pb.cc
-	cp genfiles/proto/navigator.pb.h genfiles/valhalla/proto
+genfiles/valhalla/proto/directions.pb.h: genfiles/valhalla/proto genfiles/proto/directions.pb.cc
+	cp genfiles/proto/directions.pb.h genfiles/valhalla/proto
 
 .PHONY: install clean
 
@@ -201,7 +215,7 @@ install: $(LIB)
 	cp $(LIB) ${PREFIX}/lib
 	cp genfiles/valhalla/valhalla.h ${PREFIX}/include/valhalla
 	cp genfiles/config.h ${PREFIX}/include/valhalla
-	cp valhalla/exception.h ${PREFIX}/include/valhalla
+	cp valhalla/filesystem.h ${PREFIX}/include/valhalla
 	cp valhalla/worker.h ${PREFIX}/include/valhalla
 	cp -r valhalla/loki ${PREFIX}/include/valhalla
 	cp -r genfiles/valhalla/proto ${PREFIX}/include/valhalla
@@ -213,6 +227,7 @@ install: $(LIB)
 	cp -r valhalla/skadi ${PREFIX}/include/valhalla
 	cp -r valhalla/odin ${PREFIX}/include/valhalla
 	cp -r valhalla/baldr ${PREFIX}/include/valhalla
+	cp -r third_party/date/include/date ${PREFIX}/include
 
 clean:
 	rm -f $(OBJ) $(GENERATED_SOURCES) $(GENERATED_HEADERS) $(LIB)

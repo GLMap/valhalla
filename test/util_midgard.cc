@@ -1,6 +1,7 @@
 #include "midgard/constants.h"
 #include "midgard/distanceapproximator.h"
 #include "midgard/encoded.h"
+#include "midgard/polyline2.h"
 #include "midgard/util.h"
 #include "test.h"
 #include <cmath>
@@ -154,6 +155,19 @@ void TestClamp() {
     throw std::runtime_error("wrong clamp value");
   if (!equal<float>(circular_range_clamp<float>(739, -45, -8), -38))
     throw std::runtime_error("wrong clamp value");
+
+  // Test invalid range - should throw an exception
+  try {
+    circular_range_clamp<float>(739, -8, -45);
+    throw std::runtime_error("should throw exception (lower > upper)");
+  } catch (...) {}
+
+  // Make sure get_turn_degree180 throws an exception if inbound and outbound
+  // degrees are not clamped to 0,360
+  try {
+    get_turn_degree180(420, 580);
+    throw std::runtime_error("get_turn_degree should throw exception (inputs not in 0,360 range)");
+  } catch (...) {}
 }
 
 void TestResample() {
@@ -220,6 +234,17 @@ void TestResample() {
     }
     if (current + 1 != resampled.cend())
       throw std::runtime_error("Last found point should be last point in resampled polyline");
+
+    // Test resample_polyline
+    Polyline2<PointLL> pl(input_shape);
+    float resolution = 100.0f;
+    auto length = pl.Length();
+    resampled = resample_polyline(input_shape, length, resolution);
+    size_t n = std::round(length / resolution);
+    float sample_distance = length / n;
+    if (resampled.size() != n + 1) {
+      throw std::runtime_error("resample_polyline - Sampled polyline is not the expected length");
+    }
   }
 }
 
@@ -307,6 +332,11 @@ void TestTrimPolyline() {
 
   test::assert_bool(trim_polyline(line.begin(), line.end(), 0.5f, 0.1f).empty(),
                     "nothing should be clipped since empty set [0.5, 0.1]");
+
+  // Make sure length returns 0 when iterator is equal
+  if (length(clip.begin(), clip.begin()) != 0.0f) {
+    throw std::logic_error("incorrect length when iterators are equal");
+  }
 }
 
 void TestTrimFront() {
@@ -360,6 +390,28 @@ void TestTrimFront() {
   }
 }
 
+void TestTangentAngle() {
+  PointLL point{-122.839554f, 38.3990479f};
+  std::vector<PointLL> shape{{-122.839104f, 38.3988266f},
+                             {-122.839539f, 38.3988342f},
+                             {-122.839546f, 38.3990479f}};
+  constexpr float kTestDistance = 24.0f; // Use the maximum distance from GetOffsetForHeading
+  float expected = shape[1].Heading(shape[2]);
+  float tang = tangent_angle(1, point, shape, kTestDistance, true);
+  if (std::abs(tang - expected) > 5.0f) {
+    throw std::logic_error("tangent_angle outside expected tolerance: expected " +
+                           std::to_string(expected) + " but tangent = " + std::to_string(tang));
+  }
+
+  PointLL point2{-122.839125f, 38.3988266f};
+  expected = shape[1].Heading(shape[0]);
+  tang = tangent_angle(0, point2, shape, kTestDistance, false);
+  if (std::abs(tang - expected) > 5.0f) {
+    throw std::logic_error("tangent_angle outside expected tolerance: expected " +
+                           std::to_string(expected) + " but tangent = " + std::to_string(tang));
+  }
+}
+
 void TestExpandLocation() {
   // Expand to create a box approx 200x200 meters
   PointLL loc(-77.0f, 39.0f);
@@ -369,6 +421,31 @@ void TestExpandLocation() {
   if (area < 199.0f * 199.0f || area > 201.0f * 201.0f) {
     throw std::logic_error("ExpandLocation: area of the bounding box is incorrect " +
                            std::to_string(area));
+  }
+
+  // Should throw an exception if negative value is sent
+  try {
+    AABB2<PointLL> box = ExpandMeters(loc, -10.0f);
+    throw std::logic_error("ExpandLocation: should throw exception with negative meters supplied");
+  } catch (...) {}
+}
+
+void TestSimilarAndEqual() {
+  // Make sure no negative epsilons are allowed in equal
+  try {
+    equal<float>(10.0f, 10.0f, -0.0001f);
+    throw std::logic_error("Equal test fails to throw exception for negative epsilon");
+  } catch (...) {}
+
+  // Test the equality case
+  if (!similar<float>(45.0f, 45.0f, 0.0001f)) {
+    throw std::logic_error("Similar test fails for equal values");
+  }
+
+  // Test case where signs are different - if opposing signs the values should not
+  // be similar regardless of difference
+  if (similar<float>(0.00001f, -0.00001f, 0.0001f)) {
+    throw std::logic_error("Similar test fails for values with opposing signs");
   }
 }
 
@@ -401,6 +478,12 @@ int main() {
 
   // trim_front of a polyline
   suite.test(TEST_CASE(TestTrimFront));
+
+  // tangent angle
+  suite.test(TEST_CASE(TestTangentAngle));
+
+  // Test similar and equal edge cases
+  suite.test(TEST_CASE(TestSimilarAndEqual));
 
   return suite.tear_down();
 }

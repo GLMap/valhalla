@@ -1,17 +1,13 @@
 #include "baldr/graphtile.h"
+#include "baldr/compression_utils.h"
 #include "baldr/datetime.h"
-#include "baldr/filesystem_utils.h"
 #include "baldr/tilehierarchy.h"
+#include "filesystem.h"
 #include "midgard/aabb2.h"
-#include "midgard/logging.h"
 #include "midgard/pointll.h"
 #include "midgard/tiles.h"
 
 #include <boost/algorithm/string.hpp>
-#include <boost/iostreams/copy.hpp>
-#include <boost/iostreams/device/back_inserter.hpp>
-#include <boost/iostreams/filter/gzip.hpp>
-#include <boost/iostreams/filtering_stream.hpp>
 #include <cmath>
 #include <ctime>
 #include <fstream>
@@ -34,6 +30,7 @@ protected:
 };
 const std::locale dir_locale(std::locale("C"), new dir_facet());
 const AABB2<PointLL> world_box(PointLL(-180, -90), PointLL(180, 90));
+constexpr float COMPRESSION_HINT = 3.5f;
 } // namespace
 
 namespace valhalla {
@@ -48,7 +45,8 @@ GraphTile::GraphTile()
       complex_restriction_reverse_(nullptr), edgeinfo_(nullptr), textlist_(nullptr),
       complex_restriction_forward_size_(0), complex_restriction_reverse_size_(0), edgeinfo_size_(0),
       textlist_size_(0), traffic_segments_(nullptr), traffic_chunks_(nullptr), traffic_chunk_size_(0),
-      lane_connectivity_(nullptr), lane_connectivity_size_(0), edge_elevation_(nullptr) {
+      lane_connectivity_(nullptr), lane_connectivity_size_(0), edge_elevation_(nullptr),
+      turnlanes_(nullptr) {
 }
 
 GraphTile::GraphTile(const GraphId& graphid, const std::string& file, uint32_t offset, uint32_t size) :
@@ -92,7 +90,8 @@ GraphTile::GraphTile(const std::string& tile_dir, const GraphId& graphid) : head
   }
 
   // Open to the end of the file so we can immediately get size;
-  std::string file_location = tile_dir + filesystem::path_separator + FileSuffix(graphid.Tile_Base());
+  std::string file_location =
+      tile_dir + filesystem::path::preferred_separator + FileSuffix(graphid.Tile_Base());
   std::ifstream file(file_location, std::ios::in | std::ios::binary | std::ios::ate);
   if (file.is_open()) {
     // Read binary file into memory. TODO - protect against failure to
@@ -106,27 +105,7 @@ GraphTile::GraphTile(const std::string& tile_dir, const GraphId& graphid) : head
     // Set pointers to internal data structures
     Initialize(graphid, graphtile_.get(), filesize);
   } else {
-    std::ifstream file(file_location + ".gz", std::ios::in | std::ios::binary | std::ios::ate);
-    if (file.is_open()) {
-      // Pre-allocate assuming 3.25:1 compression ratio (based on scanning some large NA tiles)
-      size_t filesize = static_cast<size_t>(file.tellg());
-      file.seekg(0, std::ios::beg);
-
-      // Decompress tile into memory
-      std::vector<char> tmp; // TODO: read the gzip footer and get the real size?
-      tmp.reserve(filesize * 3 + filesize/4);
-      boost::iostreams::filtering_ostream os;
-      os.push(boost::iostreams::gzip_decompressor());
-      os.push(boost::iostreams::back_inserter(tmp));
-      boost::iostreams::copy(file, os);
-
-      graphtile_.reset(new char[tmp.size()], std::default_delete<char[]>());
-      memcpy(graphtile_.get(), &tmp[0], tmp.size());
-      // Set pointers to internal data structures
-      Initialize(graphid, graphtile_.get(), tmp.size());
-    } else {
-      LOG_DEBUG("Tile " + file_location + " was not found");
-    }
+    LOG_DEBUG("Tile " + file_location + " was not found");
   }
 }
 
@@ -143,7 +122,8 @@ GraphTile::GraphTile(const std::string& tile_url, const GraphId& graphid, curler
   }
 
   // Get the response returned from curl
-  std::string uri = tile_url + filesystem::path_separator + FileSuffix(graphid.Tile_Base());
+  std::string uri =
+      tile_url + filesystem::path::preferred_separator + FileSuffix(graphid.Tile_Base());
   long http_code;
   auto tile_data = curler(uri, http_code);
 
@@ -245,6 +225,17 @@ void GraphTile::Initialize(const GraphId& graphid, char* tile_ptr, const size_t 
   // Start of edge elevation data. If the tile has edge elevation data (query
   // the header) then the count is the same as the directed edge count.
   edge_elevation_ = reinterpret_cast<EdgeElevation*>(tile_ptr + header_->edge_elevation_offset());
+
+  // Start of turn lane data.
+  turnlanes_ = reinterpret_cast<TurnLanes*>(tile_ptr + header_->turnlane_offset());
+
+  // Start of predicted speed data.
+  if (header_->predictedspeeds_count() > 0) {
+    char* ptr1 = tile_ptr + header_->predictedspeeds_offset();
+    char* ptr2 = ptr1 + (header_->directededgecount() * sizeof(int32_t));
+    predictedspeeds_.set_offset(reinterpret_cast<uint32_t*>(ptr1));
+    predictedspeeds_.set_profiles(reinterpret_cast<int16_t*>(ptr2));
+  }
 
   // For reference - how to use the end offset to set size of an object (that
   // is not fixed size and count).
@@ -349,10 +340,19 @@ std::string GraphTile::FileSuffix(const GraphId& graphid) {
 
 // Get the tile Id given the full path to the file.
 GraphId GraphTile::GetTileId(const std::string& fname) {
-  const std::unordered_set<std::string::value_type>
-      allowed{filesystem::path_separator, '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+  const std::unordered_set<std::string::value_type> allowed{filesystem::path::preferred_separator,
+                                                            '0',
+                                                            '1',
+                                                            '2',
+                                                            '3',
+                                                            '4',
+                                                            '5',
+                                                            '6',
+                                                            '7',
+                                                            '8',
+                                                            '9'};
   // we require slashes
-  auto pos = fname.find_last_of(filesystem::path_separator);
+  auto pos = fname.find_last_of(filesystem::path::preferred_separator);
   if (pos == fname.npos) {
     throw std::runtime_error("Invalid tile path: " + fname);
   }
@@ -379,7 +379,7 @@ GraphId GraphTile::GetTileId(const std::string& fname) {
       throw std::runtime_error("Invalid tile path: " + fname);
     }
     // if its a slash thats another digit
-    if (c == filesystem::path_separator) {
+    if (c == filesystem::path::preferred_separator) {
       // this is not 3 or 1 digits so its wrong
       auto dist = last - pos;
       if (dist != 4 && dist != 2) {
@@ -594,7 +594,8 @@ std::vector<SignInfo> GraphTile::GetSigns(const uint32_t idx) const {
   // Add signs
   for (; found < count && signs_[found].edgeindex() == idx; ++found) {
     if (signs_[found].text_offset() < textlist_size_) {
-      signs.emplace_back(signs_[found].type(), (textlist_ + signs_[found].text_offset()));
+      signs.emplace_back(signs_[found].type(), signs_[found].is_route_num(),
+                         (textlist_ + signs_[found].text_offset()));
     } else {
       throw std::runtime_error("GetSigns: offset exceeds size of text list");
     }
@@ -746,7 +747,9 @@ const TransitDeparture* GraphTile::GetTransitDeparture(const uint32_t lineid,
     mid = (low + high) / 2;
     const auto& dep = departures_[mid];
     // find the first matching lineid in the list
-    if (lineid == dep.lineid()) {
+    if (lineid == dep.lineid() &&
+        ((current_time <= dep.departure_time() && dep.type() == kFixedSchedule) ||
+         (current_time <= dep.end_time() && dep.type() == kFrequencySchedule))) {
       found = mid;
       high = mid - 1;
     } // need a smaller lineid
@@ -953,6 +956,17 @@ std::vector<TrafficSegment> GraphTile::GetTrafficSegments(const uint32_t idx) co
                            std::to_string(header_->graphid().tileid()) + "," +
                            std::to_string(header_->graphid().level()) + "," + std::to_string(idx) +
                            " traffic Id count= " + std::to_string(header_->traffic_id_count()));
+}
+
+// Get turn lanes for this edge.
+uint32_t GraphTile::turnlanes_offset(const uint32_t idx) const {
+  uint32_t count = header_->turnlane_count();
+  if (count == 0) {
+    LOG_ERROR("No turn lanes found for idx = " + std::to_string(idx));
+    return 0;
+  }
+  auto tl = std::lower_bound(&turnlanes_[0], &turnlanes_[count], TurnLanes(idx, 0));
+  return tl != &turnlanes_[count] ? tl->text_offset() : 0;
 }
 
 } // namespace baldr

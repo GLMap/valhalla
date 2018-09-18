@@ -5,21 +5,18 @@ using namespace valhalla::baldr;
 namespace valhalla {
 namespace sif {
 
-DynamicCost::DynamicCost(const boost::property_tree::ptree& pt, const TravelMode mode)
+DynamicCost::DynamicCost(const odin::DirectionsOptions& options, const TravelMode mode)
     : pass_(0), allow_transit_connections_(false), allow_destination_only_(true), travel_mode_(mode) {
   // Parse property tree to get hierarchy limits
   // TODO - get the number of levels
   uint32_t n_levels = sizeof(kDefaultMaxUpTransitions) / sizeof(kDefaultMaxUpTransitions[0]);
   for (uint32_t level = 0; level < n_levels; level++) {
-    hierarchy_limits_.emplace_back(HierarchyLimits(pt, level));
+    hierarchy_limits_.emplace_back(HierarchyLimits(level));
   }
 
-  // Parse property tree to get avoid edges
-  auto avoid_edges = pt.get_child_optional("avoid_edges");
-  if (avoid_edges) {
-    for (auto& edgeid : *avoid_edges) {
-      user_avoid_edges_.insert(GraphId(edgeid.second.get_value<uint64_t>()));
-    }
+  // Add avoid edges to internal set
+  for (auto& edgeid : options.avoid_edges()) {
+    user_avoid_edges_.insert(GraphId(edgeid));
   }
 }
 
@@ -40,6 +37,13 @@ bool DynamicCost::AllowMultiPass() const {
 Cost DynamicCost::EdgeCost(const baldr::DirectedEdge* edge,
                            const baldr::TransitDeparture* departure,
                            const uint32_t curr_time) const {
+  return {0.0f, 0.0f};
+}
+
+// Get the cost to traverse the specified directed edge and gather/pass
+// the speed along for use within costing in the PathAlgorithm. Cost
+// includes the time (seconds) to traverse the edge.
+Cost DynamicCost::EdgeCost(const baldr::DirectedEdge* edge, const uint32_t speed) const {
   return {0.0f, 0.0f};
 }
 

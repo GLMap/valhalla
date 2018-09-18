@@ -193,6 +193,11 @@ void ConstructEdges(const OSMData& osmdata,
             !way.link() && (way.auto_forward() || way.auto_backward());
         nodes.push_back({way_node.node, static_cast<uint32_t>(-1),
                          static_cast<uint32_t>(edges.size()), graph_id_predicate(way_node.node)});
+
+        // Mark the edge as ending a way if this is the last node in the way
+        edge.attributes.way_end = current_way_node_index == last_way_node_index;
+
+        // Add to the list of edges
         edges.push_back(edge);
 
         // Start a new edge if this is not the last node in the way
@@ -214,7 +219,6 @@ void ConstructEdges(const OSMData& osmdata,
         edge.attributes.backward_signal = way_node.node.backward_signal();
       }
     }
-    edge.attributes.way_end = true;
   }
   LOG_INFO("Finished with " + std::to_string(edges.size()) + " graph edges");
 }
@@ -520,28 +524,24 @@ void BuildTileSet(const std::string& ways_file,
             std::swap(source, target);
           }
 
-          // Validate speed
-          uint32_t speed = static_cast<uint32_t>(w.speed());
-
+          // Validate speed. Set speed limit and truck speed.
+          uint32_t speed = w.speed();
           if (forward && w.forward_tagged_speed()) {
-            speed = static_cast<uint32_t>(w.forward_speed());
+            speed = w.forward_speed();
           } else if (!forward && w.backward_tagged_speed()) {
-            speed = static_cast<uint32_t>(w.backward_speed());
+            speed = w.backward_speed();
           }
-
           if (speed > kMaxSpeedKph) {
             LOG_WARN("Speed = " + std::to_string(speed) + " wayId= " + std::to_string(w.way_id()));
             speed = kMaxSpeedKph;
           }
-
-          uint32_t speed_limit = static_cast<uint32_t>(w.speed_limit());
+          uint32_t speed_limit = w.speed_limit();
           if (speed_limit > kMaxSpeedKph) {
             LOG_WARN("Speed limit = " + std::to_string(speed_limit) +
                      " wayId= " + std::to_string(w.way_id()));
             speed_limit = kMaxSpeedKph;
           }
-
-          uint32_t truck_speed = static_cast<uint32_t>(w.truck_speed());
+          uint32_t truck_speed = w.truck_speed();
           if (truck_speed > kMaxSpeedKph) {
             LOG_WARN("Truck Speed = " + std::to_string(truck_speed) +
                      " wayId= " + std::to_string(w.way_id()));
@@ -612,10 +612,6 @@ void BuildTileSet(const std::string& ways_file,
 
               bike_network |= network;
             }
-          }
-
-          if ((bike_network & kMcn) || (w.bike_network() & kMcn)) {
-            use = Use::kMountainBike;
           }
 
           // Check for updated ref from relations.
@@ -773,6 +769,22 @@ void BuildTileSet(const std::string& ways_file,
                                                      max_down_slope);
           }
 
+          // Add turn lanes if they exist. Store forward turn lanes on the last edge for a way
+          // and the backward turn lanes on the first edge in a way.
+          std::string turnlane_tags;
+          if (forward && w.fwd_turn_lanes_index() > 0 && edge.attributes.way_end) {
+            turnlane_tags = osmdata.fwd_turn_lanes_map.name(w.fwd_turn_lanes_index());
+          } else if (!forward && w.bwd_turn_lanes_index() > 0 && edge.attributes.way_begin) {
+            turnlane_tags = osmdata.bwd_turn_lanes_map.name(w.bwd_turn_lanes_index());
+          }
+          if (!turnlane_tags.empty()) {
+            std::string str = TurnLanes::GetTurnLaneString(turnlane_tags);
+            if (!str.empty()) {
+              graphtile.AddTurnLanes(idx, str);
+              directededge.set_turnlanes(true);
+            }
+          }
+
           // Add lane connectivity
           try {
             auto ei = osmdata.lane_connectivity_map.equal_range(w.way_id());
@@ -927,6 +939,13 @@ void BuildTileSet(const std::string& ways_file,
                                             static_cast<uint8_t>(directededge.cyclelane()))) {
               directededge.set_cyclelane(w.cyclelane_left());
             }
+          }
+
+          // Downgrade classification of any footways that are not kServiceOther
+          if ((directededge.use() == Use::kFootway || directededge.use() == Use::kSteps ||
+               directededge.use() == Use::kSidewalk || directededge.use() == Use::kPedestrian) &&
+              directededge.classification() != RoadClass::kServiceOther) {
+            directededge.set_classification(RoadClass::kServiceOther);
           }
 
           // Increment the directed edge index within the tile
@@ -1173,12 +1192,12 @@ std::vector<SignInfo> GraphBuilder::CreateExitSignInfoList(const OSMNode& node,
     std::vector<std::string> j_refs =
         GetTagTokens(osmdata.ref_offset_map.name(way.junction_ref_index()));
     for (auto& j_ref : j_refs) {
-      exit_list.emplace_back(Sign::Type::kExitNumber, j_ref);
+      exit_list.emplace_back(Sign::Type::kExitNumber, false, j_ref);
     }
   } else if (node.ref() && !fork) {
     std::vector<std::string> n_refs = GetTagTokens(osmdata.node_ref.find(node.osmid)->second);
     for (auto& n_ref : n_refs) {
-      exit_list.emplace_back(Sign::Type::kExitNumber, n_ref);
+      exit_list.emplace_back(Sign::Type::kExitNumber, false, n_ref);
     }
   }
 
@@ -1193,7 +1212,7 @@ std::vector<SignInfo> GraphBuilder::CreateExitSignInfoList(const OSMNode& node,
     std::vector<std::string> branch_refs =
         GetTagTokens(osmdata.ref_offset_map.name(way.destination_ref_index()));
     for (auto& branch_ref : branch_refs) {
-      exit_list.emplace_back(Sign::Type::kExitBranch, branch_ref);
+      exit_list.emplace_back(Sign::Type::kExitBranch, true, branch_ref);
     }
   }
 
@@ -1203,7 +1222,7 @@ std::vector<SignInfo> GraphBuilder::CreateExitSignInfoList(const OSMNode& node,
     std::vector<std::string> branch_streets =
         GetTagTokens(osmdata.name_offset_map.name(way.destination_street_index()));
     for (auto& branch_street : branch_streets) {
-      exit_list.emplace_back(Sign::Type::kExitBranch, branch_street);
+      exit_list.emplace_back(Sign::Type::kExitBranch, false, branch_street);
     }
   }
 
@@ -1218,7 +1237,7 @@ std::vector<SignInfo> GraphBuilder::CreateExitSignInfoList(const OSMNode& node,
     std::vector<std::string> toward_refs =
         GetTagTokens(osmdata.ref_offset_map.name(way.destination_ref_to_index()));
     for (auto& toward_ref : toward_refs) {
-      exit_list.emplace_back(Sign::Type::kExitToward, toward_ref);
+      exit_list.emplace_back(Sign::Type::kExitToward, true, toward_ref);
     }
   }
 
@@ -1228,7 +1247,7 @@ std::vector<SignInfo> GraphBuilder::CreateExitSignInfoList(const OSMNode& node,
     std::vector<std::string> toward_streets =
         GetTagTokens(osmdata.name_offset_map.name(way.destination_street_to_index()));
     for (auto& toward_street : toward_streets) {
-      exit_list.emplace_back(Sign::Type::kExitToward, toward_street);
+      exit_list.emplace_back(Sign::Type::kExitToward, false, toward_street);
     }
   }
 
@@ -1241,7 +1260,7 @@ std::vector<SignInfo> GraphBuilder::CreateExitSignInfoList(const OSMNode& node,
                                                         : way.destination_backward_index());
     std::vector<std::string> toward_names = GetTagTokens(osmdata.name_offset_map.name(index));
     for (auto& toward_name : toward_names) {
-      exit_list.emplace_back(Sign::Type::kExitToward, toward_name);
+      exit_list.emplace_back(Sign::Type::kExitToward, false, toward_name);
     }
   }
 
@@ -1260,12 +1279,12 @@ std::vector<SignInfo> GraphBuilder::CreateExitSignInfoList(const OSMNode& node,
 
         // remove the "To" For example:  US 11;To I 81;Carlisle;Harrisburg
         if (boost::starts_with(tmp, "to ")) {
-          exit_list.emplace_back(Sign::Type::kExitToward, exit_to.substr(3));
+          exit_list.emplace_back(Sign::Type::kExitToward, false, exit_to.substr(3));
           continue;
         }
         // remove the "Toward" For example:  US 11;Toward I 81;Carlisle;Harrisburg
         if (boost::starts_with(tmp, "toward ")) {
-          exit_list.emplace_back(Sign::Type::kExitToward, exit_to.substr(7));
+          exit_list.emplace_back(Sign::Type::kExitToward, false, exit_to.substr(7));
           continue;
         }
 
@@ -1276,9 +1295,9 @@ std::vector<SignInfo> GraphBuilder::CreateExitSignInfoList(const OSMNode& node,
         if (found != std::string::npos && (tmp.find(" to ", found + 4) == std::string::npos &&
                                            tmp.find(" toward ") == std::string::npos)) {
 
-          exit_list.emplace_back(Sign::Type::kExitBranch, exit_to.substr(0, found));
+          exit_list.emplace_back(Sign::Type::kExitBranch, false, exit_to.substr(0, found));
 
-          exit_list.emplace_back(Sign::Type::kExitToward, exit_to.substr(found + 4));
+          exit_list.emplace_back(Sign::Type::kExitToward, false, exit_to.substr(found + 4));
           continue;
         }
 
@@ -1289,14 +1308,14 @@ std::vector<SignInfo> GraphBuilder::CreateExitSignInfoList(const OSMNode& node,
         if (found != std::string::npos && (tmp.find(" toward ", found + 8) == std::string::npos &&
                                            tmp.find(" to ") == std::string::npos)) {
 
-          exit_list.emplace_back(Sign::Type::kExitBranch, exit_to.substr(0, found));
+          exit_list.emplace_back(Sign::Type::kExitBranch, false, exit_to.substr(0, found));
 
-          exit_list.emplace_back(Sign::Type::kExitToward, exit_to.substr(found + 8));
+          exit_list.emplace_back(Sign::Type::kExitToward, false, exit_to.substr(found + 8));
           continue;
         }
 
         // default to toward.
-        exit_list.emplace_back(Sign::Type::kExitToward, exit_to);
+        exit_list.emplace_back(Sign::Type::kExitToward, false, exit_to);
       }
     }
   }
@@ -1308,7 +1327,7 @@ std::vector<SignInfo> GraphBuilder::CreateExitSignInfoList(const OSMNode& node,
   if (node.name() && !fork) {
     std::vector<std::string> names = GetTagTokens(osmdata.node_name.find(node.osmid)->second);
     for (auto& name : names) {
-      exit_list.emplace_back(Sign::Type::kExitName, name);
+      exit_list.emplace_back(Sign::Type::kExitName, false, name);
     }
   }
 

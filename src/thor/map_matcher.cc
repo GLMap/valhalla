@@ -1,4 +1,3 @@
-#include "exception.h"
 #include "midgard/logging.h"
 #include <algorithm>
 #include <exception>
@@ -61,13 +60,13 @@ MapMatcher::FormPath(meili::MapMatcher* matcher,
 
       // Get time along the edge, handling partial distance along
       // the first and last edge
-      elapsed_time +=
-          costing->EdgeCost(directededge).secs * (edge_segment.target - edge_segment.source);
+      elapsed_time += costing->EdgeCost(directededge, tile->GetSpeed(directededge)).secs *
+                      (edge_segment.target - edge_segment.source);
     } else {
       // Get time along the edge, handling partial distance along
       // the first and last edge
-      elapsed_time +=
-          costing->EdgeCost(directededge).secs * (edge_segment.target - edge_segment.source);
+      elapsed_time += costing->EdgeCost(directededge, tile->GetSpeed(directededge)).secs *
+                      (edge_segment.target - edge_segment.source);
     }
 
     // Update the prior_edge and nodeinfo. TODO (protect against invalid tile)

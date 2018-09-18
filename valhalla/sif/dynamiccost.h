@@ -10,13 +10,13 @@
 #include <valhalla/baldr/nodeinfo.h>
 #include <valhalla/baldr/timedomain.h>
 #include <valhalla/baldr/transitdeparture.h>
-
-#include <memory>
-#include <unordered_set>
-
+#include <valhalla/proto/directions_options.pb.h>
 #include <valhalla/sif/costconstants.h>
 #include <valhalla/sif/edgelabel.h>
 #include <valhalla/sif/hierarchylimits.h>
+
+#include <memory>
+#include <unordered_set>
 
 namespace valhalla {
 namespace sif {
@@ -57,10 +57,10 @@ class DynamicCost {
 public:
   /**
    * Constructor.
-   * @param  pt   Property tree with (optional) costing configuration.
+   * @param  options Request options in a pbf
    * @param  mode Travel mode
    */
-  DynamicCost(const boost::property_tree::ptree& pt, const TravelMode mode);
+  DynamicCost(const odin::DirectionsOptions& options, const TravelMode mode);
 
   virtual ~DynamicCost();
 
@@ -174,14 +174,6 @@ public:
   virtual bool Allowed(const baldr::NodeInfo* node) const = 0;
 
   /**
-   * Get the cost to traverse the specified directed edge. Cost includes
-   * the time (seconds) to traverse the edge.
-   * @param   edge  Pointer to a directed edge.
-   * @return  Returns the cost and time (seconds)
-   */
-  virtual Cost EdgeCost(const baldr::DirectedEdge* edge) const = 0;
-
-  /**
    * Get the cost to traverse the specified directed edge using a transit
    * departure (schedule based edge traversal). Cost includes
    * the time (seconds) to traverse the edge.
@@ -193,6 +185,15 @@ public:
   virtual Cost EdgeCost(const baldr::DirectedEdge* edge,
                         const baldr::TransitDeparture* departure,
                         const uint32_t curr_time) const;
+
+  /**
+   * Get the cost to traverse the specified directed edge. Cost includes
+   * the time (seconds) to traverse the edge.
+   * @param   edge  Pointer to a directed edge.
+   * @param   speed A speed for a road segment/edge.
+   * @return  Returns the cost and speed.
+   */
+  virtual Cost EdgeCost(const baldr::DirectedEdge* edge, const uint32_t speed) const;
 
   /**
    * Returns the cost to make the transition from the predecessor edge.

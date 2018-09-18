@@ -3,7 +3,6 @@
 #include "loki/search.h"
 #include "loki/worker.h"
 #include "midgard/logging.h"
-#include <boost/property_tree/json_parser.hpp>
 
 using namespace valhalla;
 using namespace valhalla::baldr;
@@ -47,27 +46,19 @@ void loki_worker_t::init_isochrones(valhalla_request_t& request) {
     l.clear_heading();
   }
 
-  // make sure the isoline definitions are valid
-  auto contours =
-      rapidjson::get_optional<rapidjson::Value::ConstArray>(request.document, "/contours");
-  if (!contours) {
-    throw valhalla_exception_t{113};
-  };
   // check that the number of contours is ok
-  if (contours->Size() > max_contours) {
+  if (request.options.contours_size() < 1) {
+    throw valhalla_exception_t{113};
+  } else if (request.options.contours_size() > max_contours) {
     throw valhalla_exception_t{152, std::to_string(max_contours)};
-  };
-  size_t prev = 0;
-  for (const auto& contour : *contours) {
-    const int c = rapidjson::get_optional<int>(contour, "/time").get_value_or(-1);
-    if (c < prev || c == -1) {
-      throw valhalla_exception_t{111};
-    };
-    if (c > max_time) {
-      throw valhalla_exception_t{151, std::to_string(max_time)};
-    };
-    prev = c;
   }
+
+  // validate the contour time by checking the last one
+  const auto contour = request.options.contours().rbegin();
+  if (contour->time() > max_time) {
+    throw valhalla_exception_t{151, std::to_string(max_time)};
+  }
+
   parse_costing(request);
 }
 void loki_worker_t::isochrones(valhalla_request_t& request) {
@@ -90,10 +81,10 @@ void loki_worker_t::isochrones(valhalla_request_t& request) {
   try {
     // correlate the various locations to the underlying graph
     auto locations = PathLocation::fromPBF(request.options.locations());
-    const auto projections = loki::Search(locations, reader, edge_filter, node_filter);
+    const auto projections = loki::Search(locations, *reader, edge_filter, node_filter);
     for (size_t i = 0; i < locations.size(); ++i) {
       const auto& projection = projections.at(locations[i]);
-      PathLocation::toPBF(projection, request.options.mutable_locations(i), reader);
+      PathLocation::toPBF(projection, request.options.mutable_locations(i), *reader);
     }
   } catch (const std::exception&) { throw valhalla_exception_t{171}; }
 }

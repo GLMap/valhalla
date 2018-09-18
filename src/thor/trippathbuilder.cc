@@ -709,7 +709,7 @@ TripPathBuilder::Build(const AttributesController& controller,
                                                        last_tile->node(startnode)->timezone()));
 
       std::string origin_date, dest_date;
-      DateTime::seconds_to_date(false, sec - elapsedtime, sec,
+      DateTime::seconds_to_date(sec - elapsedtime, sec,
                                 DateTime::get_tz_db().from_index(first_node->timezone()),
                                 DateTime::get_tz_db().from_index(
                                     last_tile->node(startnode)->timezone()),
@@ -725,7 +725,7 @@ TripPathBuilder::Build(const AttributesController& controller,
                                         DateTime::get_tz_db().from_index(first_node->timezone()));
 
       std::string origin_date, dest_date;
-      DateTime::seconds_to_date(true, sec, sec + elapsedtime,
+      DateTime::seconds_to_date(sec, sec + elapsedtime,
                                 DateTime::get_tz_db().from_index(first_node->timezone()),
                                 DateTime::get_tz_db().from_index(
                                     last_tile->node(startnode)->timezone()),
@@ -821,7 +821,7 @@ TripPathBuilder::Build(const AttributesController& controller,
     if (controller.attributes.at(kNodeTimeZone)) {
       auto tz = DateTime::get_tz_db().from_index(node->timezone());
       if (tz) {
-        trip_node->set_time_zone(tz->to_posix_string());
+        trip_node->set_time_zone(tz->name());
       }
     }
 
@@ -1196,7 +1196,7 @@ TripPathBuilder::Build(const AttributesController& controller,
                                                             last_tile->node(startnode)->timezone()));
 
     std::string origin_date, dest_date;
-    DateTime::seconds_to_date(false, sec - elapsedtime, sec,
+    DateTime::seconds_to_date(sec - elapsedtime, sec,
                               DateTime::get_tz_db().from_index(first_node->timezone()),
                               DateTime::get_tz_db().from_index(
                                   last_tile->node(startnode)->timezone()),
@@ -1212,7 +1212,7 @@ TripPathBuilder::Build(const AttributesController& controller,
                                       DateTime::get_tz_db().from_index(first_node->timezone()));
 
     std::string origin_date, dest_date;
-    DateTime::seconds_to_date(true, sec, sec + elapsedtime,
+    DateTime::seconds_to_date(sec, sec + elapsedtime,
                               DateTime::get_tz_db().from_index(first_node->timezone()),
                               DateTime::get_tz_db().from_index(
                                   last_tile->node(startnode)->timezone()),
@@ -1323,6 +1323,12 @@ TripPath_Edge* TripPathBuilder::AddTripEdge(const AttributesController& controll
     }
   }
 
+  // If turn lanes exist
+  if (directededge->turnlanes()) {
+    auto turnlanes = graphtile->turnlanes(idx);
+    // TODO - add to TripPath
+  }
+
   // Set road class if requested
   if (controller.attributes.at(kEdgeRoadClass)) {
     trip_edge->set_road_class(GetTripPathRoadClass(directededge->classification()));
@@ -1336,7 +1342,7 @@ TripPath_Edge* TripPathBuilder::AddTripEdge(const AttributesController& controll
 
   // Set speed if requested
   if (controller.attributes.at(kEdgeSpeed)) {
-    trip_edge->set_speed(directededge->speed());
+    trip_edge->set_speed(graphtile->GetSpeed(directededge));
   }
 
   uint8_t kAccess = 0;
