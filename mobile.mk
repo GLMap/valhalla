@@ -148,7 +148,7 @@ FLAGS = -std=c++14 -DNDEBUG=1 -DUSE_STD_REGEX=1 -DRAPIDJSON_HAS_STDSTRING=1 -DPA
 	$(CXX) $(FLAGS) ${CXXFLAGS} -c $< -o $@
 
 .cpp.o:
-	$(CXX) $(FLAGS) ${CXXFLAGS} -DUSE_SHELL_API=0 -DUSE_OS_TZDB=1 -c $< -o $@
+	$(CXX) $(FLAGS) ${CXXFLAGS} -DHAS_REMOTE_API=0 -DUSE_OS_TZDB=1 -c $< -o $@
 
 all: $(LIB)
 
@@ -160,12 +160,12 @@ $(OBJ): $(GENERATED_HEADERS)
 genfiles:
 	mkdir -p genfiles
 
-genfiles/date_time_zonespec.h: genfiles
-	xxd -i -s +$$(head -n 1 date_time/zonespec.csv | wc -c | xargs) date_time/zonespec.csv > genfiles/date_time_zonespec.h
-genfiles/graph_lua_proc.h: genfiles lua/graph.lua
-	xxd -i lua/graph.lua > genfiles/graph_lua_proc.h
+genfiles/date_time_zonespec.h: genfiles date_time/*
+	./preBuild.sh
 genfiles/admin_lua_proc.h: genfiles lua/admin.lua
-	xxd -i lua/admin.lua > genfiles/admin_lua_proc.h
+	cmake -P cmake/Binary2Header.cmake lua/admin.lua genfiles/admin_lua_proc.h --variable-name lua_admin_lua
+genfiles/graph_lua_proc.h: genfiles lua/graph.lua
+	cmake -P cmake/Binary2Header.cmake lua/graph.lua genfiles/graph_lua_proc.h --variable-name lua_graph_lua
 genfiles/locales.h: genfiles locales/*.json
 	-cd locales && ./make_locales.sh *.json > ../genfiles/locales.h
 genfiles/config.h: genfiles
