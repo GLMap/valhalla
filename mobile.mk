@@ -79,6 +79,7 @@ SRC = \
 	src/odin/narrativebuilder.cc \
 	src/odin/signs.cc \
 	src/odin/enhancedtrippath.cc \
+	src/baldr/compression_utils.cc \
 	src/baldr/datetime.cc \
 	src/baldr/verbal_text_formatter_us.cc \
 	src/baldr/verbal_text_formatter_us_tx.cc \
