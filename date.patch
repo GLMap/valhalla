@@ -1,0 +1,13 @@
+diff --git a/src/tz.cpp b/src/tz.cpp
+index 482bcb6..305ef0c 100644
+--- a/src/tz.cpp
++++ b/src/tz.cpp
+@@ -139,7 +139,7 @@
+ #  endif  // HAS_REMOTE_API
+ #else   // !_WIN32
+ #  include <unistd.h>
+-#  if !USE_OS_TZDB
++#  if !defined(INSTALL) || HAS_REMOTE_API
+ #    include <wordexp.h>
+ #  endif
+ #  include <limits.h>
