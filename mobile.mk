@@ -146,7 +146,7 @@ FLAGS = -std=c++14 -DNDEBUG=1 -DUSE_STD_REGEX=1 -DRAPIDJSON_HAS_STDSTRING=1 -DPA
  -I. -Ivalhalla -Igenfiles -Ithird_party/rapidjson/include -Ithird_party/date/include
 
 .cc.o:
-	$(CXX) $(FLAGS) ${CXXFLAGS} -DHAS_REMOTE_API=0 -DUSE_OS_TZDB=0 -DINSTALL=. -DMISSING_LEAP_SECONDS=0 -DRAPIDJSON_HAS_STDSTRING=1 -c $< -o $@
+	$(CXX) $(FLAGS) ${CXXFLAGS} -c $< -o $@
 
 .cpp.o:
 	$(CXX) $(FLAGS) ${CXXFLAGS} -DHAS_REMOTE_API=0 -DUSE_OS_TZDB=0 -DINSTALL=. -DMISSING_LEAP_SECONDS=0 -DRAPIDJSON_HAS_STDSTRING=1 -c $< -o $@
