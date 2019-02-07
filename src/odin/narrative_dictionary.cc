@@ -25,7 +25,8 @@ std::unordered_map<K, V> as_unordered_map(boost::property_tree::ptree const& pt,
                                           boost::property_tree::ptree::key_type const& key) {
   std::unordered_map<K, V> items;
   for (const auto& item : pt.get_child(key)) {
-    items.emplace(item.first, item.second.get_value<V>());
+    auto &k = item.first.size() ? item.first : std::to_string(items.size());
+    items.emplace(k, item.second.get_value<V>());
   }
   return items;
 }
