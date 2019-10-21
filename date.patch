@@ -1,5 +1,5 @@
 diff --git a/src/tz.cpp b/src/tz.cpp
-index 482bcb6..305ef0c 100644
+index 482bcb6..af8d82c 100644
 --- a/src/tz.cpp
 +++ b/src/tz.cpp
 @@ -139,7 +139,7 @@
@@ -11,3 +11,22 @@ index 482bcb6..305ef0c 100644
  #    include <wordexp.h>
  #  endif
  #  include <limits.h>
+@@ -230,7 +230,7 @@ static
+ std::string
+ expand_path(std::string path)
+ {
+-#      if TARGET_OS_IPHONE
++#      if TARGET_OS_IPHONE && !TARGET_OS_MACCATALYST
+     return date::iOSUtils::get_tzdata_path();
+ #      else  // !TARGET_OS_IPHONE
+     ::wordexp_t w{};
+@@ -3753,7 +3753,7 @@ tzdb::current_zone() const
+     // it is not possible to use file based approach,
+     // we switch to system API, calling functions in
+     // CoreFoundation framework.
+-#if TARGET_OS_IPHONE
++#if TARGET_OS_IPHONE && !TARGET_OS_MACCATALYST
+         std::string result = date::iOSUtils::get_current_timezone();
+         if (!result.empty())
+             return locate_zone(result);
+
