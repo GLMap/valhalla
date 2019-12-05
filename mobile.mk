@@ -144,6 +144,7 @@ OBJ = $(SRC:.cc=.o) $(THRID_PARTY_SOURCES:.cpp=.o)
 LIB = libvalhalla.a
 FLAGS = -std=c++14 -DNDEBUG=1 -DUSE_STD_REGEX=1 -DRAPIDJSON_HAS_STDSTRING=1 -DPACKAGE_VERSION="\"2.7.0\"" \
  -I. -Ivalhalla -Igenfiles -Ithird_party/rapidjson/include -Ithird_party/date/include
+PROTOC = ../build/macOS/x86_64/bin/protoc
 
 .cc.o:
 	$(CXX) $(FLAGS) $(CPPFLAGS) ${CXXFLAGS} -c $< -o $@
@@ -181,15 +182,15 @@ genfiles/valhalla/valhalla.h: genfiles/valhalla
 genfiles/proto:
 	mkdir -p genfiles/proto
 genfiles/proto/tripcommon.pb.cc: genfiles/proto
-	protoc -Iproto --cpp_out=genfiles/proto proto/tripcommon.proto
+	$(PROTOC) -Iproto --cpp_out=genfiles/proto proto/tripcommon.proto
 genfiles/proto/trippath.pb.cc: genfiles/proto
-	protoc -Iproto --cpp_out=genfiles/proto proto/trippath.proto
+	$(PROTOC) -Iproto --cpp_out=genfiles/proto proto/trippath.proto
 genfiles/proto/directions_options.pb.cc: genfiles/proto
-	protoc -Iproto --cpp_out=genfiles/proto proto/directions_options.proto
+	$(PROTOC) -Iproto --cpp_out=genfiles/proto proto/directions_options.proto
 genfiles/proto/tripdirections.pb.cc: genfiles/proto
-	protoc -Iproto --cpp_out=genfiles/proto proto/tripdirections.proto
+	$(PROTOC) -Iproto --cpp_out=genfiles/proto proto/tripdirections.proto
 genfiles/proto/directions.pb.cc: genfiles/proto
-	protoc -Iproto --cpp_out=genfiles/proto proto/directions.proto
+	$(PROTOC) -Iproto --cpp_out=genfiles/proto proto/directions.proto
 
 genfiles/valhalla/proto:
 	mkdir -p genfiles/valhalla/proto
