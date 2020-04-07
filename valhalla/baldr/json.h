@@ -23,7 +23,7 @@ using MapPtr = std::shared_ptr<Jmap>;
 class Jarray;
 using ArrayPtr = std::shared_ptr<Jarray>;
 struct fp_t {
-  long double value;
+  double value;
   size_t precision;
   // and be able to spit out text
   friend std::ostream& operator<<(std::ostream& stream, const fp_t&);

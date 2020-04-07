@@ -96,7 +96,7 @@ using namespace std;
 json::MapPtr summary(const std::list<valhalla::odin::TripDirections>& legs) {
 
   uint64_t time = 0;
-  long double length = 0;
+  double length = 0;
   AABB2<PointLL> bbox(10000.0f, 10000.0f, -10000.0f, -10000.0f);
   for (const auto& leg : legs) {
     time += static_cast<uint64_t>(leg.summary().time());
