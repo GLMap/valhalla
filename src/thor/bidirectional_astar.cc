@@ -20,7 +20,11 @@ int GetThreshold(const TravelMode mode, const int n) {
 namespace valhalla {
 namespace thor {
 
+#ifdef MOBILE
+constexpr uint64_t kInitialEdgeLabelCountBD = 100000;
+#else
 constexpr uint64_t kInitialEdgeLabelCountBD = 1000000;
+#endif
 
 // Default constructor
 BidirectionalAStar::BidirectionalAStar() : PathAlgorithm() {

@@ -22,7 +22,11 @@ namespace {
 // by .5 seconds on all sides. that means that the center of pixel 0 is
 // located at the tiles lat,lon (which is important for bilinear filtering)
 // it also means that there are 3601 pixels per row and per column
+#ifdef MOBILE
+constexpr size_t HGT_DIM = 1;
+#else
 constexpr size_t HGT_DIM = 3601;
+#endif
 constexpr size_t HGT_PIXELS = HGT_DIM * HGT_DIM;
 constexpr size_t HGT_BYTES = sizeof(int16_t) * HGT_PIXELS;
 constexpr int16_t NO_DATA_VALUE = -32768;
