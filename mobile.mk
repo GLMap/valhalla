@@ -138,19 +138,28 @@ GENERATED_SOURCES = \
 THRID_PARTY_SOURCES = \
 	third_party/date/src/tz.cpp
 
+ifeq "$(LIBS_PLATFORM)" "catalyst"
+	IOS_SOURCES := third_party/date/src/ios.mm
+endif
+
 SRC := $(GENERATED_SOURCES) $(SRC)
 
-OBJ = $(SRC:.cc=.o) $(THRID_PARTY_SOURCES:.cpp=.o)
+OBJ = $(SRC:.cc=.o) $(THRID_PARTY_SOURCES:.cpp=.o) $(IOS_SOURCES:.mm=.o)
 LIB = libvalhalla.a
 FLAGS = -std=c++17 -DMOBILE -DNDEBUG=1 -DUSE_STD_REGEX=1 -DRAPIDJSON_HAS_STDSTRING=1 -DPACKAGE_VERSION="\"2.7.0\"" \
  -I. -Ivalhalla -Igenfiles -Ithird_party/rapidjson/include -Ithird_party/date/include
 PROTOC = ../build/macOS/x86_64/bin/protoc
+
+.SUFFIXES: .cc .cpp .mm
 
 .cc.o:
 	$(CXX) $(FLAGS) $(CPPFLAGS) ${CXXFLAGS} -c $< -o $@
 
 .cpp.o:
 	$(CXX) $(FLAGS) $(CPPFLAGS) ${CXXFLAGS} -c $< -o $@
+
+.mm.o:
+	$(CXX) $(FLAGS) $(CPPFLAGS) ${CXXFLAGS} -x objective-c++ -c $< -o $@
 
 all: $(LIB)
 
