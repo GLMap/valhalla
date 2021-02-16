@@ -65,3 +65,5 @@ node_modules
 lib/binding/node_valhalla.node
 
 .DS_Store
+valhalla.xcodeproj/project.xcworkspace
+valhalla.xcodeproj/xcuserdata
