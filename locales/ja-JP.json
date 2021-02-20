@@ -1,13 +1,13 @@
 {
-  "posix_locale": "sv_SE.UTF-8",
+  "posix_locale": "ja_JP.UTF-8",
   "aliases": [
-    "sv"
+    "ja"
   ],
   "instructions": {
     "arrive": {
       "phrases": {
-        "0": "Anländer: <TIME>.",
-        "1": "Anländer: <TIME> till <TRANSIT_STOP>."
+        "0": "到着: <TIME>",
+        "1": "<TRANSIT_STOP>への到着: <TIME>"
       },
       "example_phrases": {
         "0": [
@@ -20,8 +20,8 @@
     },
     "arrive_verbal": {
       "phrases": {
-        "0": "Anländer <TIME>.",
-        "1": "Anländer <TIME> till <TRANSIT_STOP>."
+        "0": "<TIME>に到着します。",
+        "1": "<TIME>には<TRANSIT_STOP>に到着します。"
       },
       "example_phrases": {
         "0": [
@@ -34,21 +34,21 @@
     },
     "bear": {
       "phrases": {
-        "0": "Sväng <RELATIVE_DIRECTION>.",
-        "1": "Sväng <RELATIVE_DIRECTION> in på <STREET_NAMES>.",
-        "2": "Sväng <RELATIVE_DIRECTION> in på <BEGIN_STREET_NAMES>. Fortsätt på <STREET_NAMES>.",
-        "3": "Sväng <RELATIVE_DIRECTION> för att stanna kvar på <STREET_NAMES>.",
-        "4": "Sväng <RELATIVE_DIRECTION> i <JUNCTION_NAME>.",
-        "5": "Sväng <RELATIVE_DIRECTION> mot <TOWARD_SIGN>."
+        "0": "<RELATIVE_DIRECTION>方向です。",
+        "1": "<RELATIVE_DIRECTION>方向です。その先<STREET_NAMES>です。",
+        "2": "<RELATIVE_DIRECTION>方向、<BEGIN_STREET_NAMES>です。その先<STREET_NAMES>です。",
+        "3": "<RELATIVE_DIRECTION>方向です。その先<STREET_NAMES>です。",
+        "4": "<JUNCTION_NAME>を<RELATIVE_DIRECTION>方向です。",
+        "5": "<RELATIVE_DIRECTION>方向、<TOWARD_SIGN>方面です。"
       },
       "empty_street_name_labels": [
-        "gångvägen",
-        "cykelbanan",
-        "terrängcykelbanan"
+        "歩道",
+        "自転車道",
+        "自転車道"
       ],
       "relative_directions": [
-        "vänster",
-        "höger"
+        "左",
+        "右"
       ],
       "example_phrases": {
         "0": [
@@ -73,21 +73,21 @@
     },
     "bear_verbal": {
       "phrases": {
-        "0": "Sväng <RELATIVE_DIRECTION>.",
-        "1": "Sväng <RELATIVE_DIRECTION> in på <STREET_NAMES>.",
-        "2": "Sväng <RELATIVE_DIRECTION> in på <BEGIN_STREET_NAMES>.",
-        "3": "Sväng <RELATIVE_DIRECTION> för att stanna kvar på <STREET_NAMES>.",
-        "4": "Sväng <RELATIVE_DIRECTION> i <JUNCTION_NAME>.",
-        "5": "Sväng <RELATIVE_DIRECTION> mot <TOWARD_SIGN>."
+        "0": "<RELATIVE_DIRECTION>方向です。",
+        "1": "<RELATIVE_DIRECTION>方向です。その先<STREET_NAMES>です。",
+        "2": "<RELATIVE_DIRECTION>方向です。その先<BEGIN_STREET_NAMES>です。",
+        "3": "<RELATIVE_DIRECTION>方向です。その先<STREET_NAMES>です。",
+        "4": "<JUNCTION_NAME>を<RELATIVE_DIRECTION>方向です。",
+        "5": "<RELATIVE_DIRECTION>方向、<TOWARD_SIGN>方面です。"
       },
       "empty_street_name_labels": [
-        "gångvägen",
-        "cykelbanan",
-        "terrängcykelbanan"
+        "歩道",
+        "自転車道",
+        "自転車道"
       ],
       "relative_directions": [
-        "vänster",
-        "höger"
+        "左",
+        "右"
       ],
       "example_phrases": {
         "0": [
@@ -112,7 +112,7 @@
     },
     "becomes": {
       "phrases": {
-        "0": "<PREVIOUS_STREET_NAMES> blir <STREET_NAMES>."
+        "0": "<PREVIOUS_STREET_NAMES>から<STREET_NAMES>になります。"
       },
       "example_phrases": {
         "0": [
@@ -122,7 +122,7 @@
     },
     "becomes_verbal": {
       "phrases": {
-        "0": "<PREVIOUS_STREET_NAMES> blir <STREET_NAMES>."
+        "0": "<PREVIOUS_STREET_NAMES>から<STREET_NAMES>になります。"
       },
       "example_phrases": {
         "0": [
@@ -132,15 +132,15 @@
     },
     "continue": {
       "phrases": {
-        "0": "Fortsätt.",
-        "1": "Fortsätt på <STREET_NAMES>.",
-        "2": "Fortsätt i <JUNCTION_NAME>.",
-        "3": "Fortsätt mot <TOWARD_SIGN>."
+        "0": "直進です。",
+        "1": "<STREET_NAMES>を直進です。",
+        "2": "<JUNCTION_NAME>を直進です。",
+        "3": "<TOWARD_SIGN>方面、直進です。"
       },
       "empty_street_name_labels": [
-        "gångvägen",
-        "cykelbanan",
-        "terrängcykelbanan"
+        "歩道",
+        "自転車道",
+        "自転車道"
       ],
       "example_phrases": {
         "0": [
@@ -159,33 +159,33 @@
     },
     "continue_verbal": {
       "phrases": {
-        "0": "Fortsätt.",
-        "1": "Fortsätt i <LENGTH>.",
-        "2": "Fortsätt på <STREET_NAMES>.",
-        "3": "Fortsätt på <STREET_NAMES> i <LENGTH>.",
-        "4": "Fortsätt på <JUNCTION_NAME>.",
-        "5": "Fortsätt på <JUNCTION_NAME> i <LENGTH>.",
-        "6": "Fortsätt mot<TOWARD_SIGN>.",
-        "7": "Fortsätt mot <TOWARD_SIGN> i <LENGTH>."
+        "0": "直進です。",
+        "1": "<LENGTH>直進です。",
+        "2": "<STREET_NAMES>を直進です。",
+        "3": "<STREET_NAMES>を<LENGTH>直進です。",
+        "4": "<JUNCTION_NAME>を直進です。",
+        "5": "<JUNCTION_NAME>を<LENGTH>直進です。",
+        "6": "<TOWARD_SIGN>方面、直進です。",
+        "7": "<TOWARD_SIGN>方面、<LENGTH>直進です。"
       },
       "empty_street_name_labels": [
-        "gångvägen",
-        "cykelbanan",
-        "terrängcykelbanan"
+        "歩道",
+        "自転車道",
+        "自転車道"
       ],
       "metric_lengths": [
-        "<KILOMETERS> kilometer",
-        "1 kilometer",
-        "<METERS> meter",
-        "mindre än 10 meter"
+        "<KILOMETERS>キロメートル",
+        "1 キロメートル",
+        "<METERS>メートル",
+        "10メートル以内"
       ],
       "us_customary_lengths": [
-        "<MILES> engelska mil",
-        "1 engelsk mil",
-        "en halv engelsk mil",
-        "en kvarts engelsk mil ",
-        "<FEET> fot",
-        "mindre än 10 fot"
+        "<MILES>マイル",
+        "1 マイル",
+        "0.5 マイル",
+        "0.25 マイル",
+        "<FEET>フィート",
+        "10フィート以内"
       ],
       "example_phrases": {
         "0": [
@@ -216,15 +216,15 @@
     },
     "continue_verbal_alert": {
       "phrases": {
-        "0": "Fortsätt.",
-        "1": "Fortsätt på <STREET_NAMES>.",
-        "2": "Fortsätt i <JUNCTION_NAME>.",
-        "3": "Fortsätt mot <TOWARD_SIGN>."
+        "0": "直進です。",
+        "1": "<STREET_NAMES>を直進です。",
+        "2": "<JUNCTION_NAME>を直進です。",
+        "3": "<TOWARD_SIGN>方面、直進です。"
       },
       "empty_street_name_labels": [
-        "gångvägen",
-        "cykelbanan",
-        "terrängcykelbanan"
+        "歩道",
+        "自転車道",
+        "自転車道"
       ],
       "example_phrases": {
         "0": [
@@ -243,8 +243,8 @@
     },
     "depart": {
       "phrases": {
-        "0": "Avres: <TIME>.",
-        "1": "Avres: <TIME> från <TRANSIT_STOP>."
+        "0": "出発: <TIME>",
+        "1": "<TRANSIT_STOP>の出発: <TIME>"
       },
       "example_phrases": {
         "0": [
@@ -257,8 +257,8 @@
     },
     "depart_verbal": {
       "phrases": {
-        "0": "Avres <TIME>.",
-        "1": "Avres <TIME> från <TRANSIT_STOP>."
+        "0": "<TIME>に出発です。",
+        "1": "<TIME>に<TRANSIT_STOP>を出発です。"
       },
       "example_phrases": {
         "0": [
@@ -271,14 +271,14 @@
     },
     "destination": {
       "phrases": {
-        "0": "Du har anlänt till din destination.",
-        "1": "Du har anlänt till <DESTINATION>.",
-        "2": "Din destination är till <RELATIVE_DIRECTION>.",
-        "3": "<DESTINATION> är till <RELATIVE_DIRECTION>."
+        "0": "目的地に到着しました。",
+        "1": "<DESTINATION>に到着しました。",
+        "2": "目的地は<RELATIVE_DIRECTION>側です。",
+        "3": "<DESTINATION>は<RELATIVE_DIRECTION>側です。"
       },
       "relative_directions": [
-        "vänster",
-        "höger"
+        "左",
+        "右"
       ],
       "example_phrases": {
         "0": [
@@ -298,14 +298,14 @@
     },
     "destination_verbal": {
       "phrases": {
-        "0": "Du har anlänt till din destination.",
-        "1": "Du har anlänt till <DESTINATION>.",
-        "2": "Din destination är till <RELATIVE_DIRECTION>.",
-        "3": "<DESTINATION> är till <RELATIVE_DIRECTION>."
+        "0": "目的地に到着しました。",
+        "1": "<DESTINATION>に到着しました。",
+        "2": "目的地は<RELATIVE_DIRECTION>側です。",
+        "3": "<DESTINATION>は<RELATIVE_DIRECTION>側です。"
       },
       "relative_directions": [
-        "vänster",
-        "höger"
+        "左",
+        "右"
       ],
       "example_phrases": {
         "0": [
@@ -325,14 +325,14 @@
     },
     "destination_verbal_alert": {
       "phrases": {
-        "0": "Du kommer att anlända till din destination.",
-        "1": "Du kommer att anlända till <DESTINATION>.",
-        "2": "Din destination kommer att vara till <RELATIVE_DIRECTION>.",
-        "3": "<DESTINATION> kommer att vara till <RELATIVE_DIRECTION>."
+        "0": "まもなく目的地に到着します。",
+        "1": "まもなく<DESTINATION>に到着します。",
+        "2": "目的地は<RELATIVE_DIRECTION>側です。",
+        "3": "<DESTINATION>は<RELATIVE_DIRECTION>側です。"
       },
       "relative_directions": [
-        "vänster",
-        "höger"
+        "左",
+        "右"
       ],
       "example_phrases": {
         "0": [
@@ -352,17 +352,17 @@
     },
     "enter_ferry": {
       "phrases": {
-        "0": "Ta färjan.",
-        "1": "Ta <STREET_NAMES>.",
-        "2": "Ta <STREET_NAMES> <FERRY_LABEL>.",
-        "3": "Ta färjan mot <TOWARD_SIGN>."
+        "0": "フェリーに乗ります。",
+        "1": "<STREET_NAMES>です。",
+        "2": "<STREET_NAMES>です。その先、<FERRY_LABEL>です。",
+        "3": "<TOWARD_SIGN>方面のフェリーに乗ります。"
       },
       "empty_street_name_labels": [
-        "gångvägen",
-        "cykelbanan",
-        "terrängcykelbanan"
+        "歩道",
+        "自転車道",
+        "自転車道"
       ],
-      "ferry_label": "Färja",
+      "ferry_label": "フェリー",
       "example_phrases": {
         "0": [
           "Take the Ferry."
@@ -380,17 +380,17 @@
     },
     "enter_ferry_verbal": {
       "phrases": {
-        "0": "Ta färjan.",
-        "1": "Ta <STREET_NAMES>.",
-        "2": "Ta <STREET_NAMES> <FERRY_LABEL>.",
-        "3": "Ta färjan mot <TOWARD_SIGN>."
+        "0": "フェリーに乗ります。",
+        "1": "<STREET_NAMES>です。",
+        "2": "<STREET_NAMES>です。その先、<FERRY_LABEL>です。",
+        "3": "<TOWARD_SIGN>方面のフェリーに乗ります。"
       },
       "empty_street_name_labels": [
-        "gångvägen",
-        "cykelbanan",
-        "terrängcykelbanan"
+        "歩道",
+        "自転車道",
+        "自転車道"
       ],
-      "ferry_label": "Färja",
+      "ferry_label": "フェリー",
       "example_phrases": {
         "0": [
           "Take the Ferry."
@@ -408,39 +408,39 @@
     },
     "enter_roundabout": {
       "phrases": {
-        "0": "Kör in i rondellen.",
-        "1": "Kör in i rondellen och ta den <ORDINAL_VALUE> avfarten.",
-        "2": "Kör in i rondellen och ta den <ORDINAL_VALUE> avfarten in på <ROUNDABOUT_EXIT_STREET_NAMES>.",
-        "3": "Kör in i rondellen och ta den <ORDINAL_VALUE> avfarten in på <ROUNDABOUT_EXIT_BEGIN_STREET_NAMES>. Fortsätt på <ROUNDABOUT_EXIT_STREET_NAMES>.",
-        "4": "Kör in i rondellen och ta den <ORDINAL_VALUE> avfarten mot <TOWARD_SIGN>.",
-        "5": "Kör in i rondellen och ta avfarten in på <ROUNDABOUT_EXIT_STREET_NAMES>.",
-        "6": "Kör in i rondellen och ta avfarten in på <ROUNDABOUT_EXIT_BEGIN_STREET_NAMES>. Fortsätt på <ROUNDABOUT_EXIT_STREET_NAMES>.",
-        "7": "Kör in i rondellen och ta avfarten mot <TOWARD_SIGN>.",
-        "8": "Kör in på <STREET_NAMES>",
-        "9": "Kör in på <STREET_NAMES> och ta den <ORDINAL_VALUE> avfarten.",
-        "10": "Kör in på <STREET_NAMES> och ta den <ORDINAL_VALUE> avfarten in på <ROUNDABOUT_EXIT_STREET_NAMES>.",
-        "11": "Kör in på <STREET_NAMES> och ta den <ORDINAL_VALUE> avfarten in på <ROUNDABOUT_EXIT_BEGIN_STREET_NAMES>. Fortsätt på <ROUNDABOUT_EXIT_STREET_NAMES>.",
-        "12": "Kör in på <STREET_NAMES> och ta den <ORDINAL_VALUE> avfarten mot <TOWARD_SIGN>.",
-        "13": "Kör in på <STREET_NAMES> och ta avfarten mot <ROUNDABOUT_EXIT_STREET_NAMES>.",
-        "14": "Kör in på <STREET_NAMES> och ta avfarten mot <ROUNDABOUT_EXIT_BEGIN_STREET_NAMES>. Fortsätt på <ROUNDABOUT_EXIT_STREET_NAMES>.",
-        "15": "Kör in på <STREET_NAMES> och ta avfarten mot <TOWARD_SIGN>."
+        "0": "環状交差点に入ります。",
+        "1": "環状交差点に入り、<ORDINAL_VALUE>出口を出ます。",
+        "2": "環状交差点に入り、<ORDINAL_VALUE>出口を出て<ROUNDABOUT_EXIT_STREET_NAMES>に入ります。",
+        "3": "環状交差点に入り、<ORDINAL_VALUE>出口を出て<ROUNDABOUT_EXIT_BEGIN_STREET_NAMES>に入ります。その先、<ROUNDABOUT_EXIT_STREET_NAMES>を進みます。",
+        "4": "環状交差点に入り、<TOWARD_SIGN>方面に<ORDINAL_VALUE>出口を出ます。",
+        "5": "環状交差点に入り、<ROUNDABOUT_EXIT_STREET_NAMES>方面に出ます。",
+        "6": "環状交差点に入り、<ROUNDABOUT_EXIT_BEGIN_STREET_NAMES>方面に出ます。その先、<ROUNDABOUT_EXIT_STREET_NAMES>を進みます。",
+        "7": "環状交差点に入り、<TOWARD_SIGN>方面に出ます。",
+        "8": "<STREET_NAMES>に入ります。",
+        "9": "<STREET_NAMES>に入り、<ORDINAL_VALUE>出口を出ます。",
+        "10": "<STREET_NAMES>に入り、<ROUNDABOUT_EXIT_STREET_NAMES>方面に<ORDINAL_VALUE>出口を出ます。",
+        "11": "<STREET_NAMES>に入り、<ROUNDABOUT_EXIT_BEGIN_STREET_NAMES>方面に<ORDINAL_VALUE>出口を出ます。その先、<ROUNDABOUT_EXIT_STREET_NAMES>を進みます。",
+        "12": "<STREET_NAMES>に入り、<TOWARD_SIGN>方面に<ORDINAL_VALUE>出口を出ます。",
+        "13": "<STREET_NAMES>に入り、<ROUNDABOUT_EXIT_STREET_NAMES>方面に出ます。",
+        "14": "<STREET_NAMES>に入り、<ROUNDABOUT_EXIT_BEGIN_STREET_NAMES>方面に出ます。その先<ROUNDABOUT_EXIT_STREET_NAMES>を進みます。",
+        "15": "<STREET_NAMES>に入り、<TOWARD_SIGN>方面に出ます。"
       },
       "ordinal_values": [
-        "1:a",
-        "2:a",
-        "3:e",
-        "4:e",
-        "5:e",
-        "6:e",
-        "7:e",
-        "8:e",
-        "9:e",
-        "10:e"
+        "1つ目の",
+        "2つ目の",
+        "3つ目の",
+        "4つ目の",
+        "5つ目の",
+        "6つ目の",
+        "7つ目の",
+        "8つ目の",
+        "9つ目の",
+        "10番目の"
       ],
       "empty_street_name_labels": [
-        "gångvägen",
-        "cykelbanan",
-        "terrängcykelbanan"
+        "歩道",
+        "自転車道",
+        "自転車道"
       ],
       "example_phrases": {
         "0": [
@@ -504,39 +504,39 @@
     },
     "enter_roundabout_verbal": {
       "phrases": {
-        "0": "Kör in i rondellen.",
-        "1": "Kör in i rondellen och ta den <ORDINAL_VALUE> avfarten.",
-        "2": "Kör in i rondellen och ta den <ORDINAL_VALUE> avfarten in på <ROUNDABOUT_EXIT_STREET_NAMES>.",
-        "3": "Kör in i rondellen och ta den <ORDINAL_VALUE> avfarten in på <ROUNDABOUT_EXIT_BEGIN_STREET_NAMES>.",
-        "4": "Kör in i rondellen och ta den <ORDINAL_VALUE> avfarten mot <TOWARD_SIGN>.",
-        "5": "Kör in i rondellen och ta avfarten in på <ROUNDABOUT_EXIT_STREET_NAMES>.",
-        "6": "Kör in i rondellen och ta avfarten in på <ROUNDABOUT_EXIT_BEGIN_STREET_NAMES>.",
-        "7": "Kör in i rondellen och ta avfarten mot <TOWARD_SIGN>.",
-        "8": "Kör in på <STREET_NAMES>",
-        "9": "Kör in på <STREET_NAMES> och ta den <ORDINAL_VALUE> avfarten.",
-        "10": "Kör in på <STREET_NAMES> och ta den <ORDINAL_VALUE> avfarten in på <ROUNDABOUT_EXIT_STREET_NAMES>.",
-        "11": "Kör in på <STREET_NAMES> och ta den <ORDINAL_VALUE> avfarten in på <ROUNDABOUT_EXIT_BEGIN_STREET_NAMES>.",
-        "12": "Kör in på <STREET_NAMES> och ta den <ORDINAL_VALUE> avfarten mot <TOWARD_SIGN>.",
-        "13": "Kör in på <STREET_NAMES> och ta avfarten mot <ROUNDABOUT_EXIT_STREET_NAMES>.",
-        "14": "Kör in på <STREET_NAMES> och ta avfarten in på <ROUNDABOUT_EXIT_BEGIN_STREET_NAMES>.",
-        "15": "Kör in på <STREET_NAMES> och ta avfarten mot <TOWARD_SIGN>."
+        "0": "環状交差点に入ります。",
+        "1": "環状交差点に入り、<ORDINAL_VALUE>出口を出ます。",
+        "2": "環状交差点に入り、<ORDINAL_VALUE>出口を出て<ROUNDABOUT_EXIT_STREET_NAMES>に入ります。",
+        "3": "環状交差点に入り、<ROUNDABOUT_EXIT_BEGIN_STREET_NAMES>方面に<ORDINAL_VALUE>出口を出ます。",
+        "4": "環状交差点に入り、<TOWARD_SIGN>方面に<ORDINAL_VALUE>出口を出ます。",
+        "5": "環状交差点に入り、<ROUNDABOUT_EXIT_STREET_NAMES>方面に出ます。",
+        "6": "環状交差点に入り、<ROUNDABOUT_EXIT_BEGIN_STREET_NAMES>方面に出ます。",
+        "7": "環状交差点に入り、<TOWARD_SIGN>方面に出ます。",
+        "8": "<STREET_NAMES>に入ります。",
+        "9": "<STREET_NAMES>に入り、<ORDINAL_VALUE>出口を出ます。",
+        "10": "<STREET_NAMES>に入り、<ROUNDABOUT_EXIT_STREET_NAMES>方面に<ORDINAL_VALUE>出口を出ます。",
+        "11": "<STREET_NAMES>に入り、<ROUNDABOUT_EXIT_BEGIN_STREET_NAMES>方面に<ORDINAL_VALUE>出口を出ます。",
+        "12": "<STREET_NAMES>に入り、<TOWARD_SIGN>方面に<ORDINAL_VALUE>出口を出ます。",
+        "13": "<STREET_NAMES>に入り、<ROUNDABOUT_EXIT_STREET_NAMES>方面に出ます。",
+        "14": "<STREET_NAMES>に入り、<ROUNDABOUT_EXIT_BEGIN_STREET_NAMES>方面に出ます。",
+        "15": "<STREET_NAMES>に入り、<TOWARD_SIGN>方面に出ます。"
       },
       "ordinal_values": [
-        "1:a",
-        "2:a",
-        "3:e",
-        "4:e",
-        "5:e",
-        "6:e",
-        "7:e",
-        "8:e",
-        "9:e",
-        "10:e"
+        "1 つ目の",
+        "2 つ目の",
+        "3 つ目の",
+        "4 つ目の",
+        "5 つ目の",
+        "6 つ目の",
+        "7 つ目の",
+        "8 つ目の",
+        "9 つ目の",
+        "10 番目の"
       ],
       "empty_street_name_labels": [
-        "gångvägen",
-        "cykelbanan",
-        "terrängcykelbanan"
+        "歩道",
+        "自転車道",
+        "自転車道"
       ],
       "example_phrases": {
         "0": [
@@ -600,34 +600,34 @@
     },
     "exit": {
       "phrases": {
-        "0": "Ta avfarten till <RELATIVE_DIRECTION>.",
-        "1": "Ta avfart <NUMBER_SIGN> till <RELATIVE_DIRECTION>.",
-        "2": "Ta <BRANCH_SIGN> avfarten till <RELATIVE_DIRECTION>.",
-        "3": "Ta avfart <NUMBER_SIGN> till <RELATIVE_DIRECTION> in på <BRANCH_SIGN>.",
-        "4": "Ta avfarten till <RELATIVE_DIRECTION> mot <TOWARD_SIGN>.",
-        "5": "Ta avfart <NUMBER_SIGN> till <RELATIVE_DIRECTION> mot <TOWARD_SIGN>.",
-        "6": "Ta <BRANCH_SIGN> avfarten till <RELATIVE_DIRECTION> mot <TOWARD_SIGN>.",
-        "7": "Ta avfart <NUMBER_SIGN> till <RELATIVE_DIRECTION> in på <BRANCH_SIGN> mot<TOWARD_SIGN>.",
-        "8": "Ta <NAME_SIGN>avfarten till <RELATIVE_DIRECTION>.",
-        "10": "Ta <NAME_SIGN>avfarten till <RELATIVE_DIRECTION> in på <BRANCH_SIGN>.",
-        "12": "Ta <NAME_SIGN>avfarten till <RELATIVE_DIRECTION> mot <TOWARD_SIGN>.",
-        "14": "Ta <NAME_SIGN>avfarten till <RELATIVE_DIRECTION> in på <BRANCH_SIGN> mot<TOWARD_SIGN>.",
-        "15": "Ta avfarten.",
-        "16": "Ta avfart <NUMBER_SIGN>.",
-        "17": "Ta <BRANCH_SIGN> avfarten.",
-        "18": "Ta avfart <NUMBER_SIGN> in på <BRANCH_SIGN>.",
-        "19": "Ta avfarten mot <TOWARD_SIGN>.",
-        "20": "Ta avfart <NUMBER_SIGN> mot <TOWARD_SIGN>.",
-        "21": "Ta <BRANCH_SIGN> avfarten mot <TOWARD_SIGN>.",
-        "22": "Ta avfart <NUMBER_SIGN> in på <BRANCH_SIGN> mot <TOWARD_SIGN>.",
-        "23": "Ta <NAME_SIGN>avfarten.",
-        "25": "Ta <NAME_SIGN>avfarten in på  <BRANCH_SIGN>.",
-        "27": "Ta <NAME_SIGN>avfarten mot <TOWARD_SIGN>.",
-        "29": "Ta <NAME_SIGN>avfarten in på <BRANCH_SIGN> mot <TOWARD_SIGN>."
+        "0": "<RELATIVE_DIRECTION>方向、出口です。",
+        "1": "<RELATIVE_DIRECTION>方向、<NUMBER_SIGN>番出口です。",
+        "2": "<RELATIVE_DIRECTION>方向、<BRANCH_SIGN>出口です。",
+        "3": "<RELATIVE_DIRECTION>方向、<NUMBER_SIGN>番出口です。その先<BRANCH_SIGN>です。",
+        "4": "<RELATIVE_DIRECTION>方向、<TOWARD_SIGN>方面出口です。",
+        "5": "<RELATIVE_DIRECTION>方向、<TOWARD_SIGN>方面<NUMBER_SIGN>番出口です。",
+        "6": "<RELATIVE_DIRECTION>方向、<TOWARD_SIGN>方面<BRANCH_SIGN>出口です。",
+        "7": "<RELATIVE_DIRECTION>方向、<NUMBER_SIGN>番出口です。その先<BRANCH_SIGN>、<TOWARD_SIGN>方面です。",
+        "8": "<RELATIVE_DIRECTION>方向、<NAME_SIGN>出口です。",
+        "10": "<BRANCH_SIGN>を<RELATIVE_DIRECTION>方向、<NAME_SIGN>出口です。",
+        "12": "<RELATIVE_DIRECTION>方向、<TOWARD_SIGN>方面<NAME_SIGN>出口です。",
+        "14": "<RELATIVE_DIRECTION>方向、<NAME_SIGN>出口です。その先<BRANCH_SIGN>、<TOWARD_SIGN>方面です。",
+        "15": "出口です。",
+        "16": "<NUMBER_SIGN>番出口です。",
+        "17": "<BRANCH_SIGN>出口です。",
+        "18": "<NUMBER_SIGN>番出口です。その先<BRANCH_SIGN>です。",
+        "19": "<TOWARD_SIGN>方面、出口です。",
+        "20": "<TOWARD_SIGN>方面、<NUMBER_SIGN>番出口です。",
+        "21": "<TOWARD_SIGN>方面、<BRANCH_SIGN>出口です。",
+        "22": "<NUMBER_SIGN>番出口です。その先<BRANCH_SIGN>、<TOWARD_SIGN>方面です。",
+        "23": "<NAME_SIGN>出口です。",
+        "25": "<NAME_SIGN>出口です。その先<BRANCH_SIGN>です。",
+        "27": "<NAME_SIGN>出口、<TOWARD_SIGN>方面です。",
+        "29": "<NAME_SIGN>出口です。その先<BRANCH_SIGN>、<TOWARD_SIGN>方面です。"
       },
       "relative_directions": [
-        "vänster",
-        "höger"
+        "左",
+        "右"
       ],
       "example_phrases": {
         "0": [
@@ -707,15 +707,15 @@
     },
     "exit_roundabout": {
       "phrases": {
-        "0": "Kör ut ur rondellen.",
-        "1": "Kör ut ur rondellen in på <STREET_NAMES>.",
-        "2": "Kör ut ur rondellen in på <BEGIN_STREET_NAMES>. Fortsätt på  <STREET_NAMES>.",
-        "3": "Kör ut ur rondellen mot <TOWARD_SIGN>."
+        "0": "環状交差点を出ます。",
+        "1": "<STREET_NAMES>方面に環状交差点を出ます。",
+        "2": "<BEGIN_STREET_NAMES>方面に環状交差点を出ます。その先、<STREET_NAMES>を進みます。",
+        "3": "<TOWARD_SIGN>方面に環状交差点を出ます。"
       },
       "empty_street_name_labels": [
-        "gångvägen",
-        "cykelbanan",
-        "terrängcykelbanan"
+        "歩道",
+        "自転車道",
+        "自転車道"
       ],
       "example_phrases": {
         "0": [
@@ -734,15 +734,15 @@
     },
     "exit_roundabout_verbal": {
       "phrases": {
-        "0": "Kör ut ur rondellen.",
-        "1": "Kör ut ur rondellen in på <STREET_NAMES>.",
-        "2": "Kör ut ur rondellen in på <BEGIN_STREET_NAMES>.",
-        "3": "Kör ut ur rondellen mot <TOWARD_SIGN>."
+        "0": "環状交差点を出ます。",
+        "1": "<STREET_NAMES>方面に環状交差点を出ます。",
+        "2": "<BEGIN_STREET_NAMES>方面に環状交差点を出ます。",
+        "3": "<TOWARD_SIGN>方面に環状交差点を出ます。"
       },
       "empty_street_name_labels": [
-        "gångvägen",
-        "cykelbanan",
-        "terrängcykelbanan"
+        "歩道",
+        "自転車道",
+        "自転車道"
       ],
       "example_phrases": {
         "0": [
@@ -761,34 +761,34 @@
     },
     "exit_verbal": {
       "phrases": {
-        "0": "Ta avfarten till <RELATIVE_DIRECTION>.",
-        "1": "Ta avfart <NUMBER_SIGN> till <RELATIVE_DIRECTION>.",
-        "2": "Ta <BRANCH_SIGN>avfarten till <RELATIVE_DIRECTION>.",
-        "3": "Ta avfart <NUMBER_SIGN> till <RELATIVE_DIRECTION> in på <BRANCH_SIGN>.",
-        "4": "Ta avfarten till <RELATIVE_DIRECTION> mot <TOWARD_SIGN>.",
-        "5": "Ta avfart <NUMBER_SIGN> till <RELATIVE_DIRECTION> mot <TOWARD_SIGN>.",
-        "6": "Ta <BRANCH_SIGN>avfarten till <RELATIVE_DIRECTION> mot <TOWARD_SIGN>.",
-        "7": "Ta avfart <NUMBER_SIGN> till <RELATIVE_DIRECTION> in på <BRANCH_SIGN> mot <TOWARD_SIGN>.",
-        "8": "Ta <NAME_SIGN>avfarten till <RELATIVE_DIRECTION>.",
-        "10": "Ta <NAME_SIGN>avfarten till <RELATIVE_DIRECTION> in på <BRANCH_SIGN>.",
-        "12": "Ta <NAME_SIGN> avfarten till <RELATIVE_DIRECTION> mot <TOWARD_SIGN>.",
-        "14": "Ta <NAME_SIGN>avfarten till <RELATIVE_DIRECTION> in på <BRANCH_SIGN> mot <TOWARD_SIGN>.",
-        "15": "Ta avfarten.",
-        "16": "Ta avfart <NUMBER_SIGN>.",
-        "17": "Ta <BRANCH_SIGN>avfarten.",
-        "18": "Ta avfart <NUMBER_SIGN> in på <BRANCH_SIGN>.",
-        "19": "Ta avfarten mot <TOWARD_SIGN>.",
-        "20": "Ta avfart <NUMBER_SIGN> mot <TOWARD_SIGN>.",
-        "21": "Ta <BRANCH_SIGN>avfarten mot <TOWARD_SIGN>.",
-        "22": "Ta avfart <NUMBER_SIGN> in på <BRANCH_SIGN> mot <TOWARD_SIGN>.",
-        "23": "Ta <NAME_SIGN>avfarten.",
-        "25": "Ta <NAME_SIGN>avfarten in på <BRANCH_SIGN>.",
-        "27": "Ta <NAME_SIGN>avfarten mot <TOWARD_SIGN>.",
-        "29": "Ta <NAME_SIGN>avfarten in på <BRANCH_SIGN> mot <TOWARD_SIGN>."
+        "0": "<RELATIVE_DIRECTION>方向、出口です。",
+        "1": "<RELATIVE_DIRECTION>方向、<NUMBER_SIGN>番出口です。",
+        "2": "<RELATIVE_DIRECTION>方向、<BRANCH_SIGN>出口です。",
+        "3": "<RELATIVE_DIRECTION>方向、<NUMBER_SIGN>番出口です。その先<BRANCH_SIGN>です。",
+        "4": "<RELATIVE_DIRECTION>方向、<TOWARD_SIGN>方面出口です。",
+        "5": "<RELATIVE_DIRECTION>方向<TOWARD_SIGN>方面、<NUMBER_SIGN>番出口です。",
+        "6": "<RELATIVE_DIRECTION>方向、<TOWARD_SIGN>方面<BRANCH_SIGN>出口です。",
+        "7": "<RELATIVE_DIRECTION>方向、<NUMBER_SIGN>番出口です。その先<BRANCH_SIGN>、<TOWARD_SIGN>方面です。",
+        "8": "<RELATIVE_DIRECTION>方向、<NAME_SIGN>出口です。",
+        "10": "<BRANCH_SIGN>を<RELATIVE_DIRECTION>方向、<NAME_SIGN>出口です。",
+        "12": "<RELATIVE_DIRECTION>方向、<TOWARD_SIGN>方面<NAME_SIGN>出口です。",
+        "14": "<RELATIVE_DIRECTION>方向、<NAME_SIGN>出口です。その先<BRANCH_SIGN>、<TOWARD_SIGN>方面です。",
+        "15": "出口です。",
+        "16": "<NUMBER_SIGN>番出口です。",
+        "17": "<BRANCH_SIGN>出口です。",
+        "18": "<NUMBER_SIGN>番出口です。その先<BRANCH_SIGN>です。",
+        "19": "<TOWARD_SIGN>方面、出口です。",
+        "20": "<TOWARD_SIGN>方面、<NUMBER_SIGN>番出口です。",
+        "21": "<TOWARD_SIGN>方面、<BRANCH_SIGN>出口です。",
+        "22": "<NUMBER_SIGN>番出口です。その先<BRANCH_SIGN>、<TOWARD_SIGN>方面です。",
+        "23": "<NAME_SIGN>出口です。",
+        "25": "<NAME_SIGN>出口です。その先<BRANCH_SIGN>です。",
+        "27": "<NAME_SIGN>出口、<TOWARD_SIGN>方面です。",
+        "29": "<NAME_SIGN>出口です。その先<BRANCH_SIGN>、<TOWARD_SIGN>方面です。"
       },
       "relative_directions": [
-        "vänster ",
-        "höger"
+        "左",
+        "右"
       ],
       "example_phrases": {
         "0": [
@@ -868,7 +868,7 @@
     },
     "exit_visual": {
       "phrases": {
-        "0": "Avfart <EXIT_NUMBERS>"
+        "0": "<EXIT_NUMBERS>番出口"
       },
       "example_phrases": {
         "0": [
@@ -878,24 +878,24 @@
     },
     "keep": {
       "phrases": {
-        "0": "Håll <RELATIVE_DIRECTION> i korsningen.",
-        "1": "Håll <RELATIVE_DIRECTION> för att ta avfart <NUMBER_SIGN>.",
-        "2": "Håll <RELATIVE_DIRECTION> för att ta <STREET_NAMES>.",
-        "3": "Håll <RELATIVE_DIRECTION> för att ta avfart <NUMBER_SIGN> in på <STREET_NAMES>.",
-        "4": "Håll <RELATIVE_DIRECTION> mot <TOWARD_SIGN>.",
-        "5": "Håll <RELATIVE_DIRECTION> för att ta avfart <NUMBER_SIGN> mot <TOWARD_SIGN>.",
-        "6": "Håll <RELATIVE_DIRECTION>för att ta <STREET_NAMES> mot <TOWARD_SIGN>.",
-        "7": "Håll <RELATIVE_DIRECTION> för att ta avfart <NUMBER_SIGN> in på <STREET_NAMES> mot <TOWARD_SIGN>."
+        "0": "分岐を<RELATIVE_DIRECTION>方向です。",
+        "1": "<RELATIVE_DIRECTION>方向です。その先<NUMBER_SIGN>番出口です。",
+        "2": "<RELATIVE_DIRECTION>方向です。その先<STREET_NAMES>です。",
+        "3": "<RELATIVE_DIRECTION>方向、<NUMBER_SIGN>番出口です。その先<STREET_NAMES>です。",
+        "4": "<RELATIVE_DIRECTION>方向、<TOWARD_SIGN>方面です。",
+        "5": "<RELATIVE_DIRECTION>方向、<NUMBER_SIGN>番出口です。その先<TOWARD_SIGN>方面です。",
+        "6": "<RELATIVE_DIRECTION>方向です。その先<STREET_NAMES>、<TOWARD_SIGN>方面です。",
+        "7": "<RELATIVE_DIRECTION>方向、<NUMBER_SIGN>番出口です。その先<STREET_NAMES>、<TOWARD_SIGN>方面です。"
       },
       "empty_street_name_labels": [
-        "gångvägen",
-        "cykelbanan",
-        "terrängcykelbanan"
+        "歩道",
+        "自転車道",
+        "自転車道"
       ],
       "relative_directions": [
-        "vänster",
-        "rakt fram",
-        "höger"
+        "左",
+        "直進",
+        "右"
       ],
       "example_phrases": {
         "0": [
@@ -928,20 +928,20 @@
     },
     "keep_to_stay_on": {
       "phrases": {
-        "0": "Håll <RELATIVE_DIRECTION> för att stanna kvar på  <STREET_NAMES>.",
-        "1": "Håll <RELATIVE_DIRECTION> för att ta avfart <NUMBER_SIGN> för att stanna kvar på <STREET_NAMES>.",
-        "2": "Håll <RELATIVE_DIRECTION> för att stanna kvar på <STREET_NAMES> mot <TOWARD_SIGN>.",
-        "3": "Håll <RELATIVE_DIRECTION> för att ta avfart <NUMBER_SIGN> för att stanna kvar på <STREET_NAMES> mot <TOWARD_SIGN>."
+        "0": "<RELATIVE_DIRECTION>方向です。その先<STREET_NAMES>です。",
+        "1": "<RELATIVE_DIRECTION>方向、<NUMBER_SIGN>番出口です。その先<STREET_NAMES>です。",
+        "2": "<RELATIVE_DIRECTION>方向です。その先<STREET_NAMES>、<TOWARD_SIGN>方面です。",
+        "3": "<RELATIVE_DIRECTION>方向、<NUMBER_SIGN>番出口です。その先<STREET_NAMES>、<TOWARD_SIGN>方面です。"
       },
       "empty_street_name_labels": [
-        "gångvägen",
-        "cykelbanan",
-        "terrängcykelbanan"
+        "歩道",
+        "自転車道",
+        "自転車道"
       ],
       "relative_directions": [
-        "vänster",
-        "rakt fram",
-        "höger"
+        "左",
+        "直進",
+        "右"
       ],
       "example_phrases": {
         "0": [
@@ -962,20 +962,20 @@
     },
     "keep_to_stay_on_verbal": {
       "phrases": {
-        "0": "Håll <RELATIVE_DIRECTION> för att stanna kvar på <STREET_NAMES>.",
-        "1": "Håll <RELATIVE_DIRECTION> för att ta avfart <NUMBER_SIGN> för att stanna kvar på <STREET_NAMES>.",
-        "2": "Håll <RELATIVE_DIRECTION> för att stanna kvar på <STREET_NAMES> mot <TOWARD_SIGN>.",
-        "3": "Håll <RELATIVE_DIRECTION> för att ta avfart <NUMBER_SIGN> för att stanna kvar på <STREET_NAMES> mot <TOWARD_SIGN>."
+        "0": "<RELATIVE_DIRECTION>方向です。その先<STREET_NAMES>です。",
+        "1": "<RELATIVE_DIRECTION>方向、<NUMBER_SIGN>番出口です。その先<STREET_NAMES>です。",
+        "2": "<RELATIVE_DIRECTION>方向です。その先<STREET_NAMES>、<TOWARD_SIGN>方面です。",
+        "3": "<RELATIVE_DIRECTION>方向、<NUMBER_SIGN>番出口です。その先<STREET_NAMES>、<TOWARD_SIGN>方面です。"
       },
       "empty_street_name_labels": [
-        "gångvägen",
-        "cykelbanan",
-        "terrängcykelbanan"
+        "歩道",
+        "自転車道",
+        "自転車道"
       ],
       "relative_directions": [
-        "vänster",
-        "rakt fram",
-        "höger"
+        "左",
+        "直進",
+        "右"
       ],
       "example_phrases": {
         "0": [
@@ -996,24 +996,24 @@
     },
     "keep_verbal": {
       "phrases": {
-        "0": "Håll <RELATIVE_DIRECTION> i korsningen.",
-        "1": "Håll <RELATIVE_DIRECTION> för att ta avfart <NUMBER_SIGN>.",
-        "2": "Håll <RELATIVE_DIRECTION> för att ta <STREET_NAMES>.",
-        "3": "Håll <RELATIVE_DIRECTION> för att ta avfart <NUMBER_SIGN> in på  <STREET_NAMES>.",
-        "4": "Håll <RELATIVE_DIRECTION> mot <TOWARD_SIGN>.",
-        "5": "Håll <RELATIVE_DIRECTION> för att ta avfart <NUMBER_SIGN> mot <TOWARD_SIGN>.",
-        "6": "Håll <RELATIVE_DIRECTION> för att ta <STREET_NAMES> mot <TOWARD_SIGN>.",
-        "7": "Håll <RELATIVE_DIRECTION> för att ta avfart <NUMBER_SIGN> in på <STREET_NAMES> mot <TOWARD_SIGN>."
+        "0": "分岐を<RELATIVE_DIRECTION>方向です。",
+        "1": "<RELATIVE_DIRECTION>方向、<NUMBER_SIGN>番出口です。",
+        "2": "<RELATIVE_DIRECTION>方向です。その先<STREET_NAMES>です。",
+        "3": "<RELATIVE_DIRECTION>方向、<NUMBER_SIGN>番出口です。その先<STREET_NAMES>です。",
+        "4": "<RELATIVE_DIRECTION>方向です。その先、<TOWARD_SIGN>方面です。",
+        "5": "<RELATIVE_DIRECTION>方向、<NUMBER_SIGN>番出口です。その先、<TOWARD_SIGN>方面です。",
+        "6": "<RELATIVE_DIRECTION>方向です。その先<STREET_NAMES>、<TOWARD_SIGN>方面です。",
+        "7": "<RELATIVE_DIRECTION>方向、<NUMBER_SIGN>番出口です。その先<STREET_NAMES>、<TOWARD_SIGN>方面です。"
       },
       "empty_street_name_labels": [
-        "gångvägen",
-        "cykelbanan",
-        "terrängcykelbanan"
+        "歩道",
+        "自転車道",
+        "自転車道"
       ],
       "relative_directions": [
-        "vänster",
-        "rakt fram",
-        "höger"
+        "左",
+        "直進",
+        "右"
       ],
       "example_phrases": {
         "0": [
@@ -1046,21 +1046,21 @@
     },
     "merge": {
       "phrases": {
-        "0": "Köra in.",
-        "1": "Kör in till <RELATIVE_DIRECTION>.",
-        "2": "Kör in på <STREET_NAMES>.",
-        "3": "Kör in till <RELATIVE_DIRECTION> in på <STREET_NAMES>.",
-        "4": "Kör in mot <TOWARD_SIGN>.",
-        "5": "Kör till <RELATIVE_DIRECTION> mot <TOWARD_SIGN>."
+        "0": "合流です。",
+        "1": "<RELATIVE_DIRECTION>方向に合流です。",
+        "2": "合流です。<STREET_NAMES>に入ります。",
+        "3": "<RELATIVE_DIRECTION>方向に合流です。<STREET_NAMES>に入ります。",
+        "4": "<TOWARD_SIGN>方面に合流です。",
+        "5": "<RELATIVE_DIRECTION>方向に合流です。<TOWARD_SIGN>方面に進みます。"
       },
       "relative_directions": [
-        "vänster",
-        "höger"
+        "左",
+        "右"
       ],
       "empty_street_name_labels": [
-        "gångvägen",
-        "cykelbanan",
-        "terrängcykelbanan"
+        "歩道",
+        "自転車道",
+        "自転車道"
       ],
       "example_phrases": {
         "0": [
@@ -1085,25 +1085,25 @@
     },
     "merge_verbal": {
       "phrases": {
-        "0": "Kör in.",
-        "1": "Kör in till <RELATIVE_DIRECTION>.",
-        "2": "Kör in på <STREET_NAMES>.",
-        "3": "Kör in till <RELATIVE_DIRECTION> Kör in på <STREET_NAMES>.",
-        "4": "Kör in mot <TOWARD_SIGN>.",
-        "5": "Kör in till <RELATIVE_DIRECTION> mot <TOWARD_SIGN>."
+        "0": "合流です。",
+        "1": "<RELATIVE_DIRECTION>方向に合流です。",
+        "2": "合流です。<STREET_NAMES>に入ります。",
+        "3": "<RELATIVE_DIRECTION>に合流です。<STREET_NAMES>に入ります。",
+        "4": "<TOWARD_SIGN>方面に合流です。",
+        "5": "<RELATIVE_DIRECTION>方向に合流です。<TOWARD_SIGN>方面に進みます。"
       },
       "relative_directions": [
-        "vänster",
-        "höger"
+        "左",
+        "右"
       ],
       "empty_street_name_labels": [
-        "gångvägen",
-        "cykelbanan",
-        "terrängcykelbanan"
+        "歩道",
+        "自転車道",
+        "自転車道"
       ],
       "example_phrases": {
         "0": [
-          "Merge."
+          "合流です。"
         ],
         "1": [
           "Merge left."
@@ -1124,42 +1124,42 @@
     },
     "post_transition_transit_verbal": {
       "phrases": {
-        "0": "Resa<TRANSIT_STOP_COUNT> <TRANSIT_STOP_COUNT_LABEL>."
+        "0": "<TRANSIT_STOP_COUNT><TRANSIT_STOP_COUNT_LABEL>乗車します。"
       },
       "transit_stop_count_labels": {
-        "one": "stopp",
-        "other": "stopp"
+        "one": "駅",
+        "other": "駅"
       },
       "example_phrases": {
         "0": [
-          "Travel 1 stop.",
-          "Travel 3 stops."
+          "1駅乗車します。",
+          "3駅乗車します。"
         ]
       }
     },
     "post_transition_verbal": {
       "phrases": {
-        "0": "Fortsätt i <LENGTH>.",
-        "1": "Fortsätt på <STREET_NAMES> i <LENGTH>."
+        "0": "<LENGTH>直進です。",
+        "1": "<STREET_NAMES>を<LENGTH>直進です。"
       },
       "empty_street_name_labels": [
-        "gångvägen",
-        "cykelbanan",
-        "terrängcykelbanan"
+        "歩道",
+        "自転車道",
+        "自転車道"
       ],
       "metric_lengths": [
-        "<KILOMETERS> kilometer",
-        "1 kilometer",
-        "<METERS> meter",
-        "mindre än 10 meter"
+        "<KILOMETERS>キロメートル",
+        "1キロメートル",
+        "<METERS>メートル",
+        "10メートル以内"
       ],
       "us_customary_lengths": [
-        "<MILES> engelska mil",
-        "1 engelsk mil",
-        "en halv engelsk mil",
-        "en kvarts engelsk mit",
-        "<FEET> fot",
-        "mindre än 10 fot"
+        "<MILES>マイル",
+        "1マイル",
+        "0.5マイル",
+        "0.25マイル",
+        "<FEET>フィート",
+        "10フィート以内"
       ],
       "example_phrases": {
         "0": [
@@ -1174,25 +1174,25 @@
     },
     "ramp": {
       "phrases": {
-        "0": "Ta påfarten till <RELATIVE_DIRECTION>.",
-        "1": "Ta <BRANCH_SIGN>påfarten till <RELATIVE_DIRECTION>.",
-        "2": "Ta påfarten till <RELATIVE_DIRECTION> mot <TOWARD_SIGN>.",
-        "3": "Ta <BRANCH_SIGN>påfarten till <RELATIVE_DIRECTION> mot <TOWARD_SIGN>.",
-        "4": "Ta <NAME_SIGN>påfarten till <RELATIVE_DIRECTION>.",
-        "5": "Sväng <RELATIVE_DIRECTION> för att ta påfarten.",
-        "6": "Sväng <RELATIVE_DIRECTION> för att ta <BRANCH_SIGN>påfarten.",
-        "7": "Sväng <RELATIVE_DIRECTION> för att ta påfarten mot <TOWARD_SIGN>.",
-        "8": "Sväng <RELATIVE_DIRECTION> för att ta <BRANCH_SIGN>påfarten mot <TOWARD_SIGN>.",
-        "9": "Sväng <RELATIVE_DIRECTION> för att ta <NAME_SIGN>påfarten.",
-        "10": "Ta påfarten.",
-        "11": "Ta <BRANCH_SIGN>påfarten.",
-        "12": "Ta påfarten mot <TOWARD_SIGN>.",
-        "13": "Ta <BRANCH_SIGN>påfarten mot <TOWARD_SIGN>.",
-        "14": "Ta <NAME_SIGN>påfarten."
+        "0": "分岐を<RELATIVE_DIRECTION>方向です。",
+        "1": "<BRANCH_SIGN>を<RELATIVE_DIRECTION>方向です。",
+        "2": "分岐を<RELATIVE_DIRECTION>方向です。その先<TOWARD_SIGN>方面です。",
+        "3": "<BRANCH_SIGN>を<RELATIVE_DIRECTION>方向です。その先<TOWARD_SIGN>方面です。",
+        "4": "<NAME_SIGN>を<RELATIVE_DIRECTION>方向です。",
+        "5": "分岐を<RELATIVE_DIRECTION>方向です。",
+        "6": "<BRANCH_SIGN>を<RELATIVE_DIRECTION>方向です。",
+        "7": "分岐を<RELATIVE_DIRECTION>方向です。その先<TOWARD_SIGN>方面です。",
+        "8": "<BRANCH_SIGN>を<RELATIVE_DIRECTION>方向です。その先<TOWARD_SIGN>方面です。",
+        "9": "<NAME_SIGN>を<RELATIVE_DIRECTION>方向です。",
+        "10": "分岐です。",
+        "11": "分岐を<BRANCH_SIGN>方面です。",
+        "12": "分岐を<TOWARD_SIGN>方面です。",
+        "13": "<BRANCH_SIGN>を<TOWARD_SIGN>方面です。",
+        "14": "<NAME_SIGN>方面です。"
       },
       "relative_directions": [
-        "vänster",
-        "höger"
+        "左",
+        "右"
       ],
       "example_phrases": {
         "0": [
@@ -1246,11 +1246,11 @@
     },
     "ramp_straight": {
       "phrases": {
-        "0": "Håll rakt fram för att ta påfarten.",
-        "1": "Håll rakt fram för att ta <BRANCH_SIGN>påfarten.",
-        "2": "Håll rakt fram för att ta påfarten mot <TOWARD_SIGN>.",
-        "3": "Håll rakt fram för att ta <BRANCH_SIGN>påfarten mot <TOWARD_SIGN>.",
-        "4": "Håll rakt fram för att ta <NAME_SIGN>påfarten."
+        "0": "分岐を直進です。",
+        "1": "<BRANCH_SIGN>を直進です。",
+        "2": "分岐を直進です。その先<TOWARD_SIGN>方面です。",
+        "3": "<BRANCH_SIGN>を直進です。その先<TOWARD_SIGN>方面です。",
+        "4": "<NAME_SIGN>を直進です。"
       },
       "example_phrases": {
         "0": [
@@ -1272,11 +1272,11 @@
     },
     "ramp_straight_verbal": {
       "phrases": {
-        "0": "Håll rakt fram för att ta påfarten.",
-        "1": "Håll rakt fram för att ta<BRANCH_SIGN> påfarten.",
-        "2": "Håll rakt fram för att ta påfarten mot <TOWARD_SIGN>.",
-        "3": "Håll rakt fram för att ta<BRANCH_SIGN> påfarten mot <TOWARD_SIGN>.",
-        "4": "Håll rakt fram för att ta <NAME_SIGN>påfarten."
+        "0": "分岐を直進です。",
+        "1": "<BRANCH_SIGN>を直進です。",
+        "2": "分岐を直進です。その先<TOWARD_SIGN>方面です。",
+        "3": "<BRANCH_SIGN>を直進です。その先<TOWARD_SIGN>方面です。",
+        "4": "<NAME_SIGN>を直進です。"
       },
       "example_phrases": {
         "0": [
@@ -1298,25 +1298,25 @@
     },
     "ramp_verbal": {
       "phrases": {
-        "0": "Ta påfarten till <RELATIVE_DIRECTION>.",
-        "1": "Ta <BRANCH_SIGN>påfarten till <RELATIVE_DIRECTION>.",
-        "2": "Ta påfarten till <RELATIVE_DIRECTION> mot <TOWARD_SIGN>.",
-        "3": "Ta <BRANCH_SIGN>påfarten till <RELATIVE_DIRECTION> mot <TOWARD_SIGN>.",
-        "4": "Ta <NAME_SIGN>påfarten till <RELATIVE_DIRECTION>.",
-        "5": "Sväng <RELATIVE_DIRECTION> för att ta påfarten.",
-        "6": "Sväng <RELATIVE_DIRECTION> för att ta <BRANCH_SIGN>påfarten.",
-        "7": "Sväng <RELATIVE_DIRECTION> för att ta påfarten mot <TOWARD_SIGN>.",
-        "8": "Sväng <RELATIVE_DIRECTION> för att ta <BRANCH_SIGN>påfarten mot <TOWARD_SIGN>.",
-        "9": "Sväng <RELATIVE_DIRECTION> för att ta <NAME_SIGN>påfarten.",
-        "10": "Ta påfarten.",
-        "11": "Ta <BRANCH_SIGN>påfarten.",
-        "12": "Ta påfarten mot <TOWARD_SIGN>.",
-        "13": "Ta <BRANCH_SIGN>påfarten mot <TOWARD_SIGN>.",
-        "14": "Ta <NAME_SIGN>påfarten."
+        "0": "分岐を<RELATIVE_DIRECTION>方向です。",
+        "1": "<BRANCH_SIGN>を<RELATIVE_DIRECTION>方向です。",
+        "2": "分岐を<RELATIVE_DIRECTION>方向です。その先<TOWARD_SIGN>方面です。",
+        "3": "<BRANCH_SIGN>を<RELATIVE_DIRECTION>方向です。その先<TOWARD_SIGN>方面です。",
+        "4": "<NAME_SIGN>を<RELATIVE_DIRECTION>方向です。",
+        "5": "分岐を<RELATIVE_DIRECTION>方向です。",
+        "6": "<BRANCH_SIGN>を<RELATIVE_DIRECTION>方向です。",
+        "7": "分岐を<RELATIVE_DIRECTION>方向です。その先<TOWARD_SIGN>方面です。",
+        "8": "<BRANCH_SIGN>を<RELATIVE_DIRECTION>方向です。その先<TOWARD_SIGN>方面です。",
+        "9": "<NAME_SIGN>を<RELATIVE_DIRECTION>方向です。",
+        "10": "分岐です。",
+        "11": "分岐を<BRANCH_SIGN>方面です。",
+        "12": "分岐を<TOWARD_SIGN>方面です。",
+        "13": "<BRANCH_SIGN>を<TOWARD_SIGN>方面です。",
+        "14": "分岐を<NAME_SIGN>方面です。"
       },
       "relative_directions": [
-        "vänster",
-        "höger"
+        "左",
+        "右"
       ],
       "example_phrases": {
         "0": [
@@ -1370,21 +1370,21 @@
     },
     "sharp": {
       "phrases": {
-        "0": "Gör en skarp sväng till <RELATIVE_DIRECTION>.",
-        "1": "Gör en skarp sväng till <RELATIVE_DIRECTION> in på <STREET_NAMES>.",
-        "2": "Gör en skarp sväng till <RELATIVE_DIRECTION> in på <BEGIN_STREET_NAMES>. Fortsätt på <STREET_NAMES>.",
-        "3": "Gör en skarp sväng till <RELATIVE_DIRECTION> för att stanna kvar på  <STREET_NAMES>.",
-        "4": "Gör en skarp sväng till <RELATIVE_DIRECTION> i <JUNCTION_NAME>.",
-        "5": "Gör en skarp sväng till <RELATIVE_DIRECTION> mot <TOWARD_SIGN>."
+        "0": "斜め<RELATIVE_DIRECTION>手前方向です。",
+        "1": "斜め<RELATIVE_DIRECTION>手前方向です。その先<STREET_NAMES>です。",
+        "2": "斜め<RELATIVE_DIRECTION>手前方向、<BEGIN_STREET_NAMES>です。その先、<STREET_NAMES>です。",
+        "3": "斜め<RELATIVE_DIRECTION>手前方向です。その先<STREET_NAMES>です。",
+        "4": "<JUNCTION_NAME>を斜め<RELATIVE_DIRECTION>手前方向です。",
+        "5": "斜め<RELATIVE_DIRECTION>手前方向、<TOWARD_SIGN>方面です。"
       },
       "empty_street_name_labels": [
-        "gångvägen",
-        "cykelbanan",
-        "terrängcykelbanan"
+        "歩道",
+        "自転車道",
+        "自転車道"
       ],
       "relative_directions": [
-        "vänster",
-        "höger"
+        "左",
+        "右"
       ],
       "example_phrases": {
         "0": [
@@ -1409,21 +1409,21 @@
     },
     "sharp_verbal": {
       "phrases": {
-        "0": "Gör en skarp sväng till <RELATIVE_DIRECTION>.",
-        "1": "Gör en skarp sväng till <RELATIVE_DIRECTION> in på <STREET_NAMES>.",
-        "2": "Gör en skarp sväng till <RELATIVE_DIRECTION> in på <BEGIN_STREET_NAMES>.",
-        "3": "Gör en skarp sväng till <RELATIVE_DIRECTION> för att stanna kvar på  <STREET_NAMES>.",
-        "4": "Gör en skarp sväng till <RELATIVE_DIRECTION> i <JUNCTION_NAME>.",
-        "5": "Gör en skarp sväng till <RELATIVE_DIRECTION> mot <TOWARD_SIGN>."
+        "0": "斜め<RELATIVE_DIRECTION>手前方向です。",
+        "1": "斜め<RELATIVE_DIRECTION>手前方向です。その先<STREET_NAMES>です。",
+        "2": "斜め<RELATIVE_DIRECTION>手前方向です。その先<BEGIN_STREET_NAMES>です。",
+        "3": "斜め<RELATIVE_DIRECTION>手前方向です。その先<STREET_NAMES>です。",
+        "4": "<JUNCTION_NAME>を斜め<RELATIVE_DIRECTION>手前方向です。",
+        "5": "斜め<RELATIVE_DIRECTION>手前方向、<TOWARD_SIGN>方面です。"
       },
       "empty_street_name_labels": [
-        "gångvägen",
-        "cykelbanan",
-        "terrängcykelbanan"
+        "歩道",
+        "自転車道",
+        "自転車道"
       ],
       "relative_directions": [
-        "vänster",
-        "höger"
+        "左",
+        "右"
       ],
       "example_phrases": {
         "0": [
@@ -1448,33 +1448,33 @@
     },
     "start": {
       "phrases": {
-        "0": "Kör <CARDINAL_DIRECTION>.",
-        "1": "Kör <CARDINAL_DIRECTION> på <STREET_NAMES>.",
-        "2": "Kör <CARDINAL_DIRECTION> på <BEGIN_STREET_NAMES>. Fortsätt på <STREET_NAMES>.",
-        "4": "Kör <CARDINAL_DIRECTION>.",
-        "5": "Kör <CARDINAL_DIRECTION> på <STREET_NAMES>.",
-        "6": "Kör <CARDINAL_DIRECTION> on <BEGIN_STREET_NAMES>. Fortsätt på <STREET_NAMES>.",
-        "8": "Gå <CARDINAL_DIRECTION>.",
-        "9": "Gå <CARDINAL_DIRECTION> på <STREET_NAMES>.",
-        "10": "Gå <CARDINAL_DIRECTION> på <BEGIN_STREET_NAMES>. Fortsätt på <STREET_NAMES>.",
-        "16": "Cycla <CARDINAL_DIRECTION>.",
-        "17": "Cycla <CARDINAL_DIRECTION> på <STREET_NAMES>.",
-        "18": "Cycla <CARDINAL_DIRECTION> på <BEGIN_STREET_NAMES>. Fortsätt <STREET_NAMES>."
+        "0": "<CARDINAL_DIRECTION>方向です。",
+        "1": "<STREET_NAMES>を<CARDINAL_DIRECTION>方向です。",
+        "2": "<BEGIN_STREET_NAMES>を<CARDINAL_DIRECTION>方向です。その先、<STREET_NAMES>です。",
+        "4": "<CARDINAL_DIRECTION>方向です。",
+        "5": "<STREET_NAMES>を<CARDINAL_DIRECTION>方向です。",
+        "6": "<BEGIN_STREET_NAMES>を<CARDINAL_DIRECTION>方向です。その先、<STREET_NAMES>です。",
+        "8": "<CARDINAL_DIRECTION>方向です。",
+        "9": "<STREET_NAMES>を<CARDINAL_DIRECTION>方向です。",
+        "10": "<BEGIN_STREET_NAMES>を<CARDINAL_DIRECTION>方向です。その先、<STREET_NAMES>です。",
+        "16": "<CARDINAL_DIRECTION>方向です。",
+        "17": "<STREET_NAMES>を<CARDINAL_DIRECTION>方向です。",
+        "18": "<BEGIN_STREET_NAMES>を<CARDINAL_DIRECTION>方向です。その先、<STREET_NAMES>です。"
       },
       "cardinal_directions": [
-        "norrut",
-        "mot nordöst",
-        "österut",
-        "mot sydöst",
-        "söderut",
-        "mot sydväst",
-        "västerut",
-        "mot nordväst"
+        "北",
+        "北東",
+        "東",
+        "南東",
+        "南",
+        "南西",
+        "西",
+        "北西"
       ],
       "empty_street_name_labels": [
-        "gångvägen",
-        "cykelbanan",
-        "terrängcykelbanan"
+        "歩道",
+        "自転車道",
+        "自転車道"
       ],
       "example_phrases": {
         "0": [
@@ -1527,55 +1527,55 @@
     },
     "start_verbal": {
       "phrases": {
-        "0": "Kör <CARDINAL_DIRECTION>.",
-        "1": "Kör <CARDINAL_DIRECTION> i <LENGTH>.",
-        "2": "Kör <CARDINAL_DIRECTION> på <STREET_NAMES>.",
-        "3": "Kör <CARDINAL_DIRECTION> på <STREET_NAMES> i <LENGTH>.",
-        "4": "Kör <CARDINAL_DIRECTION> på <BEGIN_STREET_NAMES>.",
-        "5": "Kör <CARDINAL_DIRECTION>.",
-        "6": "Kör <CARDINAL_DIRECTION> i <LENGTH>.",
-        "7": "Kör <CARDINAL_DIRECTION>  <STREET_NAMES>.",
-        "8": "Kör <CARDINAL_DIRECTION> på <STREET_NAMES> i <LENGTH>.",
-        "9": "Kör <CARDINAL_DIRECTION> på <BEGIN_STREET_NAMES>.",
-        "10": "Gå <CARDINAL_DIRECTION>.",
-        "11": "Gå <CARDINAL_DIRECTION> i <LENGTH>.",
-        "12": "Gå <CARDINAL_DIRECTION> på <STREET_NAMES>.",
-        "13": "Gå <CARDINAL_DIRECTION> på <STREET_NAMES> i <LENGTH>.",
-        "14": "Gå<CARDINAL_DIRECTION> på <BEGIN_STREET_NAMES>.",
-        "15": "Cykla <CARDINAL_DIRECTION>.",
-        "16": "Cykla <CARDINAL_DIRECTION> i <LENGTH>.",
-        "17": "Cykla <CARDINAL_DIRECTION> på <STREET_NAMES>.",
-        "18": "Cykla <CARDINAL_DIRECTION> på <STREET_NAMES> i <LENGTH>.",
-        "19": "Cykla <CARDINAL_DIRECTION> på <BEGIN_STREET_NAMES>."
+        "0": "<CARDINAL_DIRECTION>方向です。",
+        "1": "<CARDINAL_DIRECTION>方向に<LENGTH>です。",
+        "2": "<STREET_NAMES>を<CARDINAL_DIRECTION>方向です。",
+        "3": "<STREET_NAMES>を<CARDINAL_DIRECTION>方向に<LENGTH>です。",
+        "4": "<BEGIN_STREET_NAMES>を<CARDINAL_DIRECTION>方向です。",
+        "5": "<CARDINAL_DIRECTION>方向です。",
+        "6": "<CARDINAL_DIRECTION>方向に<LENGTH>です。",
+        "7": "<STREET_NAMES>を<CARDINAL_DIRECTION>方向です。",
+        "8": "<STREET_NAMES>を<CARDINAL_DIRECTION>方向に<LENGTH>です。",
+        "9": "<BEGIN_STREET_NAMES>を<CARDINAL_DIRECTION>方向です。",
+        "10": "<CARDINAL_DIRECTION>方向です。",
+        "11": "<CARDINAL_DIRECTION>方向に<LENGTH>です。",
+        "12": "<STREET_NAMES>を<CARDINAL_DIRECTION>方向です。",
+        "13": "<STREET_NAMES>を<CARDINAL_DIRECTION>方向に<LENGTH>です。",
+        "14": "<BEGIN_STREET_NAMES>を<CARDINAL_DIRECTION>方向です。",
+        "15": "<CARDINAL_DIRECTION>方向です。",
+        "16": "<CARDINAL_DIRECTION>方向に<LENGTH>です。",
+        "17": "<STREET_NAMES>を<CARDINAL_DIRECTION>方向です。",
+        "18": "<STREET_NAMES>を<CARDINAL_DIRECTION>方向に<LENGTH>です。",
+        "19": "<BEGIN_STREET_NAMES>を<CARDINAL_DIRECTION>方向です。"
       },
       "cardinal_directions": [
-        "norrut",
-        "mot nordöst",
-        "österut",
-        "mot sydöst",
-        "söderut",
-        "mot sydväst",
-        "västerut",
-        "mot nordväst"
+        "北",
+        "北東",
+        "東",
+        "南東",
+        "南",
+        "南西",
+        "西",
+        "北西"
       ],
       "empty_street_name_labels": [
-        "gångvägen",
-        "cykelbanan",
-        "terrängcykelbanan"
+        "歩道",
+        "自転車道",
+        "自転車道"
       ],
       "metric_lengths": [
-        "<KILOMETERS> kilometer",
-        "1 kilometer",
-        "<METERS> meter",
-        "mindre än 10 meter"
+        "<KILOMETERS>キロメートル",
+        "1キロメートル",
+        "<METERS>メートル",
+        "10メートル以内"
       ],
       "us_customary_lengths": [
-        "<MILES> engelska mil",
-        "1 engelsk mil",
-        "en halv engelsk mil",
-        "en kvarts engelsk mil",
-        "<FEET> fot",
-        "mindre än 10 fot"
+        "<MILES>マイル",
+        "1マイル",
+        "0.5マイル",
+        "0.25マイル",
+        "<FEET>フィート",
+        "10フィート以内"
       ],
       "example_phrases": {
         "0": [
@@ -1650,22 +1650,22 @@
     },
     "transit": {
       "phrases": {
-        "0": "Ta <TRANSIT_NAME>. (<TRANSIT_STOP_COUNT> <TRANSIT_STOP_COUNT_LABEL>)",
-        "1": "Ta <TRANSIT_NAME> mot <TRANSIT_HEADSIGN>. (<TRANSIT_STOP_COUNT> <TRANSIT_STOP_COUNT_LABEL>)"
+        "0": "<TRANSIT_NAME>に乗ります。(<TRANSIT_STOP_COUNT><TRANSIT_STOP_COUNT_LABEL>)",
+        "1": "<TRANSIT_HEADSIGN>方面に<TRANSIT_NAME>に乗ります。(<TRANSIT_STOP_COUNT><TRANSIT_STOP_COUNT_LABEL>)"
       },
       "empty_transit_name_labels": [
-        "spårvagnen",
-        "tunnelbanan",
-        "tåget",
-        "bussen",
-        "färjan",
-        "linbanan",
-        "gondolen",
-        "bergbanan"
+        "トラム",
+        "地下鉄",
+        "電車",
+        "バス",
+        "フェリー",
+        "ケーブルカー",
+        "ゴンドラ",
+        "ケーブルカー"
       ],
       "transit_stop_count_labels": {
-        "one": "stopp",
-        "other": "stopp"
+        "one": "駅",
+        "other": "駅"
       },
       "example_phrases": {
         "0": [
@@ -1681,11 +1681,11 @@
     },
     "transit_connection_destination": {
       "phrases": {
-        "0": "Lämna stationen.",
-        "1": "Lämna <TRANSIT_STOP>.",
-        "2": "Lämna <TRANSIT_STOP> <STATION_LABEL>."
+        "0": "駅を出ます。",
+        "1": "<TRANSIT_STOP>を出ます。",
+        "2": "<STATION_LABEL>の<TRANSIT_STOP>を出ます。"
       },
-      "station_label": "Station",
+      "station_label": "駅",
       "example_phrases": {
         "0": [
           "Exit the station."
@@ -1700,11 +1700,11 @@
     },
     "transit_connection_destination_verbal": {
       "phrases": {
-        "0": "Lämna stationen.",
-        "1": "Lämna <TRANSIT_STOP>.",
-        "2": "Lämna <TRANSIT_STOP> <STATION_LABEL>."
+        "0": "駅を出ます。",
+        "1": "<TRANSIT_STOP>を出ます。",
+        "2": "<STATION_LABEL>の<TRANSIT_STOP>を出ます。"
       },
-      "station_label": "Station",
+      "station_label": "駅",
       "example_phrases": {
         "0": [
           "Exit the station."
@@ -1719,11 +1719,11 @@
     },
     "transit_connection_start": {
       "phrases": {
-        "0": "Gå in på stationen.",
-        "1": "Gå in på <TRANSIT_STOP>.",
-        "2": "Gå in på <TRANSIT_STOP> <STATION_LABEL>."
+        "0": "駅に入ります。",
+        "1": "<TRANSIT_STOP>に入ります。",
+        "2": "<STATION_LABEL>の<TRANSIT_STOP>に入ります。"
       },
-      "station_label": "Station",
+      "station_label": "駅",
       "example_phrases": {
         "0": [
           "Enter the station."
@@ -1738,11 +1738,11 @@
     },
     "transit_connection_start_verbal": {
       "phrases": {
-        "0": "Gå in på stationen.",
-        "1": "Gå in på <TRANSIT_STOP>.",
-        "2": "Gå in på <TRANSIT_STOP> <STATION_LABEL>."
+        "0": "駅に入ります。",
+        "1": "<TRANSIT_STOP>に入ります。",
+        "2": "<STATION_LABEL>の<TRANSIT_STOP>に入ります。"
       },
-      "station_label": "Station",
+      "station_label": "駅",
       "example_phrases": {
         "0": [
           "Enter the station."
@@ -1757,11 +1757,11 @@
     },
     "transit_connection_transfer": {
       "phrases": {
-        "0": "Byt på stationen.",
-        "1": "Byt på <TRANSIT_STOP>.",
-        "2": "Byt på  <TRANSIT_STOP> <STATION_LABEL>."
+        "0": "駅で乗り換えです。",
+        "1": "<TRANSIT_STOP>で乗り換えです。",
+        "2": "<STATION_LABEL>の<TRANSIT_STOP>で乗り換えです。"
       },
-      "station_label": "Station",
+      "station_label": "駅",
       "example_phrases": {
         "0": [
           "Transfer at the station."
@@ -1776,11 +1776,11 @@
     },
     "transit_connection_transfer_verbal": {
       "phrases": {
-        "0": "Byt på stationen.",
-        "1": "Byt på <TRANSIT_STOP>.",
-        "2": "Byt på <TRANSIT_STOP> <STATION_LABEL>."
+        "0": "駅で乗り換えです。",
+        "1": "<TRANSIT_STOP>で乗り換えです。",
+        "2": "<STATION_LABEL>の<TRANSIT_STOP>で乗り換えです。"
       },
-      "station_label": "Station",
+      "station_label": "駅",
       "example_phrases": {
         "0": [
           "Transfer at the station."
@@ -1795,22 +1795,22 @@
     },
     "transit_remain_on": {
       "phrases": {
-        "0": "Stanna kvar på  <TRANSIT_NAME>. (<TRANSIT_STOP_COUNT> <TRANSIT_STOP_COUNT_LABEL>)",
-        "1": "Stanna kvar på <TRANSIT_NAME> mot <TRANSIT_HEADSIGN>. (<TRANSIT_STOP_COUNT> <TRANSIT_STOP_COUNT_LABEL>)"
+        "0": "<TRANSIT_NAME>に乗ります。(<TRANSIT_STOP_COUNT><TRANSIT_STOP_COUNT_LABEL>)",
+        "1": "<TRANSIT_HEADSIGN>方面に<TRANSIT_NAME>に乗ります。(<TRANSIT_STOP_COUNT><TRANSIT_STOP_COUNT_LABEL>)"
       },
       "empty_transit_name_labels": [
-        "spårvagnen ",
-        "tunnelbanan",
-        "tåget",
-        "bussen",
-        "färjan",
-        "linbanan",
-        "gondolen",
-        "bergbanan"
+        "トラム",
+        "地下鉄",
+        "電車",
+        "バス",
+        "フェリー",
+        "ケーブルカー",
+        "ゴンドラ",
+        "ケーブルカー"
       ],
       "transit_stop_count_labels": {
-        "one": "stopp",
-        "other": "stopp"
+        "one": "駅",
+        "other": "駅"
       },
       "example_phrases": {
         "0": [
@@ -1824,18 +1824,18 @@
     },
     "transit_remain_on_verbal": {
       "phrases": {
-        "0": "Stanna kvar på <TRANSIT_NAME>.",
-        "1": "Stanna kvar på <TRANSIT_NAME> mot <TRANSIT_HEADSIGN>."
+        "0": "<TRANSIT_NAME>に乗ります。",
+        "1": "<TRANSIT_HEADSIGN>方面に<TRANSIT_NAME>に乗ります。"
       },
       "empty_transit_name_labels": [
-        "spårvagnen",
-        "tunnelbanan",
-        "tåget",
-        "bussen",
-        "färjan",
-        "linbanan",
-        "gondolen",
-        "bergbanan"
+        "トラム",
+        "地下鉄",
+        "電車",
+        "バス",
+        "フェリー",
+        "ケーブルカー",
+        "ゴンドラ",
+        "ケーブルカー"
       ],
       "example_phrases": {
         "0": [
@@ -1848,22 +1848,22 @@
     },
     "transit_transfer": {
       "phrases": {
-        "0": "Byt för att ta <TRANSIT_NAME>. (<TRANSIT_STOP_COUNT> <TRANSIT_STOP_COUNT_LABEL>)",
-        "1": "Byt för att ta <TRANSIT_NAME> mot <TRANSIT_HEADSIGN>. (<TRANSIT_STOP_COUNT> <TRANSIT_STOP_COUNT_LABEL>)"
+        "0": "<TRANSIT_NAME>に乗り換えです。(<TRANSIT_STOP_COUNT><TRANSIT_STOP_COUNT_LABEL>)",
+        "1": "<TRANSIT_HEADSIGN>方面に<TRANSIT_NAME>に乗り換えです。(<TRANSIT_STOP_COUNT><TRANSIT_STOP_COUNT_LABEL>)"
       },
       "empty_transit_name_labels": [
-        "spårvagnen",
-        "tunnelbanan",
-        "tåget",
-        "bussen",
-        "färjan",
-        "linbanan",
-        "gondolen",
-        "bergbanan"
+        "トラム",
+        "地下鉄",
+        "電車",
+        "バス",
+        "フェリー",
+        "ケーブルカー",
+        "ゴンドラ",
+        "ケーブルカー"
       ],
       "transit_stop_count_labels": {
-        "one": "stopp",
-        "other": "stopp"
+        "one": "駅",
+        "other": "駅"
       },
       "example_phrases": {
         "0": [
@@ -1877,18 +1877,18 @@
     },
     "transit_transfer_verbal": {
       "phrases": {
-        "0": "Byt för att ta <TRANSIT_NAME>.",
-        "1": "Byt för att ta <TRANSIT_NAME> mot <TRANSIT_HEADSIGN>."
+        "0": "<TRANSIT_NAME>に乗り換えです。",
+        "1": "<TRANSIT_HEADSIGN>方面に<TRANSIT_NAME>に乗り換えです。"
       },
       "empty_transit_name_labels": [
-        "spårvagnen",
-        "tunnelbanan",
-        "tåget",
-        "bussen",
-        "färjan",
-        "linbanan",
-        "gondolen",
-        "bergbanan"
+        "トラム",
+        "地下鉄",
+        "電車",
+        "バス",
+        "フェリー",
+        "ケーブルカー",
+        "ゴンドラ",
+        "ケーブルカー"
       ],
       "example_phrases": {
         "0": [
@@ -1901,18 +1901,18 @@
     },
     "transit_verbal": {
       "phrases": {
-        "0": "Ta <TRANSIT_NAME>.",
-        "1": "Ta <TRANSIT_NAME> mot <TRANSIT_HEADSIGN>."
+        "0": "<TRANSIT_NAME>に乗ります。",
+        "1": "<TRANSIT_HEADSIGN>方面に<TRANSIT_NAME>に乗ります。"
       },
       "empty_transit_name_labels": [
-        "spårvagnen",
-        "tunnelbanan",
-        "tåget",
-        "bussen",
-        "färjan",
-        "linbanan",
-        "gondolen",
-        "bergbanan"
+        "トラム",
+        "地下鉄",
+        "電車",
+        "バス",
+        "フェリー",
+        "ケーブルカー",
+        "ゴンドラ",
+        "ケーブルカー"
       ],
       "example_phrases": {
         "0": [
@@ -1925,21 +1925,21 @@
     },
     "turn": {
       "phrases": {
-        "0": "Sväng <RELATIVE_DIRECTION>.",
-        "1": "Sväng <RELATIVE_DIRECTION> in på <STREET_NAMES>.",
-        "2": "Sväng <RELATIVE_DIRECTION> in på <BEGIN_STREET_NAMES>. Fortsätt på <STREET_NAMES>.",
-        "3": "Sväng <RELATIVE_DIRECTION> för att stanna kvar på <STREET_NAMES>.",
-        "4": "Sväng <RELATIVE_DIRECTION> vid <JUNCTION_NAME>.",
-        "5": "Sväng <RELATIVE_DIRECTION> mot <TOWARD_SIGN>."
+        "0": "<RELATIVE_DIRECTION>方向です。",
+        "1": "<RELATIVE_DIRECTION>方向です。その先<STREET_NAMES>です。",
+        "2": "<RELATIVE_DIRECTION>方向、<BEGIN_STREET_NAMES>です。その先、<STREET_NAMES>です。",
+        "3": "<RELATIVE_DIRECTION>方向です。その先<STREET_NAMES>です。",
+        "4": "<JUNCTION_NAME>を<RELATIVE_DIRECTION>方向です。",
+        "5": "<RELATIVE_DIRECTION>方向、<TOWARD_SIGN>方面です。"
       },
       "empty_street_name_labels": [
-        "gångvägen",
-        "cykelbanan",
-        "terrängcykelbanan"
+        "歩道",
+        "自転車道",
+        "自転車道"
       ],
       "relative_directions": [
-        "vänster",
-        "höger"
+        "左",
+        "右"
       ],
       "example_phrases": {
         "0": [
@@ -1964,25 +1964,25 @@
     },
     "turn_verbal": {
       "phrases": {
-        "0": "Sväng <RELATIVE_DIRECTION>.",
-        "1": "Sväng <RELATIVE_DIRECTION> in på <STREET_NAMES>.",
-        "2": "Sväng <RELATIVE_DIRECTION> in på <BEGIN_STREET_NAMES>.",
-        "3": "Sväng <RELATIVE_DIRECTION> för att stanna kvar på <STREET_NAMES>.",
-        "4": "Sväng <RELATIVE_DIRECTION> i <JUNCTION_NAME>.",
-        "5": "Sväng <RELATIVE_DIRECTION> mot <TOWARD_SIGN>."
+        "0": "<RELATIVE_DIRECTION>方向です。",
+        "1": "<RELATIVE_DIRECTION>方向です。その先<STREET_NAMES>です。",
+        "2": "<RELATIVE_DIRECTION>方向です。その先<BEGIN_STREET_NAMES>です。",
+        "3": "<RELATIVE_DIRECTION>方向です。その先<STREET_NAMES>です。",
+        "4": "<JUNCTION_NAME>を<RELATIVE_DIRECTION>方向です。",
+        "5": "<RELATIVE_DIRECTION>方向、<TOWARD_SIGN>方面です。"
       },
       "empty_street_name_labels": [
-        "gångvägen",
-        "cykelbanan",
-        "terrängcykelbanan"
+        "歩道",
+        "自転車道",
+        "自転車道"
       ],
       "relative_directions": [
-        "vänster",
-        "höger"
+        "左",
+        "右"
       ],
       "example_phrases": {
         "0": [
-          "Turn left."
+          "左方向です。"
         ],
         "1": [
           "Turn right onto Flatbush Avenue."
@@ -2003,23 +2003,23 @@
     },
     "uturn": {
       "phrases": {
-        "0": "Gör en <RELATIVE_DIRECTION> U-sväng.",
-        "1": "Gör en <RELATIVE_DIRECTION> U-sväng in på <STREET_NAMES>.",
-        "2": "Gör en <RELATIVE_DIRECTION> U-sväng för att stanna kvar på <STREET_NAMES>.",
-        "3": "Gör en <RELATIVE_DIRECTION> U-sväng vid <CROSS_STREET_NAMES>.",
-        "4": "Gör en <RELATIVE_DIRECTION> U-sväng vid <CROSS_STREET_NAMES> in på <STREET_NAMES>.",
-        "5": "Gör en <RELATIVE_DIRECTION> U-sväng vid <CROSS_STREET_NAMES> för att stanna kvar på <STREET_NAMES>.",
-        "6": "Gör en <RELATIVE_DIRECTION> U-sväng vid <JUNCTION_NAME>.",
-        "7": "Gör en <RELATIVE_DIRECTION> U-sväng mot <TOWARD_SIGN>."
+        "0": "<RELATIVE_DIRECTION>方向、Uターンです。",
+        "1": "<RELATIVE_DIRECTION>方向、Uターンです。その先<STREET_NAMES>です。",
+        "2": "<RELATIVE_DIRECTION>方向、Uターンです。その先<STREET_NAMES>です。",
+        "3": "<CROSS_STREET_NAMES>を<RELATIVE_DIRECTION>方向、Uターンです。",
+        "4": "<CROSS_STREET_NAMES>を<RELATIVE_DIRECTION>方向、Uターンです。その先<STREET_NAMES>です。",
+        "5": "<CROSS_STREET_NAMES>を<RELATIVE_DIRECTION>方向、Uターンです。その先<STREET_NAMES>です。",
+        "6": "<JUNCTION_NAME>を<RELATIVE_DIRECTION>方向、Uターンです。",
+        "7": "<RELATIVE_DIRECTION>方向、<TOWARD_SIGN>方面にUターンです。"
       },
       "empty_street_name_labels": [
-        "gångvägen",
-        "cykelbanan",
-        "terrängcykelbanan"
+        "歩道",
+        "自転車道",
+        "自転車道"
       ],
       "relative_directions": [
-        "vänster",
-        "höger"
+        "左",
+        "右"
       ],
       "example_phrases": {
         "0": [
@@ -2050,23 +2050,23 @@
     },
     "uturn_verbal": {
       "phrases": {
-        "0": "Gör en <RELATIVE_DIRECTION> U-sväng.",
-        "1": "Gör en <RELATIVE_DIRECTION> U-sväng in på <STREET_NAMES>.",
-        "2": "Gör en <RELATIVE_DIRECTION> U-sväng för att stanna kvar på <STREET_NAMES>.",
-        "3": "Gör en <RELATIVE_DIRECTION> U-sväng vid <CROSS_STREET_NAMES>.",
-        "4": "Gör en <RELATIVE_DIRECTION> U-sväng vid <CROSS_STREET_NAMES> in på <STREET_NAMES>.",
-        "5": "Gör en <RELATIVE_DIRECTION> U-sväng vid <CROSS_STREET_NAMES> för att stanna kvar på <STREET_NAMES>.",
-        "6": "Gör en <RELATIVE_DIRECTION> U-sväng vid <JUNCTION_NAME>.",
-        "7": "Gör en <RELATIVE_DIRECTION> U-sväng mot <TOWARD_SIGN>."
+        "0": "<RELATIVE_DIRECTION>方向、Uターンです。",
+        "1": "<RELATIVE_DIRECTION>方向、Uターンです。その先<STREET_NAMES>です。",
+        "2": "<RELATIVE_DIRECTION>方向、Uターンです。その先<STREET_NAMES>です。",
+        "3": "<CROSS_STREET_NAMES>を<RELATIVE_DIRECTION>方向、Uターンです。",
+        "4": "<CROSS_STREET_NAMES>を<RELATIVE_DIRECTION>方向、Uターンです。その先<STREET_NAMES>です。",
+        "5": "<CROSS_STREET_NAMES>を<RELATIVE_DIRECTION>方向、Uターンです。その先<STREET_NAMES>です。",
+        "6": "<JUNCTION_NAME>を<RELATIVE_DIRECTION>方向、Uターンです。",
+        "7": "<RELATIVE_DIRECTION>方向、<TOWARD_SIGN>方面にUターンです。"
       },
       "empty_street_name_labels": [
-        "gångvägen",
-        "cykelbanan",
-        "terrängcykelbanan"
+        "歩道",
+        "自転車道",
+        "自転車道"
       ],
       "relative_directions": [
-        "vänster",
-        "höger"
+        "左",
+        "右"
       ],
       "example_phrases": {
         "0": [
@@ -2097,22 +2097,22 @@
     },
     "verbal_multi_cue": {
       "phrases": {
-        "0": "<CURRENT_VERBAL_CUE> Därefter <NEXT_VERBAL_CUE>",
-        "1": "<CURRENT_VERBAL_CUE> Därefter, i <LENGTH>, <NEXT_VERBAL_CUE>"
+        "0": "<CURRENT_VERBAL_CUE>。その先<NEXT_VERBAL_CUE>",
+        "1": "<CURRENT_VERBAL_CUE>。その先<LENGTH>で<NEXT_VERBAL_CUE>"
       },
       "metric_lengths": [
-        "<KILOMETERS> kilometer",
-        "1 kilometer",
-        "<METERS> meter",
-        "mindre än 10 meter"
+        "<KILOMETERS>キロメートル",
+        "1キロメートル",
+        "<METERS>メートル",
+        "10メートル以内"
       ],
       "us_customary_lengths": [
-        "<MILES> engelska mil",
-        "1 engelsk mil",
-        "en halv engelsk mil",
-        "en kvarts engelsk mil",
-        "<FEET> fot",
-        "mindre än 10 fot"
+        "<MILES>マイル",
+        "1マイル",
+        "0.5マイル",
+        "0.25マイル",
+        "<FEET>フィート",
+        "10フィート以内"
       ],
       "example_phrases": {
         "0": [
@@ -2125,21 +2125,21 @@
     },
     "approach_verbal_alert": {
       "phrases": {
-        "0": "Om <LENGTH>, <CURRENT_VERBAL_CUE>"
+        "0": "<LENGTH>先、<CURRENT_VERBAL_CUE>"
       },
       "metric_lengths": [
-        "<KILOMETERS> kilometer",
-        "1 kilometer",
-        "<METERS> meter",
-        "mindre än 10 meter"
+        "<KILOMETERS>キロメートル",
+        "1キロメートル",
+        "<METERS>メートル",
+        "10メートル以内"
       ],
       "us_customary_lengths": [
-        "<MILES> engelska mil",
-        "1 engelsk mil",
-        "en halv engelsk mil",
-        "en kvarts engelsk mil",
-        "<FEET> fot",
-        "mindre än 10 meter"
+        "<MILES>マイル",
+        "1マイル",
+        "0.5マイル",
+        "0.25マイル",
+        "<FEET>フィート",
+        "10フィート以内"
       ],
       "example_phrases": {
         "0": [
