@@ -143,9 +143,12 @@ ifeq "$(LIBS_PLATFORM)" "catalyst"
 endif
 
 SRC := $(GENERATED_SOURCES) $(SRC)
-
 OBJ = $(SRC:.cc=.o) $(THRID_PARTY_SOURCES:.cpp=.o) $(IOS_SOURCES:.mm=.o)
 LIB = libvalhalla.a
+MICRO_SRC = micro.cpp
+MICRO_OBJ = $(MICRO_SRC:.cpp=.o)
+MICRO_LIB = libvalhalla_micro.so
+
 FLAGS = -std=c++17 -DMOBILE -DNDEBUG=1 -DUSE_STD_REGEX=1 -DRAPIDJSON_HAS_STDSTRING=1 -DPACKAGE_VERSION="\"2.7.0\"" \
  -I. -Ivalhalla -Igenfiles -Ithird_party/rapidjson/include -Ithird_party/date/include
 PROTOC = ../build/macOS/x86_64/bin/protoc
@@ -161,12 +164,15 @@ PROTOC = ../build/macOS/x86_64/bin/protoc
 .mm.o:
 	$(CXX) $(FLAGS) $(CPPFLAGS) ${CXXFLAGS} -x objective-c++ -c $< -o $@
 
-all: $(LIB)
+all: $(MICRO_LIB)
+
+$(OBJ): $(GENERATED_HEADERS)
 
 $(LIB): $(OBJ)
 	$(AR) cr $(LIB) $(OBJ)
 
-$(OBJ): $(GENERATED_HEADERS)
+$(MICRO_LIB): $(MICRO_OBJ) $(LIB)
+	$(CXX) -fvisibility=hidden -shared -o $(MICRO_LIB) $(FLAGS) ${LDFLAGS} -L. -lvalhalla -lz -lprotobuf $(MICRO_OBJ)
 
 genfiles:
 	mkdir -p genfiles
@@ -221,24 +227,26 @@ ifndef PREFIX
 PREFIX = /usr/local
 endif
 
-install: $(LIB)
+install: $(MICRO_LIB)
 	mkdir -p ${PREFIX}/lib ${PREFIX}/include/valhalla
-	cp $(LIB) ${PREFIX}/lib
-	cp genfiles/valhalla/valhalla.h ${PREFIX}/include/valhalla
-	cp genfiles/config.h ${PREFIX}/include/valhalla
-	cp valhalla/filesystem.h ${PREFIX}/include/valhalla
-	cp valhalla/worker.h ${PREFIX}/include/valhalla
-	cp -r valhalla/loki ${PREFIX}/include/valhalla
-	cp -r genfiles/valhalla/proto ${PREFIX}/include/valhalla
-	cp -r valhalla/thor ${PREFIX}/include/valhalla	
-	cp -r valhalla/tyr ${PREFIX}/include/valhalla	
-	cp -r valhalla/meili ${PREFIX}/include/valhalla
-	cp -r valhalla/sif ${PREFIX}/include/valhalla
-	cp -r valhalla/midgard ${PREFIX}/include/valhalla
-	cp -r valhalla/skadi ${PREFIX}/include/valhalla
-	cp -r valhalla/odin ${PREFIX}/include/valhalla
-	cp -r valhalla/baldr ${PREFIX}/include/valhalla
-	cp -r third_party/date/include/date ${PREFIX}/include
+	cp $(MICRO_LIB) ${PREFIX}/lib
+	cp micro.h ${PREFIX}/include/valhalla
+	# cp $(LIB) ${PREFIX}/lib
+	# cp genfiles/valhalla/valhalla.h ${PREFIX}/include/valhalla
+	# cp genfiles/config.h ${PREFIX}/include/valhalla
+	# cp valhalla/filesystem.h ${PREFIX}/include/valhalla
+	# cp valhalla/worker.h ${PREFIX}/include/valhalla
+	# cp -r valhalla/loki ${PREFIX}/include/valhalla
+	# cp -r genfiles/valhalla/proto ${PREFIX}/include/valhalla
+	# cp -r valhalla/thor ${PREFIX}/include/valhalla	
+	# cp -r valhalla/tyr ${PREFIX}/include/valhalla	
+	# cp -r valhalla/meili ${PREFIX}/include/valhalla
+	# cp -r valhalla/sif ${PREFIX}/include/valhalla
+	# cp -r valhalla/midgard ${PREFIX}/include/valhalla
+	# cp -r valhalla/skadi ${PREFIX}/include/valhalla
+	# cp -r valhalla/odin ${PREFIX}/include/valhalla
+	# cp -r valhalla/baldr ${PREFIX}/include/valhalla
+	# cp -r third_party/date/include/date ${PREFIX}/include
 
 clean:
 	rm -f $(OBJ) $(GENERATED_SOURCES) $(GENERATED_HEADERS) $(LIB)
