@@ -20,8 +20,13 @@
 #pragma clang diagnostic pop
 
 #include "micro.h"
+#define EXPORT  __attribute__((visibility("default")))
 
-__attribute__((visibility("default"))) std::variant<std::string, Error> computeRoute(std::string &&valhallaConfig, std::vector<std::string>&& tars, std::string &&json, bool optimize, const std::function<void()> &interrupt) {
+extern "C" {
+namespace valhalla {
+
+EXPORT void Execute(const std::string &valhallaConfig, const std::vector<std::string> &tars,
+                     const std::string &json, bool optimize, const std::function<void()> &interrupt, std::string &result) {
     try {
         boost::property_tree::ptree config;
         std::stringstream stream;
@@ -34,18 +39,18 @@ __attribute__((visibility("default"))) std::variant<std::string, Error> computeR
             tile_extracts.push_back(std::make_pair("", tile_extract));
         }
         config.add_child("mjolnir.tile_extracts", tile_extracts);
-        
+
         valhalla::loki::loki_worker_t loki_worker(config);
         valhalla::thor::thor_worker_t thor_worker(config);
         valhalla::odin::odin_worker_t odin_worker(config);
-        
+
         loki_worker.set_interrupt(interrupt);
         thor_worker.set_interrupt(interrupt);
         odin_worker.set_interrupt(interrupt);
-        
+
         valhalla::valhalla_request_t request;
         request.parse(json, optimize ? valhalla::odin::DirectionsOptions::optimized_route : valhalla::odin::DirectionsOptions::route);
-        
+
         //check the request and locate the locations in the graph
         if (optimize)
             loki_worker.matrix(request);
@@ -58,14 +63,17 @@ __attribute__((visibility("default"))) std::variant<std::string, Error> computeR
         //serialize them out to json string
         std::stringstream ss;
         ss << valhalla::tyr::serializeDirections(request, legs, directions);
-        
+
         loki_worker.cleanup();
         thor_worker.cleanup();
         odin_worker.cleanup();
-        
-        return ss.str();
-    }catch(const valhalla::valhalla_exception_t &ex)
+
+        result = ss.str();
+    }catch(const valhalla_exception_t &ex)
     {
-        return Error{ex.code, ex.message};
+        throw Error(ex.code, ex.message);
     }
+}
+
+}
 }

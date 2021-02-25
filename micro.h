@@ -1,10 +1,18 @@
 #include <string>
-#include <variant>
 #include <functional>
 
-typedef struct Error{
-    uint code;
-    std::string what;
-} Error;
+extern "C" {
+namespace valhalla {
 
-std::variant<std::string, Error> computeRoute(std::string &&valhallaConfig, std::vector<std::string>&& tars, std::string &&json, bool optimize, const std::function<void()> &interrupt);
+class Error : public std::exception {
+public:
+    unsigned int code;
+    std::string what;
+    Error(unsigned int code, const std::string &what):code(code), what(what) {}
+};
+
+void Execute(const std::string &valhallaConfig, const std::vector<std::string> &tars,
+             const std::string &json, bool optimize, const std::function<void()> &interrupt, std::string &result);
+
+}
+}
