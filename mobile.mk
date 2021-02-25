@@ -157,13 +157,13 @@ PROTOC = ../build/macOS/x86_64/bin/protoc
 .SUFFIXES: .cc .cpp .mm
 
 .cc.o:
-	$(CXX) -flto=thin $(FLAGS) $(CPPFLAGS) ${CXXFLAGS} -c $< -o $@
+	$(CXX) $(FLAGS) $(CPPFLAGS) ${CXXFLAGS} -c $< -o $@
 
 .cpp.o:
-	$(CXX) -flto=thin $(FLAGS) $(CPPFLAGS) ${CXXFLAGS} -c $< -o $@
+	$(CXX) $(FLAGS) $(CPPFLAGS) ${CXXFLAGS} -c $< -o $@
 
 .mm.o:
-	$(CXX) -flto=thin $(FLAGS) $(CPPFLAGS) ${CXXFLAGS} -x objective-c++ -c $< -o $@
+	$(CXX) $(FLAGS) $(CPPFLAGS) ${CXXFLAGS} -x objective-c++ -c $< -o $@
 
 all: $(MICRO_LIB)
 
@@ -173,7 +173,7 @@ $(LIB): $(OBJ)
 	$(AR) cr $(LIB) $(OBJ)
 
 $(MICRO_LIB): $(MICRO_OBJ) $(LIB)
-	$(CXX) -flto -fvisibility=hidden -shared -o $(MICRO_LIB) $(FLAGS) ${LDFLAGS} -L. -lvalhalla -lz -lprotobuf $(MICRO_OBJ)
+	$(CXX) -fvisibility=hidden -shared -o $(MICRO_LIB) $(FLAGS) ${LDFLAGS} -L. -lvalhalla -lz -lprotobuf $(MICRO_OBJ)
 
 genfiles:
 	mkdir -p genfiles
