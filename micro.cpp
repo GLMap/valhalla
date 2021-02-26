@@ -10,6 +10,11 @@
 #pragma clang diagnostic ignored "-Wunused-function"
 #pragma clang diagnostic ignored "-Wnewline-eof"
 
+#include "micro.h"
+#define EXPORT  __attribute__((visibility("default")))
+
+#include <system_error>
+
 #include <valhalla/loki/worker.h>
 #include <valhalla/thor/worker.h>
 #include <valhalla/odin/worker.h>
@@ -18,9 +23,6 @@
 #include <boost/iostreams/stream.hpp>
 
 #pragma clang diagnostic pop
-
-#include "micro.h"
-#define EXPORT  __attribute__((visibility("default")))
 
 extern "C" {
 namespace valhalla {
@@ -71,7 +73,7 @@ EXPORT void Execute(const std::string &valhallaConfig, const std::vector<std::st
         result = ss.str();
     }catch(const valhalla_exception_t &ex)
     {
-        throw Error(ex.code, ex.message);
+        throw std::system_error(ex.code, std::generic_category(), ex.message);
     }
 }
 
