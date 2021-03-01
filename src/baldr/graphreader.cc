@@ -60,13 +60,11 @@ public:
         _tileOffsets.clear();
         break;
       }
-      uint32_t level = (id >> 22) & 0x7;
-      uint32_t tileid = id & 0x3FFFFF;
       if(prevOffset < offset)
       {
         _tileOffsets.emplace(prevID, std::make_pair(prevOffset, offset-prevOffset));
       }
-      prevID = GraphId(tileid, level, 0);
+      prevID = GraphId(id);
       prevOffset = offset;
     }
     ::fclose(f);
