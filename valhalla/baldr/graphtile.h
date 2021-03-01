@@ -86,6 +86,9 @@ public:
                                std::unique_ptr<const GraphMemory>&& memory,
                                std::unique_ptr<const GraphMemory>&& traffic_memory = nullptr);
 
+
+  static graph_tile_ptr Create(const GraphId& graphid, const std::string& file, uint32_t offset, uint32_t size);
+
   /**
    * Constructs a tile given a url for the tile using curl
    * @param  tile_url URL of tile

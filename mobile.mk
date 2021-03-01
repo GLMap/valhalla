@@ -208,6 +208,7 @@ genfiles/valhalla/proto:
 genfiles/valhalla/proto/%.pb.cc: proto/%.proto genfiles/valhalla/proto 
 	$(PROTOC) -Iproto --cpp_out=genfiles/valhalla/proto $<
 
+.PRECIOUS: genfiles/valhalla/proto/%.pb.cc genfiles/locales.h
 .PHONY: install clean
 
 ifndef PREFIX

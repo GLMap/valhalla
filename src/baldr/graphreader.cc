@@ -26,6 +26,121 @@ constexpr size_t AVERAGE_MM_TILE_SIZE = 1024;         // 1k
 namespace valhalla {
 namespace baldr {
 
+class GraphReader::tile_source_rt_t {
+public:
+  tile_source_rt_t(const std::string &file_path):
+  _file_path(file_path)
+  {
+    struct stat stat;
+    if (lstat(file_path.c_str(), &stat) != 0)
+      return;
+
+    FILE *f = ::fopen(file_path.c_str(), "r");
+    if(!f)
+        return;
+
+    uint32_t count;
+    if(::fread(&count, 1, sizeof(count), f) != sizeof(count))
+    {
+        fclose(f);
+        return;
+    }
+
+    uint32_t headerSize = sizeof(count) + count * (sizeof(uint32_t)+sizeof(uint32_t));
+    GraphId prevID;
+    uint32_t prevOffset = std::numeric_limits<uint32_t>::max();
+    for(uint32_t i=0; i<count; ++i)
+    {
+      uint32_t id, offset;
+      bool success = ::fread(&id, 1, sizeof(id), f) == sizeof(id);
+      success &= ::fread(&offset, 1, sizeof(id), f) == sizeof(offset);
+      offset += headerSize;
+      if(!success || offset > stat.st_size)
+      {
+        _tileOffsets.clear();
+        break;
+      }
+      uint32_t level = (id >> 22) & 0x7;
+      uint32_t tileid = id & 0x3FFFFF;
+      if(prevOffset < offset)
+      {
+        _tileOffsets.emplace(prevID, std::make_pair(prevOffset, offset-prevOffset));
+      }
+      prevID = GraphId(tileid, level, 0);
+      prevOffset = offset;
+    }
+    ::fclose(f);
+
+    if(prevOffset < stat.st_size)
+      _tileOffsets.emplace(prevID, std::make_pair(prevOffset, stat.st_size-prevOffset));
+
+    if(_tileOffsets.empty())
+      LOG_WARN("Tile extract could not be loaded");
+    else
+      LOG_INFO("Tile extract successfully loaded");
+  }
+
+  ~tile_source_rt_t() = default;
+
+  size_t getAverageTileSize(){
+    return AVERAGE_MM_TILE_SIZE;
+  }
+
+  bool DoesTileExist(const GraphId& graphid){
+    return _tileOffsets.find(graphid) != _tileOffsets.end() ? true : false;
+  }
+
+  void FillTileSet(std::unordered_set<GraphId> &result){
+    for(const auto& t : _tileOffsets)
+      result.emplace(t.first);
+  }
+
+  void FillTileSet(std::unordered_set<GraphId> &result, const uint8_t level){
+    for(const auto& t : _tileOffsets)
+      if(GraphId(t.first).level() == level)
+        result.emplace(t.first);
+  }
+
+  std::pair<graph_tile_ptr, uint32_t> GetGraphTile(const GraphId& base){
+    auto it = _tileOffsets.find(base);
+    if(it == _tileOffsets.cend())
+      return std::make_pair(nullptr, (uint32_t)0);
+
+    auto tile = GraphTile::Create(base, _file_path, it->second.first, it->second.second);
+    return std::make_pair(tile, it->second.second);
+  }
+
+  const std::unordered_map<GraphId, std::pair<uint32_t, uint32_t>> &getTiles(){
+    return _tileOffsets;
+  }
+private:
+  std::unordered_map<GraphId, std::pair<uint32_t, uint32_t>> _tileOffsets;
+  std::string _file_path;
+};
+
+std::shared_ptr<GraphReader::tile_source_rt_t> GraphReader::getSourceForRT(const std::string &path)
+{
+  static std::mutex mutex;
+  static std::map<std::string, std::shared_ptr<tile_source_rt_t> > cachedSources;
+
+  std::shared_ptr<tile_source_rt_t> rv;
+  mutex.lock();
+  auto it = cachedSources.find(path);
+  if(it!=cachedSources.end()){
+    rv = it->second;
+  } else {
+    rv = std::make_shared<GraphReader::tile_source_rt_t>(path);
+    //Does something readed from tar ?
+    if(rv->getTiles().size() != 0){
+      cachedSources[path] = rv;
+    } else {
+      rv = nullptr;
+    }
+  }
+  mutex.unlock();
+  return rv;
+}
+
 GraphReader::tile_extract_t::tile_extract_t(const boost::property_tree::ptree& pt) {
   // if you really meant to load it
   if (pt.get_optional<std::string>("tile_extract")) {
@@ -420,6 +535,18 @@ GraphReader::GraphReader(const boost::property_tree::ptree& pt,
       max_concurrent_users_(pt.get<size_t>("max_concurrent_reader_users", 1)),
       tile_url_(pt.get<std::string>("tile_url", "")), cache_(TileCacheFactory::createTileCache(pt)) {
 
+  auto tile_extracts = pt.get_child_optional("tile_extracts");
+  if(tile_extracts)
+  {
+    for(const auto &p : tile_extracts.get())
+    {
+      auto tile_source_extract = getSourceForRT(p.second.get_value<std::string>());
+      //Does something readed from tar ?
+      if(tile_source_extract)
+        tile_sources_.emplace_back(tile_source_extract);
+    }
+  }
+
   // Make a tile fetcher if we havent passed one in from somewhere else
   if (!tile_getter_ && !tile_url_.empty()) {
     tile_getter_ = std::make_unique<curl_tile_getter_t>(max_concurrent_users_,
@@ -457,6 +584,10 @@ bool GraphReader::DoesTileExist(const GraphId& graphid) const {
   if (!graphid.Is_Valid() || graphid.level() > TileHierarchy::get_max_level()) {
     return false;
   }
+  for(const auto &source : tile_sources_) {
+     if(source->DoesTileExist(graphid))
+        return true;
+   }
   // if you are using an extract only check that
   if (!tile_extract_->tiles.empty()) {
     return tile_extract_->tiles.find(graphid) != tile_extract_->tiles.cend();
@@ -503,6 +634,12 @@ graph_tile_ptr GraphReader::GetGraphTile(const GraphId& graphid) {
     return cached;
   }
 
+  //Load tile from source.
+  for(const auto &source : tile_sources_) {
+      auto [tile, size] = source->GetGraphTile(base);
+      if (tile)
+        return cache_->Put(base, tile, size);
+  }
   // Try getting it from the memmapped tar extract
   if (!tile_extract_->tiles.empty()) {
     // Do we have this tile
@@ -828,6 +965,9 @@ std::unordered_set<GraphId> GraphReader::GetTileSet() const {
     }
   }
 
+  for(const auto &source : tile_sources_){
+      source->FillTileSet(tiles);
+  }
   // give them back
   return tiles;
 }
@@ -858,6 +998,8 @@ std::unordered_set<GraphId> GraphReader::GetTileSet(const uint8_t level) const {
       }
     }
   }
+  for(const auto &source : tile_sources_)
+    source->FillTileSet(tiles, level);
   return tiles;
 }
 
