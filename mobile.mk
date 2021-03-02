@@ -145,6 +145,8 @@ THRID_PARTY_SOURCES = \
 ifeq "$(LIBS_PLATFORM)" "catalyst"
 	IOS_SOURCES := third_party/date/src/ios.mm
 	LDFLAGS := $(LDFLAGS) -framework CoreFoundation 
+else ifeq "$(LIBS_PLATFORM)" "android"
+	LDFLAGS := $(LDFLAGS) -landroid -llog
 endif
 
 SRC := $(GENERATED_SOURCES) $(SRC)
