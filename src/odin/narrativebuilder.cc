@@ -39,14 +39,14 @@ namespace valhalla {
 namespace odin {
 
 NarrativeBuilder::NarrativeBuilder(const DirectionsOptions& directions_options,
-                                   const EnhancedTripPath* trip_path,
+                                   const TripPath* trip_path,
                                    const NarrativeDictionary& dictionary)
     : directions_options_(directions_options), trip_path_(trip_path), dictionary_(dictionary),
       articulated_preposition_enabled_(false) {
 }
 
 void NarrativeBuilder::Build(const DirectionsOptions& directions_options,
-                             const EnhancedTripPath* etp,
+                             const TripPath* etp,
                              std::list<Maneuver>& maneuvers) {
   Maneuver* prev_maneuver = nullptr;
   for (auto& maneuver : maneuvers) {
@@ -594,7 +594,7 @@ std::string NarrativeBuilder::FormDestinationInstruction(Maneuver& maneuver) {
 
   // Determine if location (name or street) exists
   std::string destination;
-  const auto& dest = trip_path_->GetDestination();
+  const auto& dest = TripPath_GetDestination(trip_path_);
   // Check for destination name
   if (dest.has_name() && !(dest.name().empty())) {
     phrase_id += 1;
@@ -645,7 +645,7 @@ std::string NarrativeBuilder::FormVerbalAlertDestinationInstruction(Maneuver& ma
 
   // Determine if destination (name or street) exists
   std::string destination;
-  auto& dest = trip_path_->GetDestination();
+  auto& dest = TripPath_GetDestination(trip_path_);
   // Check for destination name
   if (dest.has_name() && !(dest.name().empty())) {
     phrase_id += 1;
@@ -701,7 +701,7 @@ std::string NarrativeBuilder::FormVerbalDestinationInstruction(Maneuver& maneuve
 
   // Determine if destination (name or street) exists
   std::string destination;
-  auto& dest = trip_path_->GetDestination();
+  auto& dest = TripPath_GetDestination(trip_path_);
   // Check for destination name
   if (dest.has_name() && !(dest.name().empty())) {
     phrase_id += 1;

@@ -23,7 +23,7 @@ public:
   ManeuversBuilderTest() : ManeuversBuilder(DirectionsOptions(), nullptr) {
   }
 
-  ManeuversBuilderTest(const DirectionsOptions& directions_options, EnhancedTripPath* etp)
+  ManeuversBuilderTest(const DirectionsOptions& directions_options, TripPath* etp)
       : ManeuversBuilder(directions_options, etp) {
   }
 
@@ -52,12 +52,12 @@ public:
   }
 
   bool IsIntersectingForwardEdge(int node_index,
-                                 EnhancedTripPath_Edge* prev_edge,
-                                 EnhancedTripPath_Edge* curr_edge) {
+                                 TripPath_Edge* prev_edge,
+                                 TripPath_Edge* curr_edge) {
     return ManeuversBuilder::IsIntersectingForwardEdge(node_index, prev_edge, curr_edge);
   }
 
-  EnhancedTripPath* trip_path() {
+  TripPath* trip_path() {
     return trip_path_;
   }
 };
@@ -78,7 +78,7 @@ void TrySetSimpleDirectionalManeuverType(uint32_t turn_degree,
   // node:2 dummy last node
   node = path.add_node();
 
-  ManeuversBuilderTest mbTest(directions_options, static_cast<EnhancedTripPath*>(&path));
+  ManeuversBuilderTest mbTest(directions_options, static_cast<TripPath*>(&path));
   Maneuver maneuver;
   maneuver.set_begin_node_index(1);
   maneuver.set_turn_degree(turn_degree);
@@ -239,7 +239,7 @@ void TryDetermineRelativeDirection_Maneuver(uint32_t prev_heading,
   // node:2 dummy last node
   node = path.add_node();
 
-  ManeuversBuilderTest mbTest(directions_options, static_cast<EnhancedTripPath*>(&path));
+  ManeuversBuilderTest mbTest(directions_options, static_cast<TripPath*>(&path));
   Maneuver maneuver;
   maneuver.set_begin_node_index(1);
   maneuver.set_turn_degree(valhalla::midgard::GetTurnDegree(prev_heading, curr_heading));
@@ -619,7 +619,7 @@ void TestLeftInternalStraightCombine() {
                20, 22, TripPath_Traversability_kForward, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, {}, {}, {},
                {});
 
-  ManeuversBuilderTest mbTest(directions_options, static_cast<EnhancedTripPath*>(&path));
+  ManeuversBuilderTest mbTest(directions_options, static_cast<TripPath*>(&path));
 
   ///////////////////////////////////////////////////////////////////////////
   // Create maneuver list
@@ -763,7 +763,7 @@ void TestStraightInternalLeftCombine() {
                TripPath_RoadClass_kSecondary, 22, 19, 25, 25, TripPath_Traversability_kBoth, 0, 0, 0,
                0, 0, 0, 0, 0, 0, 0, 0, {}, {}, {}, {});
 
-  ManeuversBuilderTest mbTest(directions_options, static_cast<EnhancedTripPath*>(&path));
+  ManeuversBuilderTest mbTest(directions_options, static_cast<TripPath*>(&path));
 
   ///////////////////////////////////////////////////////////////////////////
   // Create maneuver list
@@ -897,7 +897,7 @@ void TestStraightInternalLeftInternalCombine() {
                270, 5, 8, TripPath_Traversability_kBoth, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, {}, {}, {},
                {});
 
-  ManeuversBuilderTest mbTest(directions_options, static_cast<EnhancedTripPath*>(&path));
+  ManeuversBuilderTest mbTest(directions_options, static_cast<TripPath*>(&path));
 
   ///////////////////////////////////////////////////////////////////////////
   // Create maneuver list
@@ -1035,7 +1035,7 @@ void TestStraightInternalStraightCombine() {
                TripPath_RoadClass_kTrunk, 90, 89, 35, 40, TripPath_Traversability_kBoth, 0, 0, 0, 0,
                0, 0, 0, 0, 0, 0, 0, {}, {}, {}, {});
 
-  ManeuversBuilderTest mbTest(directions_options, static_cast<EnhancedTripPath*>(&path));
+  ManeuversBuilderTest mbTest(directions_options, static_cast<TripPath*>(&path));
 
   ///////////////////////////////////////////////////////////////////////////
   // Create maneuver list
@@ -1134,7 +1134,7 @@ void TestLeftInternalUturnCombine() {
                212, 221, 3, 5, TripPath_Traversability_kBoth, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, {}, {},
                {}, {});
 
-  ManeuversBuilderTest mbTest(directions_options, static_cast<EnhancedTripPath*>(&path));
+  ManeuversBuilderTest mbTest(directions_options, static_cast<TripPath*>(&path));
 
   ///////////////////////////////////////////////////////////////////////////
   // Create maneuver list
@@ -1232,7 +1232,7 @@ void TestLeftInternalUturnProperDirectionCombine() {
                TripPath_RoadClass_kPrimary, 229, 229, 5, 5, TripPath_Traversability_kBoth, 0, 0, 0, 0,
                0, 0, 0, 0, 0, 0, 0, {}, {}, {}, {});
 
-  ManeuversBuilderTest mbTest(directions_options, static_cast<EnhancedTripPath*>(&path));
+  ManeuversBuilderTest mbTest(directions_options, static_cast<TripPath*>(&path));
 
   ///////////////////////////////////////////////////////////////////////////
   // Create maneuver list
@@ -1337,7 +1337,7 @@ void TestStraightInternalLeftInternalStraightInternalUturnCombine() {
                TripPath_RoadClass_kTrunk, 155, 156, 5, 9, TripPath_Traversability_kBoth, 0, 0, 0, 0,
                0, 0, 0, 0, 0, 0, 0, {}, {}, {}, {});
 
-  ManeuversBuilderTest mbTest(directions_options, static_cast<EnhancedTripPath*>(&path));
+  ManeuversBuilderTest mbTest(directions_options, static_cast<TripPath*>(&path));
 
   ///////////////////////////////////////////////////////////////////////////
   // Create maneuver list
@@ -1437,7 +1437,7 @@ void TestInternalPencilPointUturnProperDirectionCombine() {
                TripPath_RoadClass_kUnclassified, 162, 149, 4, 6, TripPath_Traversability_kBoth, 0, 0,
                0, 0, 0, 0, 0, 0, 0, 0, 0, {}, {}, {}, {});
 
-  ManeuversBuilderTest mbTest(directions_options, static_cast<EnhancedTripPath*>(&path));
+  ManeuversBuilderTest mbTest(directions_options, static_cast<TripPath*>(&path));
 
   ///////////////////////////////////////////////////////////////////////////
   // Create maneuver list
@@ -1527,7 +1527,7 @@ void TestSimpleRightTurnChannelCombine() {
                188, 188, 11, 14, TripPath_Traversability_kBoth, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, {},
                {}, {}, {});
 
-  ManeuversBuilderTest mbTest(directions_options, static_cast<EnhancedTripPath*>(&path));
+  ManeuversBuilderTest mbTest(directions_options, static_cast<TripPath*>(&path));
 
   ///////////////////////////////////////////////////////////////////////////
   // Create maneuver list
@@ -1703,8 +1703,8 @@ void TestCountAndSortExitSigns() {
 }
 
 void TryIsIntersectingForwardEdge(ManeuversBuilderTest& mbTest, int node_index, bool expected) {
-  auto* prev_edge = mbTest.trip_path()->GetPrevEdge(node_index);
-  auto* curr_edge = mbTest.trip_path()->GetCurrEdge(node_index);
+  auto* prev_edge = TripPath_GetPrevEdge(mbTest.trip_path(), node_index);
+  auto* curr_edge = TripPath_GetCurrEdge(mbTest.trip_path(), node_index);
 
   bool intersecting_forward_link = mbTest.IsIntersectingForwardEdge(node_index, prev_edge, curr_edge);
 
@@ -1740,7 +1740,7 @@ void TestPathRightXStraightIsIntersectingForwardEdge() {
   // node:2
   node = path.add_node();
 
-  ManeuversBuilderTest mbTest(directions_options, static_cast<EnhancedTripPath*>(&path));
+  ManeuversBuilderTest mbTest(directions_options, static_cast<TripPath*>(&path));
 
   TryIsIntersectingForwardEdge(mbTest, 1, true);
 }
@@ -1771,7 +1771,7 @@ void TestPathLeftXStraightIsIntersectingForwardEdge() {
   // node:2
   node = path.add_node();
 
-  ManeuversBuilderTest mbTest(directions_options, static_cast<EnhancedTripPath*>(&path));
+  ManeuversBuilderTest mbTest(directions_options, static_cast<TripPath*>(&path));
 
   TryIsIntersectingForwardEdge(mbTest, 1, true);
 }
@@ -1802,7 +1802,7 @@ void TestPathSlightRightXSlightLeftIsIntersectingForwardEdge() {
   // node:2
   node = path.add_node();
 
-  ManeuversBuilderTest mbTest(directions_options, static_cast<EnhancedTripPath*>(&path));
+  ManeuversBuilderTest mbTest(directions_options, static_cast<TripPath*>(&path));
 
   TryIsIntersectingForwardEdge(mbTest, 1, true);
 }

@@ -166,90 +166,83 @@ namespace odin {
 ///////////////////////////////////////////////////////////////////////////////
 // EnhancedTripPath
 
-EnhancedTripPath_Node* EnhancedTripPath::GetEnhancedNode(const int node_index) {
-  return static_cast<EnhancedTripPath_Node*>(mutable_node(node_index));
+// EnhancedTripPath_Node* EnhancedTripPath::GetEnhancedNode(const int node_index) {
+//   return static_cast<EnhancedTripPath_Node*>(mutable_node(node_index));
+// }
+
+static bool IsValidNodeIndex(const TripPath *tripPath, int node_index) {
+  if ((node_index >= 0) && (node_index < tripPath->node_size())) {
+    return true;
+  }
+  return false;
 }
 
-EnhancedTripPath_Edge* EnhancedTripPath::GetPrevEdge(const int node_index, int delta) {
+static bool IsLastNodeIndex(const TripPath *tripPath, int node_index) {
+  if (IsValidNodeIndex(tripPath, node_index) && (node_index == (tripPath->node_size() - 1))) {
+    return true;
+  }
+  return false;
+}
+
+TripPath_Edge* TripPath_GetPrevEdge(TripPath *tripPath, const int node_index, int delta) {
   int index = node_index - delta;
-  if (IsValidNodeIndex(index)) {
-    return static_cast<EnhancedTripPath_Edge*>(mutable_node(index)->mutable_edge());
+  if (IsValidNodeIndex(tripPath, index)) {
+    return tripPath->mutable_node(index)->mutable_edge();
   } else {
     return nullptr;
   }
 }
 
-EnhancedTripPath_Edge* EnhancedTripPath::GetCurrEdge(const int node_index) {
-  return GetNextEdge(node_index, 0);
-}
-
-EnhancedTripPath_Edge* EnhancedTripPath::GetNextEdge(const int node_index, int delta) {
+TripPath_Edge* TripPath_GetNextEdge(TripPath *tripPath, const int node_index, int delta) {
   int index = node_index + delta;
-  if (IsValidNodeIndex(index) && !IsLastNodeIndex(index)) {
-    return static_cast<EnhancedTripPath_Edge*>(mutable_node(index)->mutable_edge());
+  if (IsValidNodeIndex(tripPath, index) && !IsLastNodeIndex(tripPath, index)) {
+    return tripPath->mutable_node(index)->mutable_edge();
   } else {
     return nullptr;
   }
 }
 
-bool EnhancedTripPath::IsValidNodeIndex(int node_index) const {
-  if ((node_index >= 0) && (node_index < node_size())) {
-    return true;
-  }
-  return false;
+TripPath_Edge* TripPath_GetCurrEdge(TripPath *tripPath, const int node_index) {
+  return TripPath_GetNextEdge(tripPath, node_index, 0);
 }
 
-bool EnhancedTripPath::IsFirstNodeIndex(int node_index) const {
-  if (node_index == 0) {
-    return true;
-  }
-  return false;
+int TripPath_GetLastNodeIndex(const TripPath *tripPath) {
+  return (tripPath->node_size() - 1);
 }
 
-bool EnhancedTripPath::IsLastNodeIndex(int node_index) const {
-  if (IsValidNodeIndex(node_index) && (node_index == (node_size() - 1))) {
-    return true;
-  }
-  return false;
+TripPath_Admin* TripPath_GetAdmin(TripPath *tripPath, size_t index) {
+  return tripPath->mutable_admin(index);
 }
 
-int EnhancedTripPath::GetLastNodeIndex() const {
-  return (node_size() - 1);
+std::string TripPath_GetCountryCode(TripPath *tripPath, int node_index) {
+  return TripPath_GetAdmin(tripPath, tripPath->node(node_index).admin_index())->country_code();
 }
 
-EnhancedTripPath_Admin* EnhancedTripPath::GetAdmin(size_t index) {
-  return static_cast<EnhancedTripPath_Admin*>(mutable_admin(index));
+std::string TripPath_GetStateCode(TripPath *tripPath, int node_index) {
+  return TripPath_GetAdmin(tripPath, tripPath->node(node_index).admin_index())->state_code();
 }
 
-std::string EnhancedTripPath::GetCountryCode(int node_index) {
-  return GetAdmin(node(node_index).admin_index())->country_code();
-}
-
-std::string EnhancedTripPath::GetStateCode(int node_index) {
-  return GetAdmin(node(node_index).admin_index())->state_code();
-}
-
-const ::valhalla::odin::Location& EnhancedTripPath::GetOrigin() const {
+const ::valhalla::odin::Location& TripPath_GetOrigin(const TripPath *tripPath) {
   // Validate location count
-  if (location_size() < 2) {
+  if (tripPath->location_size() < 2) {
     throw valhalla_exception_t{212};
   }
 
-  return location(0);
+  return tripPath->location(0);
 }
 
-const ::valhalla::odin::Location& EnhancedTripPath::GetDestination() const {
+const ::valhalla::odin::Location& TripPath_GetDestination(const TripPath *tripPath) {
   // Validate location count
-  if (location_size() < 2) {
+  if (tripPath->location_size() < 2) {
     throw valhalla_exception_t{212};
   }
 
-  return location(location_size() - 1);
+  return tripPath->location(tripPath->location_size() - 1);
 }
 
-float EnhancedTripPath::GetLength(const DirectionsOptions::Units& units) {
+float TripPath_GetLength(const TripPath *tripPath, const DirectionsOptions::Units& units) {
   float length = 0.0f;
-  for (const auto& n : node()) {
+  for (const auto& n : tripPath->node()) {
     if (n.has_edge()) {
       length += n.edge().length();
     }
@@ -263,150 +256,150 @@ float EnhancedTripPath::GetLength(const DirectionsOptions::Units& units) {
 ///////////////////////////////////////////////////////////////////////////////
 // EnhancedTripPath_Edge
 
-bool EnhancedTripPath_Edge::IsUnnamed() const {
-  return (name_size() == 0);
+bool TripPath_Edge_IsUnnamed(const TripPath_Edge *edge) {
+  return (edge->name_size() == 0);
 }
 
-bool EnhancedTripPath_Edge::IsRoadUse() const {
-  return (use() == TripPath_Use_kRoadUse);
+bool TripPath_Edge_IsRoadUse(const TripPath_Edge *edge) {
+  return (edge->use() == TripPath_Use_kRoadUse);
 }
 
-bool EnhancedTripPath_Edge::IsRampUse() const {
-  return (use() == TripPath_Use_kRampUse);
+bool TripPath_Edge_IsRampUse(const TripPath_Edge *edge) {
+  return (edge->use() == TripPath_Use_kRampUse);
 }
 
-bool EnhancedTripPath_Edge::IsTurnChannelUse() const {
-  return (use() == TripPath_Use_kTurnChannelUse);
+bool TripPath_Edge_IsTurnChannelUse(const TripPath_Edge *edge) {
+  return (edge->use() == TripPath_Use_kTurnChannelUse);
 }
 
-bool EnhancedTripPath_Edge::IsTrackUse() const {
-  return (use() == TripPath_Use_kTrackUse);
+bool TripPath_Edge_IsTrackUse(const TripPath_Edge *edge) {
+  return (edge->use() == TripPath_Use_kTrackUse);
 }
 
-bool EnhancedTripPath_Edge::IsDrivewayUse() const {
-  return (use() == TripPath_Use_kDrivewayUse);
+bool TripPath_Edge_IsDrivewayUse(const TripPath_Edge *edge) {
+  return (edge->use() == TripPath_Use_kDrivewayUse);
 }
 
-bool EnhancedTripPath_Edge::IsAlleyUse() const {
-  return (use() == TripPath_Use_kAlleyUse);
+bool TripPath_Edge_IsAlleyUse(const TripPath_Edge *edge) {
+  return (edge->use() == TripPath_Use_kAlleyUse);
 }
 
-bool EnhancedTripPath_Edge::IsParkingAisleUse() const {
-  return (use() == TripPath_Use_kParkingAisleUse);
+bool TripPath_Edge_IsParkingAisleUse(const TripPath_Edge *edge) {
+  return (edge->use() == TripPath_Use_kParkingAisleUse);
 }
 
-bool EnhancedTripPath_Edge::IsEmergencyAccessUse() const {
-  return (use() == TripPath_Use_kEmergencyAccessUse);
+bool TripPath_Edge_IsEmergencyAccessUse(const TripPath_Edge *edge) {
+  return (edge->use() == TripPath_Use_kEmergencyAccessUse);
 }
 
-bool EnhancedTripPath_Edge::IsDriveThruUse() const {
-  return (use() == TripPath_Use_kDriveThruUse);
+bool TripPath_Edge_IsDriveThruUse(const TripPath_Edge *edge) {
+  return (edge->use() == TripPath_Use_kDriveThruUse);
 }
 
-bool EnhancedTripPath_Edge::IsCuldesacUse() const {
-  return (use() == TripPath_Use_kCuldesacUse);
+bool TripPath_Edge_IsCuldesacUse(const TripPath_Edge *edge) {
+  return (edge->use() == TripPath_Use_kCuldesacUse);
 }
 
-bool EnhancedTripPath_Edge::IsCyclewayUse() const {
-  return (use() == TripPath_Use_kCyclewayUse);
+bool TripPath_Edge_IsCyclewayUse(const TripPath_Edge *edge) {
+  return (edge->use() == TripPath_Use_kCyclewayUse);
 }
 
-bool EnhancedTripPath_Edge::IsMountainBikeUse() const {
-  return (use() == TripPath_Use_kMountainBikeUse);
+bool TripPath_Edge_IsMountainBikeUse(const TripPath_Edge *edge) {
+  return (edge->use() == TripPath_Use_kMountainBikeUse);
 }
 
-bool EnhancedTripPath_Edge::IsSidewalkUse() const {
-  return (use() == TripPath_Use_kSidewalkUse);
+bool TripPath_Edge_IsSidewalkUse(const TripPath_Edge *edge) {
+  return (edge->use() == TripPath_Use_kSidewalkUse);
 }
 
-bool EnhancedTripPath_Edge::IsFootwayUse() const {
-  return (use() == TripPath_Use_kFootwayUse);
+bool TripPath_Edge_IsFootwayUse(const TripPath_Edge *edge) {
+  return (edge->use() == TripPath_Use_kFootwayUse);
 }
 
-bool EnhancedTripPath_Edge::IsStepsUse() const {
-  return (use() == TripPath_Use_kStepsUse);
+bool TripPath_Edge_IsStepsUse(const TripPath_Edge *edge) {
+  return (edge->use() == TripPath_Use_kStepsUse);
 }
 
-bool EnhancedTripPath_Edge::IsPathUse() const {
-  return (use() == TripPath_Use_kPathUse);
+bool TripPath_Edge_IsPathUse(const TripPath_Edge *edge) {
+  return (edge->use() == TripPath_Use_kPathUse);
 }
 
-bool EnhancedTripPath_Edge::IsPedestrianUse() const {
-  return (use() == TripPath_Use_kPedestrianUse);
+bool TripPath_Edge_IsPedestrianUse(const TripPath_Edge *edge) {
+  return (edge->use() == TripPath_Use_kPedestrianUse);
 }
 
-bool EnhancedTripPath_Edge::IsBridlewayUse() const {
-  return (use() == TripPath_Use_kBridlewayUse);
+bool TripPath_Edge_IsBridlewayUse(const TripPath_Edge *edge) {
+  return (edge->use() == TripPath_Use_kBridlewayUse);
 }
 
-bool EnhancedTripPath_Edge::IsOtherUse() const {
-  return (use() == TripPath_Use_kOtherUse);
+bool TripPath_Edge_IsOtherUse(const TripPath_Edge *edge) {
+  return (edge->use() == TripPath_Use_kOtherUse);
 }
 
-bool EnhancedTripPath_Edge::IsFerryUse() const {
-  return (use() == TripPath_Use_kFerryUse);
+bool TripPath_Edge_IsFerryUse(const TripPath_Edge *edge) {
+  return (edge->use() == TripPath_Use_kFerryUse);
 }
 
-bool EnhancedTripPath_Edge::IsRailFerryUse() const {
-  return (use() == TripPath_Use_kRailFerryUse);
+bool TripPath_Edge_IsRailFerryUse(const TripPath_Edge *edge) {
+  return (edge->use() == TripPath_Use_kRailFerryUse);
 }
 
-bool EnhancedTripPath_Edge::IsRailUse() const {
-  return (use() == TripPath_Use_kRailUse);
+bool TripPath_Edge_IsRailUse(const TripPath_Edge *edge) {
+  return (edge->use() == TripPath_Use_kRailUse);
 }
 
-bool EnhancedTripPath_Edge::IsBusUse() const {
-  return (use() == TripPath_Use_kBusUse);
+bool TripPath_Edge_IsBusUse(const TripPath_Edge *edge) {
+  return (edge->use() == TripPath_Use_kBusUse);
 }
 
-bool EnhancedTripPath_Edge::IsEgressConnectionUse() const {
-  return (use() == TripPath_Use_kEgressConnectionUse);
+bool TripPath_Edge_IsEgressConnectionUse(const TripPath_Edge *edge) {
+  return (edge->use() == TripPath_Use_kEgressConnectionUse);
 }
 
-bool EnhancedTripPath_Edge::IsPlatformConnectionUse() const {
-  return (use() == TripPath_Use_kPlatformConnectionUse);
+bool TripPath_Edge_IsPlatformConnectionUse(const TripPath_Edge *edge) {
+  return (edge->use() == TripPath_Use_kPlatformConnectionUse);
 }
 
-bool EnhancedTripPath_Edge::IsTransitConnectionUse() const {
-  return (use() == TripPath_Use_kTransitConnectionUse);
+bool TripPath_Edge_IsTransitConnectionUse(const TripPath_Edge *edge) {
+  return (edge->use() == TripPath_Use_kTransitConnectionUse);
 }
 
-bool EnhancedTripPath_Edge::IsTransitConnection() const {
-  return (IsTransitConnectionUse() || IsEgressConnectionUse() || IsPlatformConnectionUse());
+bool TripPath_Edge_IsTransitConnection(const TripPath_Edge *edge) {
+  return (TripPath_Edge_IsTransitConnectionUse(edge) || TripPath_Edge_IsEgressConnectionUse(edge) || TripPath_Edge_IsPlatformConnectionUse(edge));
 }
 
-bool EnhancedTripPath_Edge::IsUnnamedWalkway() const {
-  return (IsUnnamed() && IsFootwayUse());
+bool TripPath_Edge_IsUnnamedWalkway(const TripPath_Edge *edge) {
+  return (TripPath_Edge_IsUnnamed(edge) && TripPath_Edge_IsFootwayUse(edge));
 }
 
-bool EnhancedTripPath_Edge::IsUnnamedCycleway() const {
-  return (IsUnnamed() && IsCyclewayUse());
+bool TripPath_Edge_IsUnnamedCycleway(const TripPath_Edge *edge) {
+  return (TripPath_Edge_IsUnnamed(edge) && TripPath_Edge_IsCyclewayUse(edge));
 }
 
-bool EnhancedTripPath_Edge::IsUnnamedMountainBikeTrail() const {
-  return (IsUnnamed() && IsMountainBikeUse());
+bool TripPath_Edge_IsUnnamedMountainBikeTrail(const TripPath_Edge *edge) {
+  return (TripPath_Edge_IsUnnamed(edge) && TripPath_Edge_IsMountainBikeUse(edge));
 }
 
-bool EnhancedTripPath_Edge::IsHighway() const {
-  return ((road_class() == TripPath_RoadClass_kMotorway) && (!IsRampUse()));
+bool TripPath_Edge_IsHighway(const TripPath_Edge *edge) {
+  return ((edge->road_class() == TripPath_RoadClass_kMotorway) && (!TripPath_Edge_IsRampUse(edge)));
 }
 
-bool EnhancedTripPath_Edge::IsOneway() const {
-  return ((traversability() == TripPath_Traversability_kForward) ||
-          (traversability() == TripPath_Traversability_kBackward));
+bool TripPath_Edge_IsOneway(const TripPath_Edge *edge) {
+  return ((edge->traversability() == TripPath_Traversability_kForward) ||
+          (edge->traversability() == TripPath_Traversability_kBackward));
 }
 
-bool EnhancedTripPath_Edge::IsForward(uint32_t prev2curr_turn_degree) const {
+bool TripPath_Edge_IsForward(uint32_t prev2curr_turn_degree) {
   return ((prev2curr_turn_degree > 314) || (prev2curr_turn_degree < 46));
 }
 
-bool EnhancedTripPath_Edge::IsWiderForward(uint32_t prev2curr_turn_degree) const {
+bool TripPath_Edge_IsWiderForward(uint32_t prev2curr_turn_degree) {
   return ((prev2curr_turn_degree > 304) || (prev2curr_turn_degree < 56));
 }
 
-bool EnhancedTripPath_Edge::IsStraightest(uint32_t prev2curr_turn_degree,
-                                          uint32_t straightest_xedge_turn_degree) const {
-  if (IsWiderForward(prev2curr_turn_degree)) {
+bool TripPath_Edge_IsStraightest(const TripPath_Edge *edge, uint32_t prev2curr_turn_degree,
+                                          uint32_t straightest_xedge_turn_degree) {
+  if (TripPath_Edge_IsWiderForward(prev2curr_turn_degree)) {
     int path_xedge_turn_degree_delta = std::abs(static_cast<int>(prev2curr_turn_degree) -
                                                 static_cast<int>(straightest_xedge_turn_degree));
     if (path_xedge_turn_degree_delta > 180) {
@@ -424,19 +417,19 @@ bool EnhancedTripPath_Edge::IsStraightest(uint32_t prev2curr_turn_degree,
   }
 }
 
-std::vector<std::string> EnhancedTripPath_Edge::GetNameList() const {
+std::vector<std::string> TripPath_Edge_GetNameList(const TripPath_Edge *edge) {
   std::vector<std::string> name_list;
-  for (const auto& name : this->name()) {
+  for (const auto& name : edge->name()) {
     name_list.push_back(name);
   }
   return name_list;
 }
 
-float EnhancedTripPath_Edge::GetLength(const DirectionsOptions::Units& units) {
+float TripPath_Edge_GetLength(const TripPath_Edge *edge, const DirectionsOptions::Units& units) {
   if (units == DirectionsOptions::miles) {
-    return (length() * kMilePerKm);
+    return (edge->length() * kMilePerKm);
   }
-  return length();
+  return edge->length();
 }
 
 #ifdef LOGGING_LEVEL_TRACE
@@ -852,16 +845,18 @@ std::string EnhancedTripPath_Edge::ListToParameterString(
 ///////////////////////////////////////////////////////////////////////////////
 // EnhancedTripPath_IntersectingEdge
 
-bool EnhancedTripPath_IntersectingEdge::IsTraversable(const TripPath_TravelMode travel_mode) const {
+bool TripPath_IntersectingEdge_IsTraversable(
+  const TripPath_IntersectingEdge* edge,
+  const TripPath_TravelMode travel_mode) {
   TripPath_Traversability t;
 
   // Set traversability based on travel mode
   if (travel_mode == TripPath_TravelMode_kDrive) {
-    t = driveability();
+    t = edge->driveability();
   } else if (travel_mode == TripPath_TravelMode_kBicycle) {
-    t = cyclability();
+    t = edge->cyclability();
   } else {
-    t = walkability();
+    t = edge->walkability();
   }
 
   if (t != TripPath_Traversability_kNone) {
@@ -870,17 +865,18 @@ bool EnhancedTripPath_IntersectingEdge::IsTraversable(const TripPath_TravelMode 
   return false;
 }
 
-bool EnhancedTripPath_IntersectingEdge::IsTraversableOutbound(
-    const TripPath_TravelMode travel_mode) const {
+bool TripPath_IntersectingEdge_IsTraversableOutbound(
+    const TripPath_IntersectingEdge* edge,
+    const TripPath_TravelMode travel_mode) {
   TripPath_Traversability t;
 
   // Set traversability based on travel mode
   if (travel_mode == TripPath_TravelMode_kDrive) {
-    t = driveability();
+    t = edge->driveability();
   } else if (travel_mode == TripPath_TravelMode_kBicycle) {
-    t = cyclability();
+    t = edge->cyclability();
   } else {
-    t = walkability();
+    t = edge->walkability();
   }
 
   if ((t == TripPath_Traversability_kForward) || (t == TripPath_Traversability_kBoth)) {
@@ -889,27 +885,27 @@ bool EnhancedTripPath_IntersectingEdge::IsTraversableOutbound(
   return false;
 }
 
-std::string EnhancedTripPath_IntersectingEdge::ToString() const {
+std::string TripPath_IntersectingEdge_ToString(const TripPath_IntersectingEdge* edge) {
   std::string str;
   str.reserve(128);
 
   str += "begin_heading=";
-  str += std::to_string(begin_heading());
+  str += std::to_string(edge->begin_heading());
 
   str += " | prev_name_consistency=";
-  str += std::to_string(prev_name_consistency());
+  str += std::to_string(edge->prev_name_consistency());
 
   str += " | curr_name_consistency=";
-  str += std::to_string(curr_name_consistency());
+  str += std::to_string(edge->curr_name_consistency());
 
   str += " | driveability=";
-  str += std::to_string(driveability());
+  str += std::to_string(edge->driveability());
 
   str += " | cyclability=";
-  str += std::to_string(cyclability());
+  str += std::to_string(edge->cyclability());
 
   str += " | walkability=";
-  str += std::to_string(walkability());
+  str += std::to_string(edge->walkability());
 
   return str;
 }
@@ -917,12 +913,12 @@ std::string EnhancedTripPath_IntersectingEdge::ToString() const {
 ///////////////////////////////////////////////////////////////////////////////
 // EnhancedTripPath_Node
 
-bool EnhancedTripPath_Node::HasIntersectingEdges() const {
-  return (intersecting_edge_size() > 0);
+bool TripPath_Node_HasIntersectingEdges(const TripPath_Node *node) {
+  return (node->intersecting_edge_size() > 0);
 }
 
-bool EnhancedTripPath_Node::HasIntersectingEdgeNameConsistency() const {
-  for (const auto& xedge : intersecting_edge()) {
+bool TripPath_Node_HasIntersectingEdgeNameConsistency(const TripPath_Node *node) {
+  for (const auto& xedge : node->intersecting_edge()) {
     if (xedge.curr_name_consistency() || xedge.prev_name_consistency()) {
       return true;
     }
@@ -930,26 +926,27 @@ bool EnhancedTripPath_Node::HasIntersectingEdgeNameConsistency() const {
   return false;
 }
 
-EnhancedTripPath_IntersectingEdge* EnhancedTripPath_Node::GetIntersectingEdge(size_t index) {
-  return static_cast<EnhancedTripPath_IntersectingEdge*>(mutable_intersecting_edge(index));
+TripPath_IntersectingEdge* TripPath_Node_GetIntersectingEdge(TripPath_Node *node, size_t index) {
+  return node->mutable_intersecting_edge(index);
 }
 
-void EnhancedTripPath_Node::CalculateRightLeftIntersectingEdgeCounts(
+void TripPath_Node_CalculateRightLeftIntersectingEdgeCounts(
+    TripPath_Node *node,
     uint32_t from_heading,
     const TripPath_TravelMode travel_mode,
     IntersectingEdgeCounts& xedge_counts) {
   xedge_counts.clear();
 
   // No turn - just return
-  if (intersecting_edge_size() == 0) {
+  if (node->intersecting_edge_size() == 0) {
     return;
   }
 
-  uint32_t path_turn_degree = GetTurnDegree(from_heading, edge().begin_heading());
-  for (int i = 0; i < intersecting_edge_size(); ++i) {
+  uint32_t path_turn_degree = GetTurnDegree(from_heading, node->edge().begin_heading());
+  for (int i = 0; i < node->intersecting_edge_size(); ++i) {
     uint32_t intersecting_turn_degree =
-        GetTurnDegree(from_heading, intersecting_edge(i).begin_heading());
-    bool xedge_traversable_outbound = GetIntersectingEdge(i)->IsTraversableOutbound(travel_mode);
+        GetTurnDegree(from_heading, node->intersecting_edge(i).begin_heading());
+    bool xedge_traversable_outbound = TripPath_IntersectingEdge_IsTraversableOutbound(TripPath_Node_GetIntersectingEdge(node, i), travel_mode);
 
     if (path_turn_degree > 180) {
       if ((intersecting_turn_degree > path_turn_degree) || (intersecting_turn_degree < 180)) {
@@ -1003,11 +1000,10 @@ void EnhancedTripPath_Node::CalculateRightLeftIntersectingEdgeCounts(
   }
 }
 
-bool EnhancedTripPath_Node::HasFowardIntersectingEdge(uint32_t from_heading) {
-
-  for (int i = 0; i < intersecting_edge_size(); ++i) {
+bool TripPath_Node_HasFowardIntersectingEdge(TripPath_Node *node, uint32_t from_heading) {
+  for (int i = 0; i < node->intersecting_edge_size(); ++i) {
     uint32_t intersecting_turn_degree =
-        GetTurnDegree(from_heading, intersecting_edge(i).begin_heading());
+        GetTurnDegree(from_heading, node->intersecting_edge(i).begin_heading());
     if ((intersecting_turn_degree > 314) || (intersecting_turn_degree < 46)) {
       return true;
     }
@@ -1015,14 +1011,15 @@ bool EnhancedTripPath_Node::HasFowardIntersectingEdge(uint32_t from_heading) {
   return false;
 }
 
-bool EnhancedTripPath_Node::HasForwardTraversableIntersectingEdge(
+bool TripPath_Node_HasForwardTraversableIntersectingEdge(
+    TripPath_Node *node,
     uint32_t from_heading,
     const TripPath_TravelMode travel_mode) {
 
-  for (int i = 0; i < intersecting_edge_size(); ++i) {
+  for (int i = 0; i < node->intersecting_edge_size(); ++i) {
     uint32_t intersecting_turn_degree =
-        GetTurnDegree(from_heading, intersecting_edge(i).begin_heading());
-    bool xedge_traversable_outbound = GetIntersectingEdge(i)->IsTraversableOutbound(travel_mode);
+        GetTurnDegree(from_heading, node->intersecting_edge(i).begin_heading());
+    bool xedge_traversable_outbound = TripPath_IntersectingEdge_IsTraversableOutbound(TripPath_Node_GetIntersectingEdge(node, i), travel_mode);
     if (((intersecting_turn_degree > 314) || (intersecting_turn_degree < 46)) &&
         xedge_traversable_outbound) {
       return true;
@@ -1031,11 +1028,12 @@ bool EnhancedTripPath_Node::HasForwardTraversableIntersectingEdge(
   return false;
 }
 
-bool EnhancedTripPath_Node::HasTraversableOutboundIntersectingEdge(
+bool TripPath_Node_HasTraversableOutboundIntersectingEdge(
+    TripPath_Node *node,
     const TripPath_TravelMode travel_mode) {
 
-  for (int i = 0; i < intersecting_edge_size(); ++i) {
-    if (GetIntersectingEdge(i)->IsTraversableOutbound(travel_mode)) {
+  for (int i = 0; i < node->intersecting_edge_size(); ++i) {
+    if (TripPath_IntersectingEdge_IsTraversableOutbound(TripPath_Node_GetIntersectingEdge(node, i), travel_mode)) {
       return true;
     }
   }
@@ -1043,17 +1041,18 @@ bool EnhancedTripPath_Node::HasTraversableOutboundIntersectingEdge(
 }
 
 // TODO: refactor to clean up code
-uint32_t EnhancedTripPath_Node::GetStraightestTraversableIntersectingEdgeTurnDegree(
+uint32_t TripPath_Node_GetStraightestTraversableIntersectingEdgeTurnDegree(
+    TripPath_Node *node,
     uint32_t from_heading,
     const TripPath_TravelMode travel_mode) {
 
   uint32_t staightest_turn_degree = 180; // Initialize to reverse turn degree
   uint32_t staightest_delta = 180;       // Initialize to reverse delta
 
-  for (int i = 0; i < intersecting_edge_size(); ++i) {
+  for (int i = 0; i < node->intersecting_edge_size(); ++i) {
     uint32_t intersecting_turn_degree =
-        GetTurnDegree(from_heading, intersecting_edge(i).begin_heading());
-    bool xedge_traversable_outbound = GetIntersectingEdge(i)->IsTraversableOutbound(travel_mode);
+        GetTurnDegree(from_heading, node->intersecting_edge(i).begin_heading());
+    bool xedge_traversable_outbound = TripPath_IntersectingEdge_IsTraversableOutbound(TripPath_Node_GetIntersectingEdge(node, i), travel_mode);
     uint32_t straight_delta = (intersecting_turn_degree > 180) ? (360 - intersecting_turn_degree)
                                                                : intersecting_turn_degree;
     if (xedge_traversable_outbound && (straight_delta < staightest_delta)) {
@@ -1064,14 +1063,14 @@ uint32_t EnhancedTripPath_Node::GetStraightestTraversableIntersectingEdgeTurnDeg
   return staightest_turn_degree;
 }
 
-uint32_t EnhancedTripPath_Node::GetStraightestIntersectingEdgeTurnDegree(uint32_t from_heading) {
+uint32_t TripPath_Node_GetStraightestIntersectingEdgeTurnDegree(TripPath_Node *node, uint32_t from_heading) {
 
   uint32_t staightest_turn_degree = 180; // Initialize to reverse turn degree
   uint32_t staightest_delta = 180;       // Initialize to reverse delta
 
-  for (int i = 0; i < intersecting_edge_size(); ++i) {
+  for (int i = 0; i < node->intersecting_edge_size(); ++i) {
     uint32_t intersecting_turn_degree =
-        GetTurnDegree(from_heading, intersecting_edge(i).begin_heading());
+        GetTurnDegree(from_heading, node->intersecting_edge(i).begin_heading());
     uint32_t straight_delta = (intersecting_turn_degree > 180) ? (360 - intersecting_turn_degree)
                                                                : intersecting_turn_degree;
     if (straight_delta < staightest_delta) {
@@ -1082,94 +1081,94 @@ uint32_t EnhancedTripPath_Node::GetStraightestIntersectingEdgeTurnDegree(uint32_
   return staightest_turn_degree;
 }
 
-bool EnhancedTripPath_Node::IsStreetIntersection() const {
-  return (type() == TripPath_Node_Type_kStreetIntersection);
+bool TripPath_Node_IsStreetIntersection(const TripPath_Node *node) {
+  return (node->type() == TripPath_Node_Type_kStreetIntersection);
 }
 
-bool EnhancedTripPath_Node::IsGate() const {
-  return (type() == TripPath_Node_Type_kGate);
+bool TripPath_Node_IsGate(const TripPath_Node *node) {
+  return (node->type() == TripPath_Node_Type_kGate);
 }
 
-bool EnhancedTripPath_Node::IsBollard() const {
-  return (type() == TripPath_Node_Type_kBollard);
+bool TripPath_Node_IsBollard(const TripPath_Node *node) {
+  return (node->type() == TripPath_Node_Type_kBollard);
 }
 
-bool EnhancedTripPath_Node::IsTollBooth() const {
-  return (type() == TripPath_Node_Type_kTollBooth);
+bool TripPath_Node_IsTollBooth(const TripPath_Node *node) {
+  return (node->type() == TripPath_Node_Type_kTollBooth);
 }
 
-bool EnhancedTripPath_Node::IsTransitEgress() const {
-  return (type() == TripPath_Node_Type_kTransitEgress);
+bool TripPath_Node_IsTransitEgress(const TripPath_Node *node) {
+  return (node->type() == TripPath_Node_Type_kTransitEgress);
 }
 
-bool EnhancedTripPath_Node::IsTransitStation() const {
-  return (type() == TripPath_Node_Type_kTransitStation);
+bool TripPath_Node_IsTransitStation(const TripPath_Node *node) {
+  return (node->type() == TripPath_Node_Type_kTransitStation);
 }
 
-bool EnhancedTripPath_Node::IsTransitPlatform() const {
-  return (type() == TripPath_Node_Type_kTransitPlatform);
+bool TripPath_Node_IsTransitPlatform(const TripPath_Node *node) {
+  return (node->type() == TripPath_Node_Type_kTransitPlatform);
 }
 
-bool EnhancedTripPath_Node::IsBikeShare() const {
-  return (type() == TripPath_Node_Type_kBikeShare);
+bool TripPath_Node_IsBikeShare(const TripPath_Node *node) {
+  return (node->type() == TripPath_Node_Type_kBikeShare);
 }
 
-bool EnhancedTripPath_Node::IsParking() const {
-  return (type() == TripPath_Node_Type_kParking);
+bool TripPath_Node_IsParking(const TripPath_Node *node) {
+  return (node->type() == TripPath_Node_Type_kParking);
 }
 
-bool EnhancedTripPath_Node::IsMotorwayJunction() const {
-  return (type() == TripPath_Node_Type_kMotorwayJunction);
+bool TripPath_Node_IsMotorwayJunction(const TripPath_Node *node) {
+  return (node->type() == TripPath_Node_Type_kMotorwayJunction);
 }
 
-bool EnhancedTripPath_Node::IsBorderControl() const {
-  return (type() == TripPath_Node_Type_kBorderControl);
+bool TripPath_Node_IsBorderControl(const TripPath_Node *node) {
+  return (node->type() == TripPath_Node_Type_kBorderControl);
 }
 
-std::string EnhancedTripPath_Node::ToString() const {
+std::string TripPath_Node_ToString(const TripPath_Node *node) {
   std::string str;
   str.reserve(256);
 
   str += "elapsed_time=";
-  str += std::to_string(elapsed_time());
+  str += std::to_string(node->elapsed_time());
 
   str += " | admin_index=";
-  str += std::to_string(admin_index());
+  str += std::to_string(node->admin_index());
 
   str += " | type=";
-  str += std::to_string(type());
+  str += std::to_string(node->type());
 
   str += " | fork=";
-  str += std::to_string(fork());
+  str += std::to_string(node->fork());
 
-  if (has_transit_platform_info()) {
+  if (node->has_transit_platform_info()) {
     str += " | transit_platform_info.type=";
-    str += std::to_string(transit_platform_info().type());
+    str += std::to_string(node->transit_platform_info().type());
 
     str += " | transit_platform_info.onestop_id=";
-    str += transit_platform_info().onestop_id();
+    str += node->transit_platform_info().onestop_id();
 
     str += " | transit_platform_info.name=";
-    str += transit_platform_info().name();
+    str += node->transit_platform_info().name();
 
     str += " | transit_platform_info.arrival_date_time=";
-    str += transit_platform_info().arrival_date_time();
+    str += node->transit_platform_info().arrival_date_time();
 
     str += " | transit_platform_info.departure_date_time=";
-    str += transit_platform_info().departure_date_time();
+    str += node->transit_platform_info().departure_date_time();
 
     str += " | transit_platform_info.assumed_schedule()=";
-    str += std::to_string(transit_platform_info().assumed_schedule());
+    str += std::to_string(node->transit_platform_info().assumed_schedule());
 
     str += " | transit_platform_info.station_onestop_id=";
-    str += transit_platform_info().station_onestop_id();
+    str += node->transit_platform_info().station_onestop_id();
 
     str += " | transit_platform_info.station_name=";
-    str += transit_platform_info().station_name();
+    str += node->transit_platform_info().station_name();
   }
 
   str += " | time_zone=";
-  str += time_zone();
+  str += node->time_zone();
 
   return str;
 }
@@ -1177,24 +1176,24 @@ std::string EnhancedTripPath_Node::ToString() const {
 ///////////////////////////////////////////////////////////////////////////////
 // EnhancedTripPath_Admin
 
-std::string EnhancedTripPath_Admin::ToString() const {
-  std::string str;
-  str.reserve(256);
+// std::string EnhancedTripPath_Admin::ToString() const {
+//   std::string str;
+//   str.reserve(256);
 
-  str += "country_code=";
-  str += country_code();
+//   str += "country_code=";
+//   str += country_code();
 
-  str += " | country_text=";
-  str += country_text();
+//   str += " | country_text=";
+//   str += country_text();
 
-  str += " | state_code=";
-  str += state_code();
+//   str += " | state_code=";
+//   str += state_code();
 
-  str += " | state_text=";
-  str += state_text();
+//   str += " | state_text=";
+//   str += state_text();
 
-  return str;
-}
+//   return str;
+// }
 
 } // namespace odin
 } // namespace valhalla

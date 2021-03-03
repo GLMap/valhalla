@@ -9,14 +9,14 @@ namespace {
 
 void TryCalculateRightLeftIntersectingEdgeCounts(
     uint32_t from_heading,
-    EnhancedTripPath_Node* node,
+    TripPath_Node* node,
     const IntersectingEdgeCounts& expected_xedge_counts,
     const TripPath_TravelMode travel_mode = TripPath_TravelMode_kDrive) {
 
   IntersectingEdgeCounts xedge_counts;
   xedge_counts.clear();
 
-  node->CalculateRightLeftIntersectingEdgeCounts(from_heading, travel_mode, xedge_counts);
+  TripPath_Node_CalculateRightLeftIntersectingEdgeCounts(node, from_heading, travel_mode, xedge_counts);
   if (xedge_counts.right != expected_xedge_counts.right) {
     throw std::runtime_error("Incorrect right");
   }
@@ -59,7 +59,7 @@ void TestCalculateRightLeftIntersectingEdgeCounts_Straight_Straight() {
   TripPath_IntersectingEdge* n1_ie1 = node1.add_intersecting_edge();
   n1_ie1->set_begin_heading(355);
   n1_ie1->set_driveability(TripPath_Traversability_kBoth);
-  TryCalculateRightLeftIntersectingEdgeCounts(0, static_cast<EnhancedTripPath_Node*>(&node1),
+  TryCalculateRightLeftIntersectingEdgeCounts(0, node1,
                                               IntersectingEdgeCounts(0, 0, 0, 0, 1, 1, 1, 1));
 
   // Path straight, intersecting straight
@@ -68,7 +68,7 @@ void TestCalculateRightLeftIntersectingEdgeCounts_Straight_Straight() {
   TripPath_IntersectingEdge* n2_ie1 = node2.add_intersecting_edge();
   n2_ie1->set_begin_heading(5);
   n2_ie1->set_driveability(TripPath_Traversability_kForward);
-  TryCalculateRightLeftIntersectingEdgeCounts(0, static_cast<EnhancedTripPath_Node*>(&node2),
+  TryCalculateRightLeftIntersectingEdgeCounts(0, node2,
                                               IntersectingEdgeCounts(1, 1, 1, 1, 0, 0, 0, 0));
 }
 
@@ -79,7 +79,7 @@ void TestCalculateRightLeftIntersectingEdgeCounts_SlightRight_Straight() {
   TripPath_IntersectingEdge* n1_ie1 = node1.add_intersecting_edge();
   n1_ie1->set_begin_heading(0);
   n1_ie1->set_driveability(TripPath_Traversability_kBackward);
-  TryCalculateRightLeftIntersectingEdgeCounts(0, static_cast<EnhancedTripPath_Node*>(&node1),
+  TryCalculateRightLeftIntersectingEdgeCounts(0, node1,
                                               IntersectingEdgeCounts(0, 0, 0, 0, 1, 1, 0, 0));
 
   // Path slight right, intersecting straight
@@ -88,7 +88,7 @@ void TestCalculateRightLeftIntersectingEdgeCounts_SlightRight_Straight() {
   TripPath_IntersectingEdge* n2_ie1 = node2.add_intersecting_edge();
   n2_ie1->set_begin_heading(85);
   n2_ie1->set_driveability(TripPath_Traversability_kNone);
-  TryCalculateRightLeftIntersectingEdgeCounts(90, static_cast<EnhancedTripPath_Node*>(&node2),
+  TryCalculateRightLeftIntersectingEdgeCounts(90, node2,
                                               IntersectingEdgeCounts(0, 0, 0, 0, 1, 1, 0, 0));
 }
 
@@ -97,14 +97,14 @@ void TestCalculateRightLeftIntersectingEdgeCounts_SlightLeft_Straight() {
   TripPath_Node node1;
   node1.mutable_edge()->set_begin_heading(345);
   node1.add_intersecting_edge()->set_begin_heading(355);
-  TryCalculateRightLeftIntersectingEdgeCounts(0, static_cast<EnhancedTripPath_Node*>(&node1),
+  TryCalculateRightLeftIntersectingEdgeCounts(0, node1,
                                               IntersectingEdgeCounts(1, 1, 0, 0, 0, 0, 0, 0));
 
   // Path slight left, intersecting straight
   TripPath_Node node2;
   node2.mutable_edge()->set_begin_heading(255);
   node2.add_intersecting_edge()->set_begin_heading(275);
-  TryCalculateRightLeftIntersectingEdgeCounts(270, static_cast<EnhancedTripPath_Node*>(&node2),
+  TryCalculateRightLeftIntersectingEdgeCounts(270, node2,
                                               IntersectingEdgeCounts(1, 1, 0, 0, 0, 0, 0, 0));
 }
 
@@ -118,7 +118,7 @@ void TestCalculateRightLeftIntersectingEdgeCounts_SlightLeft_Right_Left() {
   node1.add_intersecting_edge()->set_begin_heading(315);
   node1.add_intersecting_edge()->set_begin_heading(270);
   node1.add_intersecting_edge()->set_begin_heading(225);
-  TryCalculateRightLeftIntersectingEdgeCounts(0, static_cast<EnhancedTripPath_Node*>(&node1),
+  TryCalculateRightLeftIntersectingEdgeCounts(0, node1,
                                               IntersectingEdgeCounts(3, 0, 0, 0, 3, 1, 0, 0));
 
   // Path slight left, intersecting right and left
@@ -130,7 +130,7 @@ void TestCalculateRightLeftIntersectingEdgeCounts_SlightLeft_Right_Left() {
   TripPath_IntersectingEdge* n2_ie2 = node2.add_intersecting_edge();
   n2_ie2->set_begin_heading(337);
   n2_ie2->set_driveability(TripPath_Traversability_kForward);
-  TryCalculateRightLeftIntersectingEdgeCounts(80, static_cast<EnhancedTripPath_Node*>(&node2),
+  TryCalculateRightLeftIntersectingEdgeCounts(80, node2,
                                               IntersectingEdgeCounts(1, 0, 1, 0, 1, 0, 1, 0));
 }
 
@@ -143,7 +143,7 @@ void TestCalculateRightLeftIntersectingEdgeCounts_SharpRight_Right_Left() {
   node1.add_intersecting_edge()->set_begin_heading(180);
   node1.add_intersecting_edge()->set_begin_heading(90);
   node1.add_intersecting_edge()->set_begin_heading(10);
-  TryCalculateRightLeftIntersectingEdgeCounts(180, static_cast<EnhancedTripPath_Node*>(&node1),
+  TryCalculateRightLeftIntersectingEdgeCounts(180, node1,
                                               IntersectingEdgeCounts(1, 1, 0, 0, 4, 0, 0, 0));
 }
 
@@ -157,7 +157,7 @@ void TestCalculateRightLeftIntersectingEdgeCounts_SharpLeft_Right_Left() {
   node1.add_intersecting_edge()->set_begin_heading(352);
   node1.add_intersecting_edge()->set_begin_heading(355);
   node1.add_intersecting_edge()->set_begin_heading(5);
-  TryCalculateRightLeftIntersectingEdgeCounts(180, static_cast<EnhancedTripPath_Node*>(&node1),
+  TryCalculateRightLeftIntersectingEdgeCounts(180, node1,
                                               IntersectingEdgeCounts(5, 0, 0, 0, 1, 1, 0, 0));
 }
 

@@ -28,7 +28,7 @@ class NarrativeBuilderTest : public NarrativeBuilder {
 public:
   NarrativeBuilderTest(const DirectionsOptions& directions_options,
                        const NarrativeDictionary& dictionary,
-                       const EnhancedTripPath* trip_path = nullptr)
+                       const TripPath* trip_path = nullptr)
       : NarrativeBuilder(directions_options, trip_path, dictionary) {
   }
 
@@ -261,7 +261,7 @@ TransitPlatformInfo GetTransitPlatformInfo(TransitPlatformInfo_Type type,
 void TryBuild(const DirectionsOptions& directions_options,
               std::list<Maneuver>& maneuvers,
               std::list<Maneuver>& expected_maneuvers,
-              const EnhancedTripPath* etp = nullptr) {
+              const TripPath* etp = nullptr) {
   std::unique_ptr<NarrativeBuilder> narrative_builder =
       NarrativeBuilderFactory::Create(directions_options, etp);
   narrative_builder->Build(directions_options, etp, maneuvers);
@@ -3036,7 +3036,7 @@ void TestBuildDestinationInstructions_0_miles_en_US() {
   // destination
   location = path.add_location();
 
-  TryBuild(directions_options, maneuvers, expected_maneuvers, static_cast<EnhancedTripPath*>(&path));
+  TryBuild(directions_options, maneuvers, expected_maneuvers, static_cast<TripPath*>(&path));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3073,7 +3073,7 @@ void TestBuildDestinationInstructions_1_miles_en_US() {
   location = path.add_location();
   location->set_street("3206 Powelton Avenue");
 
-  TryBuild(directions_options, maneuvers, expected_maneuvers, static_cast<EnhancedTripPath*>(&path));
+  TryBuild(directions_options, maneuvers, expected_maneuvers, static_cast<TripPath*>(&path));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3110,7 +3110,7 @@ void TestBuildDestinationInstructions_2_miles_en_US() {
   location = path.add_location();
   location->set_side_of_street(Location::kRight);
 
-  TryBuild(directions_options, maneuvers, expected_maneuvers, static_cast<EnhancedTripPath*>(&path));
+  TryBuild(directions_options, maneuvers, expected_maneuvers, static_cast<TripPath*>(&path));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3148,7 +3148,7 @@ void TestBuildDestinationInstructions_3_miles_en_US() {
   location->set_name("Lancaster Brewing Company");
   location->set_side_of_street(Location::kLeft);
 
-  TryBuild(directions_options, maneuvers, expected_maneuvers, static_cast<EnhancedTripPath*>(&path));
+  TryBuild(directions_options, maneuvers, expected_maneuvers, static_cast<TripPath*>(&path));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

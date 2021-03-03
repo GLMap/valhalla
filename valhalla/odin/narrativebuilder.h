@@ -25,7 +25,7 @@ const std::string kVerbalDelim = ", ";
 class NarrativeBuilder {
 public:
   NarrativeBuilder(const DirectionsOptions& directions_options,
-                   const EnhancedTripPath* trip_path,
+                   const TripPath* trip_path,
                    const NarrativeDictionary& dictionary);
 
   virtual ~NarrativeBuilder() = default;
@@ -37,7 +37,7 @@ public:
   NarrativeBuilder& operator=(const NarrativeBuilder&) = default;
 
   void Build(const DirectionsOptions& directions_options,
-             const EnhancedTripPath* etp,
+             const TripPath* etp,
              std::list<Maneuver>& maneuvers);
 
 protected:
@@ -518,7 +518,7 @@ protected:
 
   /////////////////////////////////////////////////////////////////////////////
   const DirectionsOptions& directions_options_;
-  const EnhancedTripPath* trip_path_;
+  const TripPath* trip_path_;
   const NarrativeDictionary& dictionary_;
   bool articulated_preposition_enabled_;
 };
@@ -528,7 +528,7 @@ class NarrativeBuilder_csCZ : public NarrativeBuilder {
 
 public:
   NarrativeBuilder_csCZ(const DirectionsOptions& directions_options,
-                        const EnhancedTripPath* trip_path,
+                        const TripPath* trip_path,
                         const NarrativeDictionary& dictionary)
       : NarrativeBuilder(directions_options, trip_path, dictionary) {
   }
@@ -551,7 +551,7 @@ class NarrativeBuilder_hiIN : public NarrativeBuilder {
 
 public:
   NarrativeBuilder_hiIN(const DirectionsOptions& directions_options,
-                        const EnhancedTripPath* trip_path,
+                        const TripPath* trip_path,
                         const NarrativeDictionary& dictionary)
       : NarrativeBuilder(directions_options, trip_path, dictionary) {
   }
@@ -574,7 +574,7 @@ class NarrativeBuilder_itIT : public NarrativeBuilder {
 
 public:
   NarrativeBuilder_itIT(const DirectionsOptions& directions_options,
-                        const EnhancedTripPath* trip_path,
+                        const TripPath* trip_path,
                         const NarrativeDictionary& dictionary)
       : NarrativeBuilder(directions_options, trip_path, dictionary) {
     // Enable articulated prepositions for Itailian
@@ -596,7 +596,7 @@ class NarrativeBuilder_ruRU : public NarrativeBuilder {
 
 public:
   NarrativeBuilder_ruRU(const DirectionsOptions& directions_options,
-                        const EnhancedTripPath* trip_path,
+                        const TripPath* trip_path,
                         const NarrativeDictionary& dictionary)
       : NarrativeBuilder(directions_options, trip_path, dictionary) {
   }

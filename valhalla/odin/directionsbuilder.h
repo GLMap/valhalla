@@ -39,7 +39,7 @@ protected:
    *
    * @param etp The enhanced trip path contains the edges to process.
    */
-  void UpdateHeading(EnhancedTripPath* etp);
+  void UpdateHeading(TripPath* etp);
 
   /**
    * Returns the trip directions based on the specified directions options,
@@ -52,7 +52,7 @@ protected:
    * @returns the trip directions.
    */
   TripDirections PopulateTripDirections(const DirectionsOptions& directions_options,
-                                        EnhancedTripPath* etp,
+                                        TripPath* etp,
                                         std::list<Maneuver>& maneuvers);
 };
 

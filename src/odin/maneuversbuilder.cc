@@ -60,7 +60,7 @@ void CountAndSortExitSignList(std::vector<Sign>* prev_signs, std::vector<Sign>* 
 namespace valhalla {
 namespace odin {
 
-ManeuversBuilder::ManeuversBuilder(const DirectionsOptions& directions_options, EnhancedTripPath* etp)
+ManeuversBuilder::ManeuversBuilder(const DirectionsOptions& directions_options, TripPath* etp)
     : directions_options_(directions_options), trip_path_(etp) {
 }
 
@@ -124,14 +124,14 @@ std::list<Maneuver> ManeuversBuilder::Build() {
 
   if (shape.empty() || (trip_path_->node_size() < 2))
     throw valhalla_exception_t{213};
-  const auto& orig = trip_path_->GetOrigin();
-  const auto& dest = trip_path_->GetDestination();
+  const auto& orig = TripPath_GetOrigin(trip_path_);
+  const auto& dest = TripPath_GetDestination(trip_path_);
   std::string first_name =
-      (trip_path_->GetCurrEdge(0)->name_size() == 0) ? "" : trip_path_->GetCurrEdge(0)->name(0);
+      (TripPath_GetCurrEdge(trip_path_, 0)->name_size() == 0) ? "" : TripPath_GetCurrEdge(trip_path_, 0)->name(0);
   auto last_node_index = (trip_path_->node_size() - 2);
-  std::string last_name = (trip_path_->GetCurrEdge(last_node_index)->name_size() == 0)
+  std::string last_name = (TripPath_GetCurrEdge(trip_path_, last_node_index)->name_size() == 0)
                               ? ""
-                              : trip_path_->GetCurrEdge(last_node_index)->name(0);
+                              : TripPath_GetCurrEdge(trip_path_, last_node_index)->name(0);
   std::string units = (directions_options_.units() == valhalla::odin::DirectionsOptions::kilometers)
                           ? "kilometers"
                           : "miles";
@@ -180,7 +180,7 @@ std::list<Maneuver> ManeuversBuilder::Produce() {
 
   // Initialize maneuver prior to loop
   maneuvers.emplace_front();
-  InitializeManeuver(maneuvers.front(), trip_path_->GetLastNodeIndex());
+  InitializeManeuver(maneuvers.front(), TripPath_GetLastNodeIndex(trip_path_));
 
 #ifdef LOGGING_LEVEL_TRACE
   LOG_TRACE("=============================================");
@@ -189,11 +189,11 @@ std::list<Maneuver> ManeuversBuilder::Produce() {
 
   // Step through nodes in reverse order to produce maneuvers
   // excluding the last and first nodes
-  for (int i = (trip_path_->GetLastNodeIndex() - 1); i > 0; --i) {
+  for (int i = (TripPath_GetLastNodeIndex(trip_path_) - 1); i > 0; --i) {
 
 #ifdef LOGGING_LEVEL_TRACE
-    auto* prev_edge = trip_path_->GetPrevEdge(i);
-    auto* curr_edge = trip_path_->GetCurrEdge(i);
+    auto* prev_edge = TripPath_GetPrevEdge(trip_path_, i);
+    auto* curr_edge = TripPath_GetCurrEdge(trip_path_, i);
     auto* next_edge = trip_path_->GetNextEdge(i);
     LOG_TRACE("---------------------------------------------");
     LOG_TRACE(std::to_string(i) + ":  ");
@@ -202,9 +202,9 @@ std::list<Maneuver> ManeuversBuilder::Produce() {
     LOG_TRACE(std::string("  curr_edge=") + (curr_edge ? curr_edge->ToString() : "NONE"));
     LOG_TRACE(std::string("  prev2curr_turn_degree=") +
               std::to_string(GetTurnDegree(prev_edge->end_heading(), curr_edge->begin_heading())));
-    auto* node = trip_path_->GetEnhancedNode(i);
+    auto* node = trip_path_->mutable_node(i);
     for (size_t z = 0; z < node->intersecting_edge_size(); ++z) {
-      auto* intersecting_edge = node->GetIntersectingEdge(z);
+      auto* intersecting_edge = TripPath_Node_GetIntersectingEdge(node, z);
       LOG_TRACE(std::string("    intersectingEdge=") + intersecting_edge->ToString());
       LOG_TRACE(std::string("    prev2int_turn_degree=") +
                 std::to_string(
@@ -212,7 +212,7 @@ std::list<Maneuver> ManeuversBuilder::Produce() {
     }
     LOG_TRACE(std::string("  node=") + node->ToString());
     IntersectingEdgeCounts xedge_counts;
-    node->CalculateRightLeftIntersectingEdgeCounts(prev_edge->end_heading(), prev_edge->travel_mode(),
+    TripPath_Node_CalculateRightLeftIntersectingEdgeCounts(node, prev_edge->end_heading(), prev_edge->travel_mode(),
                                                    xedge_counts);
     LOG_TRACE(std::string("    right=") + std::to_string(xedge_counts.right) +
               std::string(" | right_similar=") + std::to_string(xedge_counts.right_similar) +
@@ -241,15 +241,15 @@ std::list<Maneuver> ManeuversBuilder::Produce() {
   }
 
 #ifdef LOGGING_LEVEL_TRACE
-  auto* curr_edge = trip_path_->GetCurrEdge(0);
+  auto* curr_edge = TripPath_GetCurrEdge(trip_path_, 0);
   LOG_TRACE("---------------------------------------------");
   LOG_TRACE(std::string("0") + ":  ");
   LOG_TRACE(std::string("  curr_edge_PARAMETERS=") +
             (curr_edge ? curr_edge->ToParameterString() : "NONE"));
   LOG_TRACE(std::string("  curr_edge=") + (curr_edge ? curr_edge->ToString() : "NONE"));
-  auto* node = trip_path_->GetEnhancedNode(0);
+  auto* node = trip_path_->mutable_node(0);
   for (size_t z = 0; z < node->intersecting_edge_size(); ++z) {
-    auto* intersecting_edge = node->GetIntersectingEdge(z);
+    auto* intersecting_edge = TripPath_Node_GetIntersectingEdge(node, z);
     LOG_TRACE(std::string("    intersectingEdge=") + intersecting_edge->ToString());
   }
   LOG_TRACE("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
@@ -287,7 +287,7 @@ void ManeuversBuilder::Combine(std::list<Maneuver>& maneuvers) {
           curr_man->street_names().FindCommonBaseNames(next_man->street_names());
 
       // Get the begin edge of the next maneuver
-      auto* next_man_begin_edge = trip_path_->GetCurrEdge(next_man->begin_node_index());
+      auto* next_man_begin_edge = TripPath_GetCurrEdge(trip_path_, next_man->begin_node_index());
 
       bool is_first_man = (curr_man == maneuvers.begin());
 
@@ -402,7 +402,7 @@ void ManeuversBuilder::Combine(std::list<Maneuver>& maneuvers) {
       // and the next maneuver is not a ramp
       // and current and next maneuvers have a common base name
       else if ((next_man->begin_relative_direction() == Maneuver::RelativeDirection::kKeepStraight) &&
-               (next_man_begin_edge && !next_man_begin_edge->IsTurnChannelUse()) &&
+               (next_man_begin_edge && !TripPath_Edge_IsTurnChannelUse(next_man_begin_edge)) &&
                !next_man->internal_intersection() && !curr_man->ramp() && !next_man->ramp() &&
                !curr_man->roundabout() && !next_man->roundabout() && !common_base_names->empty()) {
 
@@ -423,7 +423,7 @@ void ManeuversBuilder::Combine(std::list<Maneuver>& maneuvers) {
       else if ((next_man->begin_relative_direction() == Maneuver::RelativeDirection::kKeepStraight) &&
                !curr_man->HasStreetNames() && !next_man->HasStreetNames() && !curr_man->IsTransit() &&
                !next_man->IsTransit() &&
-               (next_man_begin_edge && !next_man_begin_edge->IsTurnChannelUse()) &&
+               (next_man_begin_edge && !TripPath_Edge_IsTurnChannelUse(next_man_begin_edge)) &&
                !next_man->internal_intersection() && !curr_man->ramp() && !next_man->ramp() &&
                !curr_man->roundabout() && !next_man->roundabout()) {
 
@@ -702,11 +702,11 @@ void ManeuversBuilder::ConfirmManeuverTypeAssignment(std::list<Maneuver>& maneuv
 }
 
 void ManeuversBuilder::CreateDestinationManeuver(Maneuver& maneuver) {
-  int node_index = trip_path_->GetLastNodeIndex();
+  int node_index = TripPath_GetLastNodeIndex(trip_path_);
 
   // Determine if the destination has a side of street
   // and set the appropriate destination maneuver type
-  switch (trip_path_->GetDestination().side_of_street()) {
+  switch (TripPath_GetDestination(trip_path_).side_of_street()) {
     case Location::kLeft: {
       maneuver.set_type(TripDirections_Maneuver_Type_kDestinationLeft);
       LOG_TRACE("ManeuverType=DESTINATION_LEFT");
@@ -728,7 +728,7 @@ void ManeuversBuilder::CreateDestinationManeuver(Maneuver& maneuver) {
   maneuver.set_end_node_index(node_index);
 
   // Set the begin and end shape index
-  auto* prev_edge = trip_path_->GetPrevEdge(node_index);
+  auto* prev_edge = TripPath_GetPrevEdge(trip_path_, node_index);
   maneuver.set_begin_shape_index(prev_edge->end_shape_index());
   maneuver.set_end_shape_index(prev_edge->end_shape_index());
 
@@ -757,8 +757,8 @@ void ManeuversBuilder::CreateDestinationManeuver(Maneuver& maneuver) {
 
   // Set the verbal text formatter
   maneuver.set_verbal_formatter(
-      VerbalTextFormatterFactory::Create(trip_path_->GetCountryCode(node_index),
-                                         trip_path_->GetStateCode(node_index)));
+      VerbalTextFormatterFactory::Create(TripPath_GetCountryCode(trip_path_, node_index),
+                                         TripPath_GetStateCode(trip_path_, node_index)));
 }
 
 void ManeuversBuilder::CreateStartManeuver(Maneuver& maneuver) {
@@ -766,7 +766,7 @@ void ManeuversBuilder::CreateStartManeuver(Maneuver& maneuver) {
 
   // Determine if the origin has a side of street
   // and set the appropriate start maneuver type
-  switch (trip_path_->GetOrigin().side_of_street()) {
+  switch (TripPath_GetOrigin(trip_path_).side_of_street()) {
     case Location::kLeft: {
       maneuver.set_type(TripDirections_Maneuver_Type_kStartLeft);
       LOG_TRACE("ManeuverType=START_LEFT");
@@ -788,8 +788,8 @@ void ManeuversBuilder::CreateStartManeuver(Maneuver& maneuver) {
 
 void ManeuversBuilder::InitializeManeuver(Maneuver& maneuver, int node_index) {
 
-  auto* prev_edge = trip_path_->GetPrevEdge(node_index);
-  auto* curr_edge = trip_path_->GetCurrEdge(node_index);
+  auto* prev_edge = TripPath_GetPrevEdge(trip_path_, node_index);
+  auto* curr_edge = TripPath_GetCurrEdge(trip_path_, node_index);
 
   // Set the end heading
   maneuver.set_end_heading(prev_edge->end_heading());
@@ -801,22 +801,22 @@ void ManeuversBuilder::InitializeManeuver(Maneuver& maneuver, int node_index) {
   maneuver.set_end_shape_index(prev_edge->end_shape_index());
 
   // Ramp
-  if (prev_edge->IsRampUse()) {
+  if (TripPath_Edge_IsRampUse(prev_edge)) {
     maneuver.set_ramp(true);
   }
 
   // Turn Channel
-  if (prev_edge->IsTurnChannelUse()) {
+  if (TripPath_Edge_IsTurnChannelUse(prev_edge)) {
     maneuver.set_turn_channel(true);
   }
 
   // Ferry
-  if (prev_edge->IsFerryUse()) {
+  if (TripPath_Edge_IsFerryUse(prev_edge)) {
     maneuver.set_ferry(true);
   }
 
   // Rail Ferry
-  if (prev_edge->IsRailFerryUse()) {
+  if (TripPath_Edge_IsRailFerryUse(prev_edge)) {
     maneuver.set_rail_ferry(true);
   }
 
@@ -855,18 +855,18 @@ void ManeuversBuilder::InitializeManeuver(Maneuver& maneuver, int node_index) {
   }
 
   // Unnamed walkway
-  maneuver.set_unnamed_walkway(prev_edge->IsUnnamedWalkway());
+  maneuver.set_unnamed_walkway(TripPath_Edge_IsUnnamedWalkway(prev_edge));
 
   // Unnamed cycleway
-  maneuver.set_unnamed_cycleway(prev_edge->IsUnnamedCycleway());
+  maneuver.set_unnamed_cycleway(TripPath_Edge_IsUnnamedCycleway(prev_edge));
 
   // Unnamed mountain bike trail
-  maneuver.set_unnamed_mountain_bike_trail(prev_edge->IsUnnamedMountainBikeTrail());
+  maneuver.set_unnamed_mountain_bike_trail(TripPath_Edge_IsUnnamedMountainBikeTrail(prev_edge));
 
   // Transit info
   if (prev_edge->travel_mode() == TripPath_TravelMode_kTransit) {
-    maneuver.set_rail(prev_edge->IsRailUse());
-    maneuver.set_bus(prev_edge->IsBusUse());
+    maneuver.set_rail(TripPath_Edge_IsRailUse(prev_edge));
+    maneuver.set_bus(TripPath_Edge_IsBusUse(prev_edge));
     auto* transit_info = maneuver.mutable_transit_info();
     const auto& pe_transit_info = prev_edge->transit_route_info();
     transit_info->onestop_id = pe_transit_info.onestop_id();
@@ -885,16 +885,16 @@ void ManeuversBuilder::InitializeManeuver(Maneuver& maneuver, int node_index) {
   }
 
   // Transit connection
-  if (prev_edge->IsTransitConnection()) {
+  if (TripPath_Edge_IsTransitConnection(prev_edge)) {
     maneuver.set_transit_connection(true);
 
     // If previous edge is transit connection platform
     // and current edge is transit then mark maneuver as transit connection start
-    if (prev_edge->IsPlatformConnectionUse() && curr_edge &&
+    if (TripPath_Edge_IsPlatformConnectionUse(prev_edge) && curr_edge &&
         (curr_edge->travel_mode() == TripPath_TravelMode_kTransit)) {
       maneuver.set_type(TripDirections_Maneuver_Type_kTransitConnectionStart);
       LOG_TRACE("ManeuverType=TRANSIT_CONNECTION_START");
-      auto* node = trip_path_->GetEnhancedNode(node_index);
+      auto* node = trip_path_->mutable_node(node_index);
       maneuver.set_transit_connection_platform_info(node->transit_platform_info());
     }
     // else mark it as transit connection destination
@@ -910,7 +910,7 @@ void ManeuversBuilder::InitializeManeuver(Maneuver& maneuver, int node_index) {
 
 void ManeuversBuilder::UpdateManeuver(Maneuver& maneuver, int node_index) {
 
-  auto* prev_edge = trip_path_->GetPrevEdge(node_index);
+  auto* prev_edge = TripPath_GetPrevEdge(trip_path_, node_index);
 
   // Street names
   // Set if street names are empty and maneuver is not internal intersection
@@ -918,7 +918,7 @@ void ManeuversBuilder::UpdateManeuver(Maneuver& maneuver, int node_index) {
   if ((maneuver.street_names().empty() && !maneuver.internal_intersection()) ||
       UsableInternalIntersectionName(maneuver, node_index)) {
     maneuver.set_street_names(
-        StreetNamesFactory::Create(trip_path_->GetCountryCode(node_index), prev_edge->GetNameList()));
+        StreetNamesFactory::Create(TripPath_GetCountryCode(trip_path_, node_index), TripPath_Edge_GetNameList(prev_edge)));
   }
 
   // Update the internal turn count
@@ -943,7 +943,7 @@ void ManeuversBuilder::UpdateManeuver(Maneuver& maneuver, int node_index) {
   }
 
   // Portions highway
-  if (prev_edge->IsHighway()) {
+  if (TripPath_Edge_IsHighway(prev_edge)) {
     maneuver.set_portions_highway(true);
   }
 
@@ -952,14 +952,13 @@ void ManeuversBuilder::UpdateManeuver(Maneuver& maneuver, int node_index) {
     TripPath_TravelMode mode = prev_edge->travel_mode();
 
     // Adjust bicycle travel mode if roundabout is a road
-    if ((mode == TripPath_TravelMode_kBicycle) && (prev_edge->IsRoadUse())) {
+    if ((mode == TripPath_TravelMode_kBicycle) && (TripPath_Edge_IsRoadUse(prev_edge))) {
       mode = TripPath_TravelMode_kDrive;
     }
     // TODO might have to adjust for pedestrian too
 
     IntersectingEdgeCounts xedge_counts;
-    trip_path_->GetEnhancedNode(node_index)
-        ->CalculateRightLeftIntersectingEdgeCounts(prev_edge->end_heading(), mode, xedge_counts);
+    TripPath_Node_CalculateRightLeftIntersectingEdgeCounts(trip_path_->mutable_node(node_index), prev_edge->end_heading(), mode, xedge_counts);
     if (prev_edge->drive_on_right()) {
       maneuver.set_roundabout_exit_count(maneuver.roundabout_exit_count() +
                                          xedge_counts.right_traversable_outbound);
@@ -994,16 +993,16 @@ void ManeuversBuilder::UpdateManeuver(Maneuver& maneuver, int node_index) {
 
   // Insert transit stop into the transit maneuver
   if (prev_edge->travel_mode() == TripPath_TravelMode_kTransit) {
-    auto* node = trip_path_->GetEnhancedNode(node_index);
+    auto* node = trip_path_->mutable_node(node_index);
     maneuver.InsertTransitStop(node->transit_platform_info());
   }
 }
 
 void ManeuversBuilder::FinalizeManeuver(Maneuver& maneuver, int node_index) {
 
-  auto* prev_edge = trip_path_->GetPrevEdge(node_index);
-  auto* curr_edge = trip_path_->GetCurrEdge(node_index);
-  auto* node = trip_path_->GetEnhancedNode(node_index);
+  auto* prev_edge = TripPath_GetPrevEdge(trip_path_, node_index);
+  auto* curr_edge = TripPath_GetCurrEdge(trip_path_, node_index);
+  auto* node = trip_path_->mutable_node(node_index);
 
   // Set begin cardinal direction
   maneuver.set_begin_cardinal_direction(DetermineCardinalDirection(curr_edge->begin_heading()));
@@ -1033,7 +1032,7 @@ void ManeuversBuilder::FinalizeManeuver(Maneuver& maneuver, int node_index) {
     // Roundabouts
     //    if (curr_edge->roundabout()) {
     //      IntersectingEdgeCounts xedge_counts;
-    //      trip_path_->GetEnhancedNode(node_index)
+    //      trip_path_->mutable_node(node_index)
     //            ->CalculateRightLeftIntersectingEdgeCounts(prev_edge->end_heading(),
     //                                                       prev_edge->travel_mode(),
     //                                                       xedge_counts);
@@ -1057,7 +1056,7 @@ void ManeuversBuilder::FinalizeManeuver(Maneuver& maneuver, int node_index) {
   // Add transit connection stop to a transit connection destination
   if ((maneuver.type() == TripDirections_Maneuver_Type_kTransitConnectionDestination) && prev_edge &&
       (prev_edge->travel_mode() == TripPath_TravelMode_kTransit)) {
-    auto* node = trip_path_->GetEnhancedNode(node_index);
+    auto* node = trip_path_->mutable_node(node_index);
     maneuver.set_transit_connection_platform_info(node->transit_platform_info());
     LOG_TRACE("TripDirections_Maneuver_Type_kTransitConnectionDestination "
               "set_transit_connection_platform_info");
@@ -1065,18 +1064,18 @@ void ManeuversBuilder::FinalizeManeuver(Maneuver& maneuver, int node_index) {
 
   // Insert first transit stop
   if (maneuver.travel_mode() == TripPath_TravelMode_kTransit) {
-    auto* node = trip_path_->GetEnhancedNode(node_index);
+    auto* node = trip_path_->mutable_node(node_index);
     maneuver.InsertTransitStop(node->transit_platform_info());
   }
 
   // Set the begin intersecting edge name consistency
-  maneuver.set_begin_intersecting_edge_name_consistency(node->HasIntersectingEdgeNameConsistency());
+  maneuver.set_begin_intersecting_edge_name_consistency(TripPath_Node_HasIntersectingEdgeNameConsistency(node));
 
   // Set begin street names
-  if (!curr_edge->IsHighway() && !curr_edge->internal_intersection() &&
-      (curr_edge->GetNameList().size() > 1)) {
+  if (!TripPath_Edge_IsHighway(curr_edge) && !curr_edge->internal_intersection() &&
+      (TripPath_Edge_GetNameList(curr_edge).size() > 1)) {
     std::unique_ptr<StreetNames> curr_edge_names =
-        StreetNamesFactory::Create(trip_path_->GetCountryCode(node_index), curr_edge->GetNameList());
+        StreetNamesFactory::Create(TripPath_GetCountryCode(trip_path_, node_index), TripPath_Edge_GetNameList(curr_edge));
     std::unique_ptr<StreetNames> common_base_names =
         curr_edge_names->FindCommonBaseNames(maneuver.street_names());
     if (curr_edge_names->size() > common_base_names->size()) {
@@ -1086,8 +1085,8 @@ void ManeuversBuilder::FinalizeManeuver(Maneuver& maneuver, int node_index) {
 
   // Set the verbal text formatter
   maneuver.set_verbal_formatter(
-      VerbalTextFormatterFactory::Create(trip_path_->GetCountryCode(node_index),
-                                         trip_path_->GetStateCode(node_index)));
+      VerbalTextFormatterFactory::Create(TripPath_GetCountryCode(trip_path_, node_index),
+                                         TripPath_GetStateCode(trip_path_, node_index)));
 
   // Set the maneuver type
   SetManeuverType(maneuver);
@@ -1099,8 +1098,8 @@ void ManeuversBuilder::SetManeuverType(Maneuver& maneuver, bool none_type_allowe
     return;
   }
 
-  auto* prev_edge = trip_path_->GetPrevEdge(maneuver.begin_node_index());
-  auto* curr_edge = trip_path_->GetCurrEdge(maneuver.begin_node_index());
+  auto* prev_edge = TripPath_GetPrevEdge(trip_path_, maneuver.begin_node_index());
+  auto* curr_edge = TripPath_GetCurrEdge(trip_path_, maneuver.begin_node_index());
 
   // Process the different transit types
   if (maneuver.travel_mode() == TripPath_TravelMode_kTransit) {
@@ -1125,7 +1124,7 @@ void ManeuversBuilder::SetManeuverType(Maneuver& maneuver, bool none_type_allowe
     }
   }
   // Process post transit connection destination
-  else if (prev_edge && prev_edge->IsTransitConnectionUse() &&
+  else if (prev_edge && TripPath_Edge_IsTransitConnectionUse(prev_edge) &&
            (maneuver.travel_mode() != TripPath_TravelMode_kTransit)) {
     maneuver.set_type(TripDirections_Maneuver_Type_kPostTransitConnectionDestination);
     LOG_TRACE("ManeuverType=POST_TRANSIT_CONNECTION_DESTINATION");
@@ -1172,7 +1171,7 @@ void ManeuversBuilder::SetManeuverType(Maneuver& maneuver, bool none_type_allowe
     LOG_TRACE("ManeuverType=TURN_CHANNNEL");
   }
   // Process exit
-  else if (maneuver.ramp() && prev_edge && (prev_edge->IsHighway() || maneuver.HasExitNumberSign())) {
+  else if (maneuver.ramp() && prev_edge && (TripPath_Edge_IsHighway(prev_edge) || maneuver.HasExitNumberSign())) {
     switch (maneuver.begin_relative_direction()) {
       case Maneuver::RelativeDirection::kKeepRight:
       case Maneuver::RelativeDirection::kRight: {
@@ -1196,7 +1195,7 @@ void ManeuversBuilder::SetManeuverType(Maneuver& maneuver, bool none_type_allowe
     }
   }
   // Process on ramp
-  else if (maneuver.ramp() && prev_edge && !prev_edge->IsHighway()) {
+  else if (maneuver.ramp() && prev_edge && !TripPath_Edge_IsHighway(prev_edge)) {
     switch (maneuver.begin_relative_direction()) {
       case Maneuver::RelativeDirection::kKeepRight:
       case Maneuver::RelativeDirection::kRight: {
@@ -1225,7 +1224,7 @@ void ManeuversBuilder::SetManeuverType(Maneuver& maneuver, bool none_type_allowe
     }
   }
   // Process merge
-  else if (curr_edge->IsHighway() && prev_edge && prev_edge->IsRampUse()) {
+  else if (TripPath_Edge_IsHighway(curr_edge) && prev_edge && TripPath_Edge_IsRampUse(prev_edge)) {
     maneuver.set_type(TripDirections_Maneuver_Type_kMerge);
     LOG_TRACE("ManeuverType=MERGE");
   }
@@ -1235,7 +1234,7 @@ void ManeuversBuilder::SetManeuverType(Maneuver& maneuver, bool none_type_allowe
     LOG_TRACE("ManeuverType=FERRY_ENTER");
   }
   // Process exit ferry
-  else if (prev_edge && (prev_edge->IsFerryUse() || prev_edge->IsRailFerryUse())) {
+  else if (prev_edge && (TripPath_Edge_IsFerryUse(prev_edge) || TripPath_Edge_IsRailFerryUse(prev_edge))) {
     maneuver.set_type(TripDirections_Maneuver_Type_kFerryExit);
     LOG_TRACE("ManeuverType=FERRY_EXIT");
   }
@@ -1247,23 +1246,23 @@ void ManeuversBuilder::SetManeuverType(Maneuver& maneuver, bool none_type_allowe
 }
 
 void ManeuversBuilder::SetSimpleDirectionalManeuverType(Maneuver& maneuver,
-                                                        EnhancedTripPath_Edge* prev_edge,
-                                                        EnhancedTripPath_Edge* curr_edge) {
+                                                        TripPath_Edge* prev_edge,
+                                                        TripPath_Edge* curr_edge) {
   switch (Turn::GetType(maneuver.turn_degree())) {
     case Turn::Type::kStraight: {
       maneuver.set_type(TripDirections_Maneuver_Type_kContinue);
       LOG_TRACE("ManeuverType=CONTINUE");
       if (trip_path_) {
-        auto* man_begin_edge = trip_path_->GetCurrEdge(maneuver.begin_node_index());
-        auto* node = trip_path_->GetEnhancedNode(maneuver.begin_node_index());
-        bool prev_edge_has_names = (prev_edge ? !prev_edge->IsUnnamed() : false);
+        auto* man_begin_edge = TripPath_GetCurrEdge(trip_path_, maneuver.begin_node_index());
+        auto* node = trip_path_->mutable_node(maneuver.begin_node_index());
+        bool prev_edge_has_names = (prev_edge ? !TripPath_Edge_IsUnnamed(prev_edge) : false);
 
         ////////////////////////////////////////////////////////////////////
         // If the maneuver begin edge is a turn channel
         // and the relative direction is not a keep straight
         // then set as slight right based on a relative keep right direction
         //  OR  set as slight left based on a relative keep left direction
-        if (man_begin_edge && man_begin_edge->IsTurnChannelUse() &&
+        if (man_begin_edge && TripPath_Edge_IsTurnChannelUse(man_begin_edge) &&
             (maneuver.begin_relative_direction() != Maneuver::RelativeDirection::kKeepStraight)) {
           if (maneuver.begin_relative_direction() == Maneuver::RelativeDirection::kKeepRight) {
             maneuver.set_type(TripDirections_Maneuver_Type_kSlightRight);
@@ -1308,8 +1307,8 @@ void ManeuversBuilder::SetSimpleDirectionalManeuverType(Maneuver& maneuver,
         //          // current maneuver
         //          std::unique_ptr<StreetNames> prev_edge_names =
         //              StreetNamesFactory::Create(
-        //                  trip_path_->GetCountryCode(maneuver.begin_node_index()),
-        //                  prev_edge->GetNameList());
+        //                  TripPath_GetCountryCode(trip_path_, maneuver.begin_node_index()),
+        //                  TripPath_Edge_GetNameList(prev_edge));
         //          std::unique_ptr<StreetNames> common_base_names = prev_edge_names
         //              ->FindCommonBaseNames(maneuver.street_names());
         //          LOG_INFO("prev_edge_names->size()=" + std::to_string(prev_edge_names->size()));
@@ -1349,7 +1348,7 @@ void ManeuversBuilder::SetSimpleDirectionalManeuverType(Maneuver& maneuver,
       } else if (maneuver.begin_relative_direction() == Maneuver::RelativeDirection::kKeepRight) {
         maneuver.set_type(TripDirections_Maneuver_Type_kUturnRight);
         LOG_TRACE("kReverse: 2 ManeuverType=UTURN_RIGHT");
-      } else if (trip_path_->GetCurrEdge(maneuver.begin_node_index())->drive_on_right()) {
+      } else if (TripPath_GetCurrEdge(trip_path_, maneuver.begin_node_index())->drive_on_right()) {
         if (maneuver.turn_degree() < 180) {
           maneuver.set_type(TripDirections_Maneuver_Type_kUturnRight);
           LOG_TRACE("kReverse: 3 ManeuverType=UTURN_RIGHT");
@@ -1409,8 +1408,8 @@ ManeuversBuilder::DetermineCardinalDirection(uint32_t heading) {
 }
 
 bool ManeuversBuilder::CanManeuverIncludePrevEdge(Maneuver& maneuver, int node_index) {
-  auto* prev_edge = trip_path_->GetPrevEdge(node_index);
-  auto* curr_edge = trip_path_->GetCurrEdge(node_index);
+  auto* prev_edge = TripPath_GetPrevEdge(trip_path_, node_index);
+  auto* curr_edge = TripPath_GetCurrEdge(trip_path_, node_index);
 
   /////////////////////////////////////////////////////////////////////////////
   // Process transit
@@ -1440,31 +1439,31 @@ bool ManeuversBuilder::CanManeuverIncludePrevEdge(Maneuver& maneuver, int node_i
   /////////////////////////////////////////////////////////////////////////////
   // Process transit connection
   // If maneuver and prev edge are transit connections
-  if (maneuver.transit_connection() && prev_edge->IsTransitConnection()) {
+  if (maneuver.transit_connection() && TripPath_Edge_IsTransitConnection(prev_edge)) {
 
     // Logic for a transit entrance in reverse
-    if (prev_edge->IsEgressConnectionUse() && curr_edge->IsPlatformConnectionUse()) {
+    if (TripPath_Edge_IsEgressConnectionUse(prev_edge) && TripPath_Edge_IsPlatformConnectionUse(curr_edge)) {
       return true;
-    } else if (prev_edge->IsTransitConnectionUse() && curr_edge->IsEgressConnectionUse()) {
+    } else if (TripPath_Edge_IsTransitConnectionUse(prev_edge) && TripPath_Edge_IsEgressConnectionUse(curr_edge)) {
       return true;
     }
 
     // Logic for a transit exit in reverse
-    if (prev_edge->IsEgressConnectionUse() && curr_edge->IsTransitConnectionUse()) {
+    if (TripPath_Edge_IsEgressConnectionUse(prev_edge) && TripPath_Edge_IsTransitConnectionUse(curr_edge)) {
       return true;
-    } else if (prev_edge->IsPlatformConnectionUse() && curr_edge->IsEgressConnectionUse()) {
+    } else if (TripPath_Edge_IsPlatformConnectionUse(prev_edge) && TripPath_Edge_IsEgressConnectionUse(curr_edge)) {
       return true;
     }
 
     // Combine for station transfer
-    if (prev_edge->IsPlatformConnectionUse() && curr_edge->IsPlatformConnectionUse()) {
+    if (TripPath_Edge_IsPlatformConnectionUse(prev_edge) && TripPath_Edge_IsPlatformConnectionUse(curr_edge)) {
       return true;
     }
 
     // If the expected order of transit connection types was not found
     // then do not combine
     return false;
-  } else if (maneuver.transit_connection() || prev_edge->IsTransitConnection()) {
+  } else if (maneuver.transit_connection() || TripPath_Edge_IsTransitConnection(prev_edge)) {
     return false;
   }
 
@@ -1473,13 +1472,13 @@ bool ManeuversBuilder::CanManeuverIncludePrevEdge(Maneuver& maneuver, int node_i
   if (maneuver.travel_mode() != prev_edge->travel_mode()) {
     return false;
   }
-  if (maneuver.unnamed_walkway() != prev_edge->IsUnnamedWalkway()) {
+  if (maneuver.unnamed_walkway() != TripPath_Edge_IsUnnamedWalkway(prev_edge)) {
     return false;
   }
-  if (maneuver.unnamed_cycleway() != prev_edge->IsUnnamedCycleway()) {
+  if (maneuver.unnamed_cycleway() != TripPath_Edge_IsUnnamedCycleway(prev_edge)) {
     return false;
   }
-  if (maneuver.unnamed_mountain_bike_trail() != prev_edge->IsUnnamedMountainBikeTrail()) {
+  if (maneuver.unnamed_mountain_bike_trail() != TripPath_Edge_IsUnnamedMountainBikeTrail(prev_edge)) {
     return false;
   }
 
@@ -1514,11 +1513,11 @@ bool ManeuversBuilder::CanManeuverIncludePrevEdge(Maneuver& maneuver, int node_i
 
   /////////////////////////////////////////////////////////////////////////////
   // Process simple turn channel
-  if (prev_edge->IsTurnChannelUse() && !maneuver.turn_channel()) {
+  if (TripPath_Edge_IsTurnChannelUse(prev_edge) && !maneuver.turn_channel()) {
     return false;
-  } else if (!prev_edge->IsTurnChannelUse() && maneuver.turn_channel()) {
+  } else if (!TripPath_Edge_IsTurnChannelUse(prev_edge) && maneuver.turn_channel()) {
     return false;
-  } else if (prev_edge->IsTurnChannelUse() && maneuver.turn_channel()) {
+  } else if (TripPath_Edge_IsTurnChannelUse(prev_edge) && maneuver.turn_channel()) {
     return true;
   }
 
@@ -1530,37 +1529,37 @@ bool ManeuversBuilder::CanManeuverIncludePrevEdge(Maneuver& maneuver, int node_i
 
   /////////////////////////////////////////////////////////////////////////////
   // Process ramps
-  if (maneuver.ramp() && !prev_edge->IsRampUse()) {
+  if (maneuver.ramp() && !TripPath_Edge_IsRampUse(prev_edge)) {
     return false;
   }
-  if (prev_edge->IsRampUse() && !maneuver.ramp()) {
+  if (TripPath_Edge_IsRampUse(prev_edge) && !maneuver.ramp()) {
     return false;
   }
-  if (maneuver.ramp() && prev_edge->IsRampUse()) {
+  if (maneuver.ramp() && TripPath_Edge_IsRampUse(prev_edge)) {
     return true;
   }
 
   /////////////////////////////////////////////////////////////////////////////
   // Process ferries
-  if (maneuver.ferry() && !prev_edge->IsFerryUse()) {
+  if (maneuver.ferry() && !TripPath_Edge_IsFerryUse(prev_edge)) {
     return false;
   }
-  if (prev_edge->IsFerryUse() && !maneuver.ferry()) {
+  if (TripPath_Edge_IsFerryUse(prev_edge) && !maneuver.ferry()) {
     return false;
   }
-  if (maneuver.ferry() && prev_edge->IsFerryUse()) {
+  if (maneuver.ferry() && TripPath_Edge_IsFerryUse(prev_edge)) {
     return true;
   }
 
   /////////////////////////////////////////////////////////////////////////////
   // Process rail ferries
-  if (maneuver.rail_ferry() && !prev_edge->IsRailFerryUse()) {
+  if (maneuver.rail_ferry() && !TripPath_Edge_IsRailFerryUse(prev_edge)) {
     return false;
   }
-  if (prev_edge->IsRailFerryUse() && !maneuver.rail_ferry()) {
+  if (TripPath_Edge_IsRailFerryUse(prev_edge) && !maneuver.rail_ferry()) {
     return false;
   }
-  if (maneuver.rail_ferry() && prev_edge->IsRailFerryUse()) {
+  if (maneuver.rail_ferry() && TripPath_Edge_IsRailFerryUse(prev_edge)) {
     return true;
   }
 
@@ -1606,7 +1605,7 @@ bool ManeuversBuilder::CanManeuverIncludePrevEdge(Maneuver& maneuver, int node_i
   }
 
   std::unique_ptr<StreetNames> prev_edge_names =
-      StreetNamesFactory::Create(trip_path_->GetCountryCode(node_index), prev_edge->GetNameList());
+      StreetNamesFactory::Create(TripPath_GetCountryCode(trip_path_, node_index), TripPath_Edge_GetNameList(prev_edge));
 
   /////////////////////////////////////////////////////////////////////////////
   // Process common base names
@@ -1619,7 +1618,7 @@ bool ManeuversBuilder::CanManeuverIncludePrevEdge(Maneuver& maneuver, int node_i
 
   /////////////////////////////////////////////////////////////////////////////
   // Process unnamed edge
-  if (!maneuver.HasStreetNames() && prev_edge->IsUnnamed() &&
+  if (!maneuver.HasStreetNames() && TripPath_Edge_IsUnnamed(prev_edge) &&
       IncludeUnnamedPrevEdge(node_index, prev_edge, curr_edge)) {
     return true;
   }
@@ -1628,16 +1627,16 @@ bool ManeuversBuilder::CanManeuverIncludePrevEdge(Maneuver& maneuver, int node_i
 }
 
 bool ManeuversBuilder::IncludeUnnamedPrevEdge(int node_index,
-                                              EnhancedTripPath_Edge* prev_edge,
-                                              EnhancedTripPath_Edge* curr_edge) const {
+                                              TripPath_Edge* prev_edge,
+                                              TripPath_Edge* curr_edge) const {
 
-  auto* node = trip_path_->GetEnhancedNode(node_index);
+  auto* node = trip_path_->mutable_node(node_index);
 
-  if (!node->HasIntersectingEdges()) {
+  if (!TripPath_Node_HasIntersectingEdges(node)) {
     return true;
-  } else if (curr_edge->IsStraightest(GetTurnDegree(prev_edge->end_heading(),
+  } else if (TripPath_Edge_IsStraightest(curr_edge, GetTurnDegree(prev_edge->end_heading(),
                                                     curr_edge->begin_heading()),
-                                      node->GetStraightestIntersectingEdgeTurnDegree(
+                                          TripPath_Node_GetStraightestIntersectingEdgeTurnDegree(node,
                                           prev_edge->end_heading()))) {
     return true;
   }
@@ -1646,10 +1645,10 @@ bool ManeuversBuilder::IncludeUnnamedPrevEdge(int node_index,
 }
 
 bool ManeuversBuilder::IsFork(int node_index,
-                              EnhancedTripPath_Edge* prev_edge,
-                              EnhancedTripPath_Edge* curr_edge) const {
+                              TripPath_Edge* prev_edge,
+                              TripPath_Edge* curr_edge) const {
 
-  auto* node = trip_path_->GetEnhancedNode(node_index);
+  auto* node = trip_path_->mutable_node(node_index);
   uint32_t turn_degree = GetTurnDegree(prev_edge->end_heading(), curr_edge->begin_heading());
 
   // If node is fork
@@ -1659,7 +1658,7 @@ bool ManeuversBuilder::IsFork(int node_index,
 
     IntersectingEdgeCounts xedge_counts;
     // TODO: update to pass similar turn threshold
-    node->CalculateRightLeftIntersectingEdgeCounts(prev_edge->end_heading(), prev_edge->travel_mode(),
+    TripPath_Node_CalculateRightLeftIntersectingEdgeCounts(node, prev_edge->end_heading(), prev_edge->travel_mode(),
                                                    xedge_counts);
 
     // if there is a similar traversable intersecting edge
@@ -1668,7 +1667,7 @@ bool ManeuversBuilder::IsFork(int node_index,
          (xedge_counts.right_similar_traversable_outbound > 0)) ||
         (((xedge_counts.left_traversable_outbound > 0) ||
           (xedge_counts.right_traversable_outbound > 0)) &&
-         curr_edge->IsRampUse())) {
+         TripPath_Edge_IsRampUse(curr_edge))) {
       return true;
     }
   }
@@ -1677,10 +1676,10 @@ bool ManeuversBuilder::IsFork(int node_index,
 }
 
 bool ManeuversBuilder::IsTee(int node_index,
-                             EnhancedTripPath_Edge* prev_edge,
-                             EnhancedTripPath_Edge* curr_edge) const {
+                             TripPath_Edge* prev_edge,
+                             TripPath_Edge* curr_edge) const {
 
-  auto* node = trip_path_->GetEnhancedNode(node_index);
+  auto* node = trip_path_->mutable_node(node_index);
   // Verify only one intersecting edge
   if (node->intersecting_edge_size() == 1) {
     // Assign turn type
@@ -1691,7 +1690,7 @@ bool ManeuversBuilder::IsTee(int node_index,
         GetTurnDegree(prev_edge->end_heading(), node->intersecting_edge(0).begin_heading()));
 
     // Intersecting edge must be traversable
-    if (!(node->GetIntersectingEdge(0)->IsTraversable(prev_edge->travel_mode()))) {
+    if (!TripPath_IntersectingEdge_IsTraversable(TripPath_Node_GetIntersectingEdge(node, 0), prev_edge->travel_mode())) {
       return false;
     }
 
@@ -1706,8 +1705,8 @@ bool ManeuversBuilder::IsTee(int node_index,
 }
 
 bool ManeuversBuilder::IsLeftPencilPointUturn(int node_index,
-                                              EnhancedTripPath_Edge* prev_edge,
-                                              EnhancedTripPath_Edge* curr_edge) const {
+                                              TripPath_Edge* prev_edge,
+                                              TripPath_Edge* curr_edge) const {
 
   uint32_t turn_degree = GetTurnDegree(prev_edge->end_heading(), curr_edge->begin_heading());
 
@@ -1719,19 +1718,19 @@ bool ManeuversBuilder::IsLeftPencilPointUturn(int node_index,
       (((turn_degree > 179) && (turn_degree < 211)) ||
        (((prev_edge->length() < 50) || (curr_edge->length() < 50)) && (turn_degree > 179) &&
         (turn_degree < 226))) &&
-      prev_edge->IsOneway() && curr_edge->IsOneway()) {
+      TripPath_Edge_IsOneway(prev_edge) && TripPath_Edge_IsOneway(curr_edge)) {
     // If the above criteria is met then check the following criteria...
 
     IntersectingEdgeCounts xedge_counts;
-    auto* node = trip_path_->GetEnhancedNode(node_index);
-    node->CalculateRightLeftIntersectingEdgeCounts(prev_edge->end_heading(), prev_edge->travel_mode(),
+    auto* node = trip_path_->mutable_node(node_index);
+    TripPath_Node_CalculateRightLeftIntersectingEdgeCounts(node, prev_edge->end_heading(), prev_edge->travel_mode(),
                                                    xedge_counts);
 
     std::unique_ptr<StreetNames> prev_edge_names =
-        StreetNamesFactory::Create(trip_path_->GetCountryCode(node_index), prev_edge->GetNameList());
+        StreetNamesFactory::Create(TripPath_GetCountryCode(trip_path_, node_index), TripPath_Edge_GetNameList(prev_edge));
 
     std::unique_ptr<StreetNames> curr_edge_names =
-        StreetNamesFactory::Create(trip_path_->GetCountryCode(node_index), curr_edge->GetNameList());
+        StreetNamesFactory::Create(TripPath_GetCountryCode(trip_path_, node_index), TripPath_Edge_GetNameList(curr_edge));
 
     // Process common base names
     std::unique_ptr<StreetNames> common_base_names =
@@ -1749,8 +1748,8 @@ bool ManeuversBuilder::IsLeftPencilPointUturn(int node_index,
 }
 
 bool ManeuversBuilder::IsRightPencilPointUturn(int node_index,
-                                               EnhancedTripPath_Edge* prev_edge,
-                                               EnhancedTripPath_Edge* curr_edge) const {
+                                               TripPath_Edge* prev_edge,
+                                               TripPath_Edge* curr_edge) const {
 
   uint32_t turn_degree = GetTurnDegree(prev_edge->end_heading(), curr_edge->begin_heading());
 
@@ -1762,19 +1761,19 @@ bool ManeuversBuilder::IsRightPencilPointUturn(int node_index,
       (((turn_degree > 149) && (turn_degree < 181)) ||
        (((prev_edge->length() < 50) || (curr_edge->length() < 50)) && (turn_degree > 134) &&
         (turn_degree < 181))) &&
-      prev_edge->IsOneway() && curr_edge->IsOneway()) {
+      TripPath_Edge_IsOneway(prev_edge) && TripPath_Edge_IsOneway(curr_edge)) {
     // If the above criteria is met then check the following criteria...
 
     IntersectingEdgeCounts xedge_counts;
-    auto* node = trip_path_->GetEnhancedNode(node_index);
-    node->CalculateRightLeftIntersectingEdgeCounts(prev_edge->end_heading(), prev_edge->travel_mode(),
+    auto* node = trip_path_->mutable_node(node_index);
+    TripPath_Node_CalculateRightLeftIntersectingEdgeCounts(node, prev_edge->end_heading(), prev_edge->travel_mode(),
                                                    xedge_counts);
 
     std::unique_ptr<StreetNames> prev_edge_names =
-        StreetNamesFactory::Create(trip_path_->GetCountryCode(node_index), prev_edge->GetNameList());
+        StreetNamesFactory::Create(TripPath_GetCountryCode(trip_path_, node_index), TripPath_Edge_GetNameList(prev_edge));
 
     std::unique_ptr<StreetNames> curr_edge_names =
-        StreetNamesFactory::Create(trip_path_->GetCountryCode(node_index), curr_edge->GetNameList());
+        StreetNamesFactory::Create(TripPath_GetCountryCode(trip_path_, node_index), TripPath_Edge_GetNameList(curr_edge));
 
     // Process common base names
     std::unique_ptr<StreetNames> common_base_names =
@@ -1792,30 +1791,30 @@ bool ManeuversBuilder::IsRightPencilPointUturn(int node_index,
 }
 
 bool ManeuversBuilder::IsIntersectingForwardEdge(int node_index,
-                                                 EnhancedTripPath_Edge* prev_edge,
-                                                 EnhancedTripPath_Edge* curr_edge) const {
+                                                 TripPath_Edge* prev_edge,
+                                                 TripPath_Edge* curr_edge) const {
 
-  auto* node = trip_path_->GetEnhancedNode(node_index);
+  auto* node = trip_path_->mutable_node(node_index);
   uint32_t turn_degree = GetTurnDegree(prev_edge->end_heading(), curr_edge->begin_heading());
 
-  if (node->HasIntersectingEdges() && !node->IsMotorwayJunction() && !node->fork() &&
-      !(curr_edge->IsHighway() && prev_edge->IsHighway())) {
+  if (TripPath_Node_HasIntersectingEdges(node) && !TripPath_Node_IsMotorwayJunction(node) && !node->fork() &&
+      !(TripPath_Edge_IsHighway(curr_edge) && TripPath_Edge_IsHighway(prev_edge))) {
     // if path edge is not forward
     // and forward intersecting edge exists
     // then return true
-    if (!curr_edge->IsForward(turn_degree) &&
-        node->HasFowardIntersectingEdge(prev_edge->end_heading())) {
+    if (!TripPath_Edge_IsForward(turn_degree) &&
+        TripPath_Node_HasFowardIntersectingEdge(node, prev_edge->end_heading())) {
       return true;
     }
     // if path edge is forward
     // and forward traversable intersecting edge exists
     // and path edge is not the straightest
     // then return true
-    else if (curr_edge->IsForward(turn_degree) &&
-             node->HasForwardTraversableIntersectingEdge(prev_edge->end_heading(),
+    else if (TripPath_Edge_IsForward(turn_degree) &&
+             TripPath_Node_HasForwardTraversableIntersectingEdge(node, prev_edge->end_heading(),
                                                          prev_edge->travel_mode()) &&
-             !curr_edge->IsStraightest(turn_degree,
-                                       node->GetStraightestTraversableIntersectingEdgeTurnDegree(
+             !TripPath_Edge_IsStraightest(curr_edge, turn_degree,
+                                       TripPath_Node_GetStraightestTraversableIntersectingEdgeTurnDegree(node,
                                            prev_edge->end_heading(), prev_edge->travel_mode()))) {
       return true;
     }
@@ -1825,12 +1824,12 @@ bool ManeuversBuilder::IsIntersectingForwardEdge(int node_index,
 }
 
 void ManeuversBuilder::DetermineRelativeDirection(Maneuver& maneuver) {
-  auto* prev_edge = trip_path_->GetPrevEdge(maneuver.begin_node_index());
-  auto* curr_edge = trip_path_->GetCurrEdge(maneuver.begin_node_index());
+  auto* prev_edge = TripPath_GetPrevEdge(trip_path_, maneuver.begin_node_index());
+  auto* curr_edge = TripPath_GetCurrEdge(trip_path_, maneuver.begin_node_index());
 
   IntersectingEdgeCounts xedge_counts;
-  auto* node = trip_path_->GetEnhancedNode(maneuver.begin_node_index());
-  node->CalculateRightLeftIntersectingEdgeCounts(prev_edge->end_heading(), prev_edge->travel_mode(),
+  auto* node = trip_path_->mutable_node(maneuver.begin_node_index());
+  TripPath_Node_CalculateRightLeftIntersectingEdgeCounts(node, prev_edge->end_heading(), prev_edge->travel_mode(),
                                                  xedge_counts);
 
   Maneuver::RelativeDirection relative_direction =
@@ -1848,8 +1847,8 @@ void ManeuversBuilder::DetermineRelativeDirection(Maneuver& maneuver) {
     } else if ((xedge_counts.left_similar_traversable_outbound == 0) &&
                (xedge_counts.left_traversable_outbound > 0) &&
                (xedge_counts.right_traversable_outbound == 0)) {
-      if (!curr_edge->IsStraightest(maneuver.turn_degree(),
-                                    node->GetStraightestTraversableIntersectingEdgeTurnDegree(
+      if (!TripPath_Edge_IsStraightest(curr_edge, maneuver.turn_degree(),
+                                        TripPath_Node_GetStraightestTraversableIntersectingEdgeTurnDegree(node,
                                         prev_edge->end_heading(), prev_edge->travel_mode()))) {
         maneuver.set_begin_relative_direction(Maneuver::RelativeDirection::kKeepRight);
       } else if (maneuver.turn_channel() &&
@@ -1859,8 +1858,8 @@ void ManeuversBuilder::DetermineRelativeDirection(Maneuver& maneuver) {
     } else if ((xedge_counts.right_similar_traversable_outbound == 0) &&
                (xedge_counts.right_traversable_outbound > 0) &&
                (xedge_counts.left_traversable_outbound == 0)) {
-      if (!curr_edge->IsStraightest(maneuver.turn_degree(),
-                                    node->GetStraightestTraversableIntersectingEdgeTurnDegree(
+      if (!TripPath_Edge_IsStraightest(curr_edge, maneuver.turn_degree(),
+                                        TripPath_Node_GetStraightestTraversableIntersectingEdgeTurnDegree(node, 
                                         prev_edge->end_heading(), prev_edge->travel_mode()))) {
         maneuver.set_begin_relative_direction(Maneuver::RelativeDirection::kKeepLeft);
       } else if (maneuver.turn_channel() &&
@@ -1886,8 +1885,8 @@ Maneuver::RelativeDirection ManeuversBuilder::DetermineRelativeDirection(uint32_
 }
 
 bool ManeuversBuilder::UsableInternalIntersectionName(Maneuver& maneuver, int node_index) const {
-  auto* prev_edge = trip_path_->GetPrevEdge(node_index);
-  auto* prev_prev_edge = trip_path_->GetPrevEdge(node_index, 2);
+  auto* prev_edge = TripPath_GetPrevEdge(trip_path_, node_index);
+  auto* prev_prev_edge = TripPath_GetPrevEdge(trip_path_, node_index, 2);
   uint32_t prev_prev_2prev_turn_degree = 0;
   if (prev_prev_edge) {
     prev_prev_2prev_turn_degree =
@@ -1910,8 +1909,8 @@ bool ManeuversBuilder::UsableInternalIntersectionName(Maneuver& maneuver, int no
 }
 
 void ManeuversBuilder::UpdateInternalTurnCount(Maneuver& maneuver, int node_index) const {
-  auto* prev_edge = trip_path_->GetPrevEdge(node_index);
-  auto* prev_prev_edge = trip_path_->GetPrevEdge(node_index, 2);
+  auto* prev_edge = TripPath_GetPrevEdge(trip_path_, node_index);
+  auto* prev_prev_edge = TripPath_GetPrevEdge(trip_path_, node_index, 2);
   uint32_t prev_prev_2prev_turn_degree = 0;
   if (prev_prev_edge) {
     prev_prev_2prev_turn_degree =

@@ -11,126 +11,62 @@
 namespace valhalla {
 namespace odin {
 
-class EnhancedTripPath;
-class EnhancedTripPath_Edge;
-class EnhancedTripPath_Node;
-class EnhancedTripPath_Admin;
+TripPath_Edge* TripPath_GetPrevEdge(TripPath *tripPath, const int node_index, int delta = 1);
+TripPath_Edge* TripPath_GetCurrEdge(TripPath *tripPath, const int node_index);
+TripPath_Edge* TripPath_GetNextEdge(TripPath *tripPath, const int node_index, int delta = 1);
+float TripPath_GetLength(const TripPath *tripPath, const DirectionsOptions::Units& units);
 
-class EnhancedTripPath : public TripPath {
-public:
-  EnhancedTripPath() = delete;
+int TripPath_GetLastNodeIndex(const TripPath *tripPath);
+TripPath_Admin* TripPath_GetAdmin(TripPath *tripPath, size_t index);
+std::string TripPath_GetCountryCode(TripPath *tripPath, int node_index);
+std::string TripPath_GetStateCode(TripPath *tripPath, int node_index);
 
-  EnhancedTripPath_Node* GetEnhancedNode(const int node_index);
+const ::valhalla::odin::Location& TripPath_GetOrigin(const TripPath *tripPath);
+const ::valhalla::odin::Location& TripPath_GetDestination(const TripPath *tripPath);
 
-  EnhancedTripPath_Edge* GetPrevEdge(const int node_index, int delta = 1);
+bool TripPath_Edge_IsUnnamed(const TripPath_Edge *edge);
+bool TripPath_Edge_IsRoadUse(const TripPath_Edge *edge);
+bool TripPath_Edge_IsRampUse(const TripPath_Edge *edge);
+bool TripPath_Edge_IsTurnChannelUse(const TripPath_Edge *edge);
+bool TripPath_Edge_IsTrackUse(const TripPath_Edge *edge);
+bool TripPath_Edge_IsDrivewayUse(const TripPath_Edge *edge);
+bool TripPath_Edge_IsAlleyUse(const TripPath_Edge *edge);
+bool TripPath_Edge_IsParkingAisleUse(const TripPath_Edge *edge);
+bool TripPath_Edge_IsEmergencyAccessUse(const TripPath_Edge *edge);
+bool TripPath_Edge_IsDriveThruUse(const TripPath_Edge *edge);
+bool TripPath_Edge_IsCuldesacUse(const TripPath_Edge *edge);
+bool TripPath_Edge_IsCyclewayUse(const TripPath_Edge *edge);
+bool TripPath_Edge_IsMountainBikeUse(const TripPath_Edge *edge);
+bool TripPath_Edge_IsSidewalkUse(const TripPath_Edge *edge);
+bool TripPath_Edge_IsFootwayUse(const TripPath_Edge *edge);
+bool TripPath_Edge_IsStepsUse(const TripPath_Edge *edge);
+bool TripPath_Edge_IsPathUse(const TripPath_Edge *edge);
+bool TripPath_Edge_IsPedestrianUse(const TripPath_Edge *edge);
+bool TripPath_Edge_IsBridlewayUse(const TripPath_Edge *edge);
+bool TripPath_Edge_IsOtherUse(const TripPath_Edge *edge);
+bool TripPath_Edge_IsFerryUse(const TripPath_Edge *edge);
+bool TripPath_Edge_IsRailFerryUse(const TripPath_Edge *edge);
+bool TripPath_Edge_IsRailUse(const TripPath_Edge *edge);
+bool TripPath_Edge_IsBusUse(const TripPath_Edge *edge);
+bool TripPath_Edge_IsEgressConnectionUse(const TripPath_Edge *edge);
+bool TripPath_Edge_IsPlatformConnectionUse(const TripPath_Edge *edge);
+bool TripPath_Edge_IsTransitConnectionUse(const TripPath_Edge *edge);
+bool TripPath_Edge_IsTransitConnection(const TripPath_Edge *edge);
+bool TripPath_Edge_IsUnnamedWalkway(const TripPath_Edge *edge);
+bool TripPath_Edge_IsUnnamedCycleway(const TripPath_Edge *edge);
+bool TripPath_Edge_IsUnnamedMountainBikeTrail(const TripPath_Edge *edge);
+bool TripPath_Edge_IsHighway(const TripPath_Edge *edge);
+bool TripPath_Edge_IsOneway(const TripPath_Edge *edge);
+bool TripPath_Edge_IsForward(uint32_t prev2curr_turn_degree);
+bool TripPath_Edge_IsWiderForward(uint32_t prev2curr_turn_degree);
+bool TripPath_Edge_IsStraightest(const TripPath_Edge *edge, uint32_t prev2curr_turn_degree,
+                                          uint32_t straightest_xedge_turn_degree);
+std::vector<std::string> TripPath_Edge_GetNameList(const TripPath_Edge *edge);
+float TripPath_Edge_GetLength(const TripPath_Edge *edge, const DirectionsOptions::Units& units);
 
-  EnhancedTripPath_Edge* GetCurrEdge(const int node_index);
-
-  EnhancedTripPath_Edge* GetNextEdge(const int node_index, int delta = 1);
-
-  bool IsValidNodeIndex(int node_index) const;
-
-  bool IsFirstNodeIndex(int node_index) const;
-
-  bool IsLastNodeIndex(int node_index) const;
-
-  int GetLastNodeIndex() const;
-
-  EnhancedTripPath_Admin* GetAdmin(size_t index);
-
-  std::string GetCountryCode(int node_index);
-
-  std::string GetStateCode(int node_index);
-
-  const ::valhalla::odin::Location& GetOrigin() const;
-
-  const ::valhalla::odin::Location& GetDestination() const;
-
-  float GetLength(const DirectionsOptions::Units& units);
-};
-
-class EnhancedTripPath_Edge : public TripPath_Edge {
-public:
-  EnhancedTripPath_Edge() = delete;
-
-  bool IsUnnamed() const;
-
-  // Use
-  bool IsRoadUse() const;
-  bool IsRampUse() const;
-  bool IsTurnChannelUse() const;
-  bool IsTrackUse() const;
-  bool IsDrivewayUse() const;
-  bool IsAlleyUse() const;
-  bool IsParkingAisleUse() const;
-  bool IsEmergencyAccessUse() const;
-  bool IsDriveThruUse() const;
-  bool IsCuldesacUse() const;
-  bool IsCyclewayUse() const;
-  bool IsMountainBikeUse() const;
-  bool IsSidewalkUse() const;
-  bool IsFootwayUse() const;
-  bool IsStepsUse() const;
-  bool IsPathUse() const;
-  bool IsPedestrianUse() const;
-  bool IsBridlewayUse() const;
-  bool IsOtherUse() const;
-  bool IsFerryUse() const;
-  bool IsRailFerryUse() const;
-  bool IsRailUse() const;
-  bool IsBusUse() const;
-  bool IsEgressConnectionUse() const;
-  bool IsPlatformConnectionUse() const;
-  bool IsTransitConnectionUse() const;
-
-  bool IsTransitConnection() const;
-
-  bool IsUnnamedWalkway() const;
-
-  bool IsUnnamedCycleway() const;
-
-  bool IsUnnamedMountainBikeTrail() const;
-
-  bool IsHighway() const;
-
-  bool IsOneway() const;
-
-  bool IsForward(uint32_t prev2curr_turn_degree) const;
-
-  bool IsWiderForward(uint32_t prev2curr_turn_degree) const;
-
-  bool IsStraightest(uint32_t prev2curr_turn_degree, uint32_t straightest_xedge_turn_degree) const;
-
-  std::vector<std::string> GetNameList() const;
-
-  float GetLength(const DirectionsOptions::Units& units);
-
-  std::string ToString() const;
-
-#ifdef LOGGING_LEVEL_TRACE
-  std::string ToParameterString() const;
-#endif
-
-protected:
-#ifdef LOGGING_LEVEL_TRACE
-  std::string
-  ListToString(const ::google::protobuf::RepeatedPtrField<::std::string>& string_list) const;
-
-  std::string
-  ListToParameterString(const ::google::protobuf::RepeatedPtrField<::std::string>& string_list) const;
-#endif
-};
-
-class EnhancedTripPath_IntersectingEdge : public TripPath_IntersectingEdge {
-public:
-  EnhancedTripPath_IntersectingEdge() = delete;
-
-  bool IsTraversable(const TripPath_TravelMode travel_mode) const;
-
-  bool IsTraversableOutbound(const TripPath_TravelMode travel_mode) const;
-
-  std::string ToString() const;
-};
+bool TripPath_IntersectingEdge_IsTraversable(const TripPath_IntersectingEdge* edge, const TripPath_TravelMode travel_mode);
+bool TripPath_IntersectingEdge_IsTraversableOutbound(const TripPath_IntersectingEdge* edge, const TripPath_TravelMode travel_mode);
+std::string TripPath_IntersectingEdge_ToString(const TripPath_IntersectingEdge* edge);
 
 struct IntersectingEdgeCounts {
 
@@ -172,54 +108,41 @@ struct IntersectingEdgeCounts {
   uint32_t left_similar_traversable_outbound;
 };
 
-class EnhancedTripPath_Node : public TripPath_Node {
-public:
-  EnhancedTripPath_Node() = delete;
 
-  bool HasIntersectingEdges() const;
+bool TripPath_Node_HasIntersectingEdges(const TripPath_Node *node);
+bool TripPath_Node_HasIntersectingEdgeNameConsistency(const TripPath_Node *node);
+TripPath_IntersectingEdge* TripPath_Node_GetIntersectingEdge(TripPath_Node *node, size_t index);
+void TripPath_Node_CalculateRightLeftIntersectingEdgeCounts(
+    TripPath_Node *node,
+    uint32_t from_heading,
+    const TripPath_TravelMode travel_mode,
+    IntersectingEdgeCounts& xedge_counts);
+bool TripPath_Node_HasFowardIntersectingEdge(TripPath_Node *node, uint32_t from_heading);
+bool TripPath_Node_HasForwardTraversableIntersectingEdge(
+    TripPath_Node *node,
+    uint32_t from_heading,
+    const TripPath_TravelMode travel_mode);
+bool TripPath_Node_HasTraversableOutboundIntersectingEdge(
+    TripPath_Node *node,
+    const TripPath_TravelMode travel_mode);
+uint32_t TripPath_Node_GetStraightestTraversableIntersectingEdgeTurnDegree(
+    TripPath_Node *node,
+    uint32_t from_heading,
+    const TripPath_TravelMode travel_mode);
+uint32_t TripPath_Node_GetStraightestIntersectingEdgeTurnDegree(TripPath_Node *node, uint32_t from_heading);
 
-  bool HasIntersectingEdgeNameConsistency() const;
-
-  EnhancedTripPath_IntersectingEdge* GetIntersectingEdge(size_t index);
-
-  void CalculateRightLeftIntersectingEdgeCounts(uint32_t from_heading,
-                                                const TripPath_TravelMode travel_mode,
-                                                IntersectingEdgeCounts& xedge_counts);
-
-  bool HasFowardIntersectingEdge(uint32_t from_heading);
-
-  bool HasForwardTraversableIntersectingEdge(uint32_t from_heading,
-                                             const TripPath_TravelMode travel_mode);
-
-  bool HasTraversableOutboundIntersectingEdge(const TripPath_TravelMode travel_mode);
-
-  uint32_t GetStraightestIntersectingEdgeTurnDegree(uint32_t from_heading);
-
-  uint32_t GetStraightestTraversableIntersectingEdgeTurnDegree(uint32_t from_heading,
-                                                               const TripPath_TravelMode travel_mode);
-
-  // Type
-  bool IsStreetIntersection() const;
-  bool IsGate() const;
-  bool IsBollard() const;
-  bool IsTollBooth() const;
-  bool IsTransitEgress() const;
-  bool IsTransitStation() const;
-  bool IsTransitPlatform() const;
-  bool IsBikeShare() const;
-  bool IsParking() const;
-  bool IsMotorwayJunction() const;
-  bool IsBorderControl() const;
-
-  std::string ToString() const;
-};
-
-class EnhancedTripPath_Admin : public TripPath_Admin {
-public:
-  EnhancedTripPath_Admin() = delete;
-
-  std::string ToString() const;
-};
+bool TripPath_Node_IsStreetIntersection(const TripPath_Node *node);
+bool TripPath_Node_IsGate(const TripPath_Node *node);
+bool TripPath_Node_IsBollard(const TripPath_Node *node);
+bool TripPath_Node_IsTollBooth(const TripPath_Node *node);
+bool TripPath_Node_IsTransitEgress(const TripPath_Node *node);
+bool TripPath_Node_IsTransitStation(const TripPath_Node *node);
+bool TripPath_Node_IsTransitPlatform(const TripPath_Node *node);
+bool TripPath_Node_IsBikeShare(const TripPath_Node *node);
+bool TripPath_Node_IsParking(const TripPath_Node *node);
+bool TripPath_Node_IsMotorwayJunction(const TripPath_Node *node);
+bool TripPath_Node_IsBorderControl(const TripPath_Node *node);
+std::string TripPath_Node_ToString(const TripPath_Node *node); 
 
 const std::unordered_map<uint8_t, std::string> TripPath_TravelMode_Strings{
     {static_cast<uint8_t>(TripPath_TravelMode_kDrive), "drive"},

@@ -76,7 +76,7 @@ TripDirections DirectionsBuilder::Build(const DirectionsOptions& directions_opti
     throw valhalla_exception_t{210};
   }
 
-  EnhancedTripPath* etp = static_cast<EnhancedTripPath*>(&trip_path);
+  TripPath* etp = static_cast<TripPath*>(&trip_path);
 
   // Produce maneuvers and narrative if enabled
   std::list<Maneuver> maneuvers;
@@ -99,11 +99,11 @@ TripDirections DirectionsBuilder::Build(const DirectionsOptions& directions_opti
 }
 
 // Update the heading of ~0 length edges.
-void DirectionsBuilder::UpdateHeading(EnhancedTripPath* etp) {
+void DirectionsBuilder::UpdateHeading(TripPath* etp) {
   for (int x = 0; x < etp->node_size(); ++x) {
-    auto* prev_edge = etp->GetPrevEdge(x);
-    auto* curr_edge = etp->GetCurrEdge(x);
-    auto* next_edge = etp->GetNextEdge(x);
+    auto* prev_edge = TripPath_GetPrevEdge(etp, x);
+    auto* curr_edge = TripPath_GetCurrEdge(etp, x);
+    auto* next_edge = TripPath_GetNextEdge(etp, x);
     if (curr_edge && (curr_edge->length() < kMinEdgeLength)) {
 
       // Set the current begin heading
@@ -126,7 +126,7 @@ void DirectionsBuilder::UpdateHeading(EnhancedTripPath* etp) {
 // Returns the trip directions based on the specified directions options,
 // trip path, and maneuver list.
 TripDirections DirectionsBuilder::PopulateTripDirections(const DirectionsOptions& directions_options,
-                                                         EnhancedTripPath* etp,
+                                                         TripPath* etp,
                                                          std::list<Maneuver>& maneuvers) {
   TripDirections trip_directions;
 
@@ -318,8 +318,8 @@ TripDirections DirectionsBuilder::PopulateTripDirections(const DirectionsOptions
   }
 
   // Populate summary
-  trip_directions.mutable_summary()->set_length(etp->GetLength(directions_options.units()));
-  trip_directions.mutable_summary()->set_time(etp->node(etp->GetLastNodeIndex()).elapsed_time());
+  trip_directions.mutable_summary()->set_length(TripPath_GetLength(etp, directions_options.units()));
+  trip_directions.mutable_summary()->set_time(etp->node(TripPath_GetLastNodeIndex(etp)).elapsed_time());
   auto mutable_bbox = trip_directions.mutable_summary()->mutable_bbox();
   mutable_bbox->mutable_min_ll()->set_lat(etp->bbox().min_ll().lat());
   mutable_bbox->mutable_min_ll()->set_lng(etp->bbox().min_ll().lng());

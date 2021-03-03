@@ -121,26 +121,23 @@ GENERATED_HEADERS = \
 	genfiles/date_time_zonespec.h \
 	genfiles/graph_lua_proc.h \
 	genfiles/admin_lua_proc.h \
-	genfiles/locales.h \
-	genfiles/valhalla/proto/tripcommon.pb.h \
-	genfiles/valhalla/proto/trippath.pb.h \
-	genfiles/valhalla/proto/directions_options.pb.h \
-	genfiles/valhalla/proto/tripdirections.pb.h \
-	genfiles/valhalla/proto/directions.pb.h
+	genfiles/locales.h
 
 GENERATED_SOURCES = \
-	genfiles/proto/tripcommon.pb.cc \
-	genfiles/proto/trippath.pb.cc \
-	genfiles/proto/directions_options.pb.cc \
-	genfiles/proto/tripdirections.pb.cc \
-	genfiles/proto/directions.pb.cc
+	genfiles/valhalla/proto/tripcommon.pb.cc \
+	genfiles/valhalla/proto/trippath.pb.cc \
+	genfiles/valhalla/proto/directions_options.pb.cc \
+	genfiles/valhalla/proto/tripdirections.pb.cc \
+	genfiles/valhalla/proto/directions.pb.cc
 
 THRID_PARTY_SOURCES = \
 	third_party/date/src/tz.cpp
 
 ifeq "$(LIBS_PLATFORM)" "catalyst"
-	IOS_SOURCES := third_party/date/src/ios.mm
+	# IOS_SOURCES := third_party/date/src/ios.mm
 	LDFLAGS := $(LDFLAGS) -framework CoreFoundation 
+else ifeq "$(LIBS_PLATFORM)" "android"
+	LDFLAGS := $(LDFLAGS) -landroid -llog
 endif
 
 SRC := $(GENERATED_SOURCES) $(SRC)
@@ -148,7 +145,7 @@ OBJ = $(SRC:.cc=.o) $(THRID_PARTY_SOURCES:.cpp=.o) $(IOS_SOURCES:.mm=.o)
 LIB = libvalhalla.a
 MICRO_SRC = micro.cpp
 MICRO_OBJ = $(MICRO_SRC:.cpp=.o)
-MICRO_LIB = libvalhalla_micro.so
+MICRO_LIB = libvalhalla2_micro.so
 
 FLAGS = -std=c++17 -DMOBILE -DNDEBUG=1 -DUSE_STD_REGEX=1 -DRAPIDJSON_HAS_STDSTRING=1 -DPACKAGE_VERSION="\"2.7.0\"" \
  -I. -Ivalhalla -Igenfiles -Ithird_party/rapidjson/include -Ithird_party/date/include
@@ -194,34 +191,14 @@ genfiles/valhalla:
 genfiles/valhalla/valhalla.h: genfiles/valhalla
 	touch genfiles/valhalla/valhalla.h
 
-# protobuf sources
-genfiles/proto:
-	mkdir -p genfiles/proto
-genfiles/proto/tripcommon.pb.cc: genfiles/proto
-	$(PROTOC) -Iproto --cpp_out=genfiles/proto proto/tripcommon.proto
-genfiles/proto/trippath.pb.cc: genfiles/proto
-	$(PROTOC) -Iproto --cpp_out=genfiles/proto proto/trippath.proto
-genfiles/proto/directions_options.pb.cc: genfiles/proto
-	$(PROTOC) -Iproto --cpp_out=genfiles/proto proto/directions_options.proto
-genfiles/proto/tripdirections.pb.cc: genfiles/proto
-	$(PROTOC) -Iproto --cpp_out=genfiles/proto proto/tripdirections.proto
-genfiles/proto/directions.pb.cc: genfiles/proto
-	$(PROTOC) -Iproto --cpp_out=genfiles/proto proto/directions.proto
-
 genfiles/valhalla/proto:
 	mkdir -p genfiles/valhalla/proto
 
-genfiles/valhalla/proto/tripcommon.pb.h: genfiles/valhalla/proto genfiles/proto/tripcommon.pb.cc
-	cp genfiles/proto/tripcommon.pb.h genfiles/valhalla/proto
-genfiles/valhalla/proto/trippath.pb.h: genfiles/valhalla/proto genfiles/proto/trippath.pb.cc
-	cp genfiles/proto/trippath.pb.h genfiles/valhalla/proto
-genfiles/valhalla/proto/directions_options.pb.h: genfiles/valhalla/proto genfiles/proto/directions_options.pb.cc
-	cp genfiles/proto/directions_options.pb.h genfiles/valhalla/proto
-genfiles/valhalla/proto/tripdirections.pb.h: genfiles/valhalla/proto genfiles/proto/tripdirections.pb.cc
-	cp genfiles/proto/tripdirections.pb.h genfiles/valhalla/proto
-genfiles/valhalla/proto/directions.pb.h: genfiles/valhalla/proto genfiles/proto/directions.pb.cc
-	cp genfiles/proto/directions.pb.h genfiles/valhalla/proto
+# protobuf sources
+genfiles/valhalla/proto/%.pb.cc: proto/%.proto genfiles/valhalla/proto 
+	$(PROTOC) -Iproto --cpp_out=genfiles/valhalla/proto $<
 
+.PRECIOUS: genfiles/valhalla/proto/%.pb.cc genfiles/locales.h
 .PHONY: install clean
 
 ifndef PREFIX
@@ -232,22 +209,6 @@ install: $(MICRO_LIB)
 	mkdir -p ${PREFIX}/lib ${PREFIX}/include/valhalla
 	cp $(MICRO_LIB) ${PREFIX}/lib
 	cp micro.h ${PREFIX}/include/valhalla
-	# cp $(LIB) ${PREFIX}/lib
-	# cp genfiles/valhalla/valhalla.h ${PREFIX}/include/valhalla
-	# cp genfiles/config.h ${PREFIX}/include/valhalla
-	# cp valhalla/filesystem.h ${PREFIX}/include/valhalla
-	# cp valhalla/worker.h ${PREFIX}/include/valhalla
-	# cp -r valhalla/loki ${PREFIX}/include/valhalla
-	# cp -r genfiles/valhalla/proto ${PREFIX}/include/valhalla
-	# cp -r valhalla/thor ${PREFIX}/include/valhalla	
-	# cp -r valhalla/tyr ${PREFIX}/include/valhalla	
-	# cp -r valhalla/meili ${PREFIX}/include/valhalla
-	# cp -r valhalla/sif ${PREFIX}/include/valhalla
-	# cp -r valhalla/midgard ${PREFIX}/include/valhalla
-	# cp -r valhalla/skadi ${PREFIX}/include/valhalla
-	# cp -r valhalla/odin ${PREFIX}/include/valhalla
-	# cp -r valhalla/baldr ${PREFIX}/include/valhalla
-	# cp -r third_party/date/include/date ${PREFIX}/include
 
 clean:
 	rm -f $(OBJ) $(GENERATED_SOURCES) $(GENERATED_HEADERS) $(LIB) $(MICRO_LIB) $(MICRO_OBJ)

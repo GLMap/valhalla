@@ -25,7 +25,7 @@ public:
    *                           language.
    * @param trip_path The trip path - list of nodes, edges, attributes and shape.
    */
-  ManeuversBuilder(const DirectionsOptions& directions_options, EnhancedTripPath* trip_path);
+  ManeuversBuilder(const DirectionsOptions& directions_options, TripPath* trip_path);
 
   std::list<Maneuver> Build();
 
@@ -78,34 +78,34 @@ protected:
   void SetManeuverType(Maneuver& maneuver, bool none_type_allowed = true);
 
   void SetSimpleDirectionalManeuverType(Maneuver& maneuver,
-                                        EnhancedTripPath_Edge* prev_edge,
-                                        EnhancedTripPath_Edge* curr_edge);
+                                        TripPath_Edge* prev_edge,
+                                        TripPath_Edge* curr_edge);
 
   TripDirections_Maneuver_CardinalDirection DetermineCardinalDirection(uint32_t heading);
 
   bool CanManeuverIncludePrevEdge(Maneuver& maneuver, int node_index);
 
   bool IncludeUnnamedPrevEdge(int node_index,
-                              EnhancedTripPath_Edge* prev_edge,
-                              EnhancedTripPath_Edge* curr_edge) const;
+                              TripPath_Edge* prev_edge,
+                              TripPath_Edge* curr_edge) const;
 
   bool
-  IsFork(int node_index, EnhancedTripPath_Edge* prev_edge, EnhancedTripPath_Edge* curr_edge) const;
+  IsFork(int node_index, TripPath_Edge* prev_edge, TripPath_Edge* curr_edge) const;
 
   bool
-  IsTee(int node_index, EnhancedTripPath_Edge* prev_edge, EnhancedTripPath_Edge* curr_edge) const;
+  IsTee(int node_index, TripPath_Edge* prev_edge, TripPath_Edge* curr_edge) const;
 
   bool IsLeftPencilPointUturn(int node_index,
-                              EnhancedTripPath_Edge* prev_edge,
-                              EnhancedTripPath_Edge* curr_edge) const;
+                              TripPath_Edge* prev_edge,
+                              TripPath_Edge* curr_edge) const;
 
   bool IsRightPencilPointUturn(int node_index,
-                               EnhancedTripPath_Edge* prev_edge,
-                               EnhancedTripPath_Edge* curr_edge) const;
+                               TripPath_Edge* prev_edge,
+                               TripPath_Edge* curr_edge) const;
 
   bool IsIntersectingForwardEdge(int node_index,
-                                 EnhancedTripPath_Edge* prev_edge,
-                                 EnhancedTripPath_Edge* curr_edge) const;
+                                 TripPath_Edge* prev_edge,
+                                 TripPath_Edge* curr_edge) const;
 
   void DetermineRelativeDirection(Maneuver& maneuver);
 
@@ -149,7 +149,7 @@ protected:
   void EnhanceSignlessInterchnages(std::list<Maneuver>& maneuvers);
 
   const DirectionsOptions& directions_options_;
-  EnhancedTripPath* trip_path_;
+  TripPath* trip_path_;
 };
 
 } // namespace odin

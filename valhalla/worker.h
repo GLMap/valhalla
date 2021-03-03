@@ -15,22 +15,6 @@ using namespace prime_server;
 
 namespace valhalla {
 
-// to use protobuflite we cant use descriptors which means we cant translate enums to strings
-// and so we reimplement the ones we use here
-namespace odin {
-bool DirectionsOptions_Action_Parse(const std::string& action, odin::DirectionsOptions::Action* a);
-const std::string& DirectionsOptions_Action_Name(const odin::DirectionsOptions::Action action);
-bool Costing_Parse(const std::string& costing, odin::Costing* c);
-const std::string& Costing_Name(const odin::Costing costing);
-bool ShapeMatch_Parse(const std::string& match, odin::ShapeMatch* s);
-const std::string& ShapeMatch_Name(const odin::ShapeMatch match);
-bool DirectionsOptions_Format_Parse(const std::string& format, odin::DirectionsOptions::Format* f);
-const std::string& DirectionsOptions_Format_Name(const odin::DirectionsOptions::Format match);
-const std::string& DirectionsOptions_Units_Name(const odin::DirectionsOptions::Units unit);
-bool FilterAction_Parse(const std::string& action, odin::FilterAction* a);
-const std::string& FilterAction_Name(const odin::FilterAction action);
-} // namespace odin
-
 const std::unordered_map<unsigned, std::string>
     error_codes{// loki project 1xx
                 {100, "Failed to parse json request"},
