@@ -27,6 +27,12 @@
 extern "C" {
 namespace valhalla {
 
+#if !USE_OS_TZDB
+EXPORT void SetTZDataPath(const std::string &path) {
+    date::set_install(path);
+}
+#endif
+
 EXPORT void Execute(const std::string &valhallaConfig, const std::vector<std::string> &tars,
                      const std::string &json, bool optimize, const std::function<void()> &interrupt, std::string &result) {
     try {
