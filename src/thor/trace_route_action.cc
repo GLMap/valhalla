@@ -68,7 +68,7 @@ odin::TripPath thor_worker_t::trace_route(valhalla_request_t& request) {
         }
       } catch (...) {
         throw valhalla_exception_t{
-            443, odin::ShapeMatch_Name(request.options.shape_match()) +
+            443, odin::ShapeMatch_Name2(request.options.shape_match()) +
                      " algorithm failed to find exact route match.  Try using "
                      "shape_match:'walk_or_snap' to fallback to map-matching algorithm"};
       }
@@ -90,7 +90,7 @@ odin::TripPath thor_worker_t::trace_route(valhalla_request_t& request) {
     case odin::ShapeMatch::walk_or_snap:
       trip_path = route_match(request, controller);
       if (trip_path.node().size() == 0) {
-        LOG_WARN(odin::ShapeMatch_Name(request.options.shape_match()) +
+        LOG_WARN(odin::ShapeMatch_Name2(request.options.shape_match()) +
                  " algorithm failed to find exact route match; Falling back to map_match...");
         try {
           auto map_match_results = map_match(request, controller);

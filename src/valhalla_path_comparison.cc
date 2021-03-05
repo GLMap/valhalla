@@ -275,7 +275,7 @@ int main(int argc, char* argv[]) {
   CostFactory<DynamicCost> factory;
   factory.RegisterStandardCostingModels();
   valhalla::odin::Costing costing;
-  if (valhalla::odin::Costing_Parse(routetype, &costing)) {
+  if (valhalla::odin::Costing_Parse2(routetype, &costing)) {
     request.options.set_costing(costing);
   } else {
     throw std::runtime_error("No costing method found");

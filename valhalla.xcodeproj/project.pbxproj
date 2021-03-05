@@ -540,7 +540,7 @@
 				C1B9BAF025DBC46C001B4BFB /* trippath.pb.h */,
 			);
 			name = proto;
-			path = genfiles/proto;
+			path = genfiles/valhalla/proto;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
   rapidjson::read_json(argv[1], config);
   const std::string modename = config.get<std::string>("meili.mode");
   valhalla::odin::Costing costing;
-  if (!valhalla::odin::Costing_Parse(modename, &costing)) {
+  if (!valhalla::odin::Costing_Parse2(modename, &costing)) {
     throw std::runtime_error("No costing method found");
   }
 

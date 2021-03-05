@@ -29,7 +29,7 @@ std::string thor_worker_t::matrix(valhalla_request_t& request) {
 
   if (!request.options.do_not_track()) {
     valhalla::midgard::logging::Log("matrix_type::" +
-                                        odin::DirectionsOptions_Action_Name(request.options.action()),
+                                        odin::DirectionsOptions_Action_Name2(request.options.action()),
                                     " [ANALYTICS] ");
   }
 

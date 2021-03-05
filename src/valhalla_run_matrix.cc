@@ -161,7 +161,7 @@ int main(int argc, char* argv[]) {
   factory.RegisterStandardCostingModels();
 
   // Get type of route - this provides the costing method to use.
-  std::string routetype = valhalla::odin::Costing_Name(request.options.costing());
+  std::string routetype = valhalla::odin::Costing_Name2(request.options.costing());
   LOG_INFO("routetype: " + routetype);
 
   // Get the costing method - pass the JSON configuration

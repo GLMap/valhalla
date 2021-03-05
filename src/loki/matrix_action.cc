@@ -87,10 +87,10 @@ void loki_worker_t::init_matrix(valhalla_request_t& request) {
 
 void loki_worker_t::matrix(valhalla_request_t& request) {
   init_matrix(request);
-  auto costing = odin::Costing_Name(request.options.costing());
+  auto costing = odin::Costing_Name2(request.options.costing());
 
   if (costing == "multimodal") {
-    throw valhalla_exception_t{140, odin::DirectionsOptions_Action_Name(request.options.action())};
+    throw valhalla_exception_t{140, odin::DirectionsOptions_Action_Name2(request.options.action())};
   };
 
   // check that location size does not exceed max.

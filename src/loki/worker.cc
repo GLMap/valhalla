@@ -58,7 +58,7 @@ void loki_worker_t::parse_costing(valhalla_request_t& request) {
   }
 
   auto costing = request.options.costing();
-  auto costing_str = odin::Costing_Name(costing);
+  auto costing_str = odin::Costing_Name2(costing);
 
   if (!request.options.do_not_track()) {
     valhalla::midgard::logging::Log("costing_type::" + costing_str, " [ANALYTICS] ");
@@ -142,7 +142,7 @@ loki_worker_t::loki_worker_t(const boost::property_tree::ptree& config,
   odin::DirectionsOptions::Action action;
   for (const auto& kv : config.get_child("loki.actions")) {
     auto path = kv.second.get_value<std::string>();
-    if (!odin::DirectionsOptions_Action_Parse(path, &action)) {
+    if (!odin::DirectionsOptions_Action_Parse2(path, &action)) {
       throw std::runtime_error("Action not supported " + path);
     }
     action_str.append("'/" + path + "' ");

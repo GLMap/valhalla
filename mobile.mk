@@ -170,7 +170,7 @@ $(LIB): $(OBJ)
 	$(AR) cr $(LIB) $(OBJ)
 
 $(MICRO_LIB): $(MICRO_OBJ) $(LIB)
-	$(CXX) -fvisibility=hidden -shared -o $(MICRO_LIB) $(FLAGS) ${LDFLAGS} -L. -lvalhalla -lz -lprotobuf $(MICRO_OBJ)
+	$(CXX) -fvisibility=hidden -shared -o $(MICRO_LIB) $(FLAGS) ${LDFLAGS} -L. -lvalhalla -lz -lprotobuf-lite $(MICRO_OBJ)
 
 genfiles:
 	mkdir -p genfiles

@@ -155,12 +155,12 @@ worker_t::result_t thor_worker_t::work(const std::list<zmq::message_t>& job,
     double elapsed_time =
         std::chrono::duration<float, std::milli>(std::chrono::system_clock::now() - s).count();
     if (!request.options.do_not_track() && elapsed_time / denominator > long_request) {
-      LOG_WARN("thor::" + odin::DirectionsOptions_Action_Name(request.options.action()) +
+      LOG_WARN("thor::" + odin::DirectionsOptions_Action_Name2(request.options.action()) +
                " request elapsed time (ms)::" + std::to_string(elapsed_time));
-      LOG_WARN("thor::" + odin::DirectionsOptions_Action_Name(request.options.action()) +
+      LOG_WARN("thor::" + odin::DirectionsOptions_Action_Name2(request.options.action()) +
                " request exceeded threshold::" + request_str);
       midgard::logging::Log("valhalla_thor_long_request_" +
-                                odin::DirectionsOptions_Action_Name(request.options.action()),
+                                odin::DirectionsOptions_Action_Name2(request.options.action()),
                             " [ANALYTICS] ");
     }
 
@@ -208,7 +208,7 @@ valhalla::sif::cost_ptr_t thor_worker_t::get_costing(const odin::Costing costing
 std::string thor_worker_t::parse_costing(const valhalla_request_t& request) {
   // Parse out the type of route - this provides the costing method to use
   auto costing = request.options.costing();
-  auto costing_str = odin::Costing_Name(costing);
+  auto costing_str = odin::Costing_Name2(costing);
 
   // Set travel mode and construct costing
   if (costing == odin::Costing::multimodal || costing == odin::Costing::transit) {
@@ -252,7 +252,7 @@ void thor_worker_t::parse_locations(valhalla_request_t& request) {
       }
 
       // subtract off the min score and cap at max so that path algorithm doesnt go too far
-      auto max_score = kMaxDistances.find(odin::Costing_Name(request.options.costing()));
+      auto max_score = kMaxDistances.find(odin::Costing_Name2(request.options.costing()));
       for (auto* candidates : {location.mutable_path_edges(), location.mutable_filtered_edges()}) {
         for (auto& candidate : *candidates) {
           candidate.set_distance(candidate.distance() - minScore);

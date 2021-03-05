@@ -51,7 +51,7 @@ public:
   cost_ptr_t Create(const odin::Costing costing, const odin::DirectionsOptions& options) const {
     auto itr = factory_funcs_.find(costing);
     if (itr == factory_funcs_.end()) {
-      auto costing_str = odin::Costing_Name(costing);
+      auto costing_str = odin::Costing_Name2(costing);
       throw std::runtime_error("No costing method found for '" + costing_str + "'");
     }
     // create the cost using the function pointer

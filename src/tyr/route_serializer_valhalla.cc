@@ -560,7 +560,7 @@ std::string serialize(const valhalla::odin::DirectionsOptions& directions_option
                                                                    // cannot find route between points
                            {"status", static_cast<uint64_t>(0)},   // 0 success
                            {"units",
-                            valhalla::odin::DirectionsOptions_Units_Name(directions_options.units())},
+                            valhalla::odin::DirectionsOptions_Units_Name2(directions_options.units())},
                            {"language", directions_options.language()}})}});
   if (directions_options.has_id()) {
     json->emplace("id", directions_options.id());
