@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6C5BC3D825F6B289001FC3DD /* micro.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6C5BC3D125F6B1B4001FC3DD /* micro.cpp */; };
+		6C5BC3DE25F6B2AF001FC3DD /* libvalhalla.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C1B9B82F25DBC0F4001B4BFB /* libvalhalla.a */; };
 		C1B9B9E025DBC210001B4BFB /* pedestriancost.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B8B225DBC210001B4BFB /* pedestriancost.cc */; };
 		C1B9B9E225DBC210001B4BFB /* motorscootercost.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B8B425DBC210001B4BFB /* motorscootercost.cc */; };
 		C1B9B9E525DBC210001B4BFB /* autocost.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B8B825DBC210001B4BFB /* autocost.cc */; };
@@ -137,6 +139,16 @@
 		C1EE536E25DBC80100F4C8D3 /* ios.mm in Sources */ = {isa = PBXBuildFile; fileRef = C1EE536D25DBC80100F4C8D3 /* ios.mm */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		6C5BC3DB25F6B291001FC3DD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C1B9B82725DBC0F4001B4BFB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C1B9B82E25DBC0F4001B4BFB;
+			remoteInfo = valhalla;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXCopyFilesBuildPhase section */
 		C1B9B82D25DBC0F4001B4BFB /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -150,6 +162,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		6C5BC3BD25F6B0A7001FC3DD /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
+		6C5BC3BE25F6B0A7001FC3DD /* Framework.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Framework.xcconfig; sourceTree = "<group>"; };
+		6C5BC3C425F6B0C5001FC3DD /* valhalla2_micro.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = valhalla2_micro.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		6C5BC3D025F6B1B4001FC3DD /* micro.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = micro.h; sourceTree = "<group>"; };
+		6C5BC3D125F6B1B4001FC3DD /* micro.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = micro.cpp; sourceTree = "<group>"; };
+		6C5BC3D425F6B1F0001FC3DD /* mobile.mk */ = {isa = PBXFileReference; lastKnownFileType = text; path = mobile.mk; sourceTree = "<group>"; };
+		6C5BC3D525F6B1FD001FC3DD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C1B9B82F25DBC0F4001B4BFB /* libvalhalla.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libvalhalla.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		C1B9B8B225DBC210001B4BFB /* pedestriancost.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pedestriancost.cc; sourceTree = "<group>"; };
 		C1B9B8B425DBC210001B4BFB /* motorscootercost.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = motorscootercost.cc; sourceTree = "<group>"; };
@@ -287,6 +306,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		6C5BC3C125F6B0C5001FC3DD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6C5BC3DE25F6B2AF001FC3DD /* libvalhalla.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C1B9B82C25DBC0F4001B4BFB /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -297,14 +324,28 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		6C5BC3DD25F6B2AF001FC3DD /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		C1B9B82625DBC0F4001B4BFB = {
 			isa = PBXGroup;
 			children = (
+				6C5BC3BD25F6B0A7001FC3DD /* Base.xcconfig */,
+				6C5BC3BE25F6B0A7001FC3DD /* Framework.xcconfig */,
+				6C5BC3D425F6B1F0001FC3DD /* mobile.mk */,
+				6C5BC3D525F6B1FD001FC3DD /* Info.plist */,
+				6C5BC3D125F6B1B4001FC3DD /* micro.cpp */,
+				6C5BC3D025F6B1B4001FC3DD /* micro.h */,
 				C1EE536D25DBC80100F4C8D3 /* ios.mm */,
 				C1B9BB2625DBC49F001B4BFB /* tz.cpp */,
 				C1B9BAE925DBC46C001B4BFB /* proto */,
 				C1B9B83125DBC0F4001B4BFB /* valhalla */,
 				C1B9B83025DBC0F4001B4BFB /* Products */,
+				6C5BC3DD25F6B2AF001FC3DD /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -312,6 +353,7 @@
 			isa = PBXGroup;
 			children = (
 				C1B9B82F25DBC0F4001B4BFB /* libvalhalla.a */,
+				6C5BC3C425F6B0C5001FC3DD /* valhalla2_micro.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -545,7 +587,36 @@
 		};
 /* End PBXGroup section */
 
+/* Begin PBXHeadersBuildPhase section */
+		6C5BC3BF25F6B0C5001FC3DD /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
 /* Begin PBXNativeTarget section */
+		6C5BC3C325F6B0C5001FC3DD /* valhalla2_micro */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6C5BC3C925F6B0C5001FC3DD /* Build configuration list for PBXNativeTarget "valhalla2_micro" */;
+			buildPhases = (
+				6C5BC3BF25F6B0C5001FC3DD /* Headers */,
+				6C5BC3C025F6B0C5001FC3DD /* Sources */,
+				6C5BC3C125F6B0C5001FC3DD /* Frameworks */,
+				6C5BC3C225F6B0C5001FC3DD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				6C5BC3DC25F6B291001FC3DD /* PBXTargetDependency */,
+			);
+			name = valhalla2_micro;
+			productName = valhalla_micro;
+			productReference = 6C5BC3C425F6B0C5001FC3DD /* valhalla2_micro.framework */;
+			productType = "com.apple.product-type.framework";
+		};
 		C1B9B82E25DBC0F4001B4BFB /* valhalla */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C1B9B83825DBC0F4001B4BFB /* Build configuration list for PBXNativeTarget "valhalla" */;
@@ -571,6 +642,9 @@
 			attributes = {
 				LastUpgradeCheck = 1240;
 				TargetAttributes = {
+					6C5BC3C325F6B0C5001FC3DD = {
+						CreatedOnToolsVersion = 12.4;
+					};
 					C1B9B82E25DBC0F4001B4BFB = {
 						CreatedOnToolsVersion = 12.4;
 					};
@@ -590,11 +664,30 @@
 			projectRoot = "";
 			targets = (
 				C1B9B82E25DBC0F4001B4BFB /* valhalla */,
+				6C5BC3C325F6B0C5001FC3DD /* valhalla2_micro */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		6C5BC3C225F6B0C5001FC3DD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
+		6C5BC3C025F6B0C5001FC3DD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6C5BC3D825F6B289001FC3DD /* micro.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C1B9B82B25DBC0F4001B4BFB /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -732,180 +825,71 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		6C5BC3DC25F6B291001FC3DD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C1B9B82E25DBC0F4001B4BFB /* valhalla */;
+			targetProxy = 6C5BC3DB25F6B291001FC3DD /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		6C5BC3CA25F6B0C5001FC3DD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6C5BC3BE25F6B0A7001FC3DD /* Framework.xcconfig */;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		6C5BC3CB25F6B0C5001FC3DD /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6C5BC3BE25F6B0A7001FC3DD /* Framework.xcconfig */;
+			buildSettings = {
+			};
+			name = Release;
+		};
 		C1B9B83625DBC0F4001B4BFB /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6C5BC3BD25F6B0A7001FC3DD /* Base.xcconfig */;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_COMMA = YES;
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INFINITE_RECURSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
-				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_TESTABILITY = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
-				MTL_FAST_MATH = YES;
-				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = iphoneos;
 			};
 			name = Debug;
 		};
 		C1B9B83725DBC0F4001B4BFB /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6C5BC3BD25F6B0A7001FC3DD /* Base.xcconfig */;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_COMMA = YES;
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INFINITE_RECURSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
-				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				ENABLE_NS_ASSERTIONS = NO;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				MTL_ENABLE_DEBUG_INFO = NO;
-				MTL_FAST_MATH = YES;
-				SDKROOT = iphoneos;
-				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
 		C1B9B83925DBC0F4001B4BFB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
-				CODE_SIGN_STYLE = Automatic;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					MOBILE,
-					"USE_STD_REGEX=1",
-					"RAPIDJSON_HAS_STDSTRING=1",
-					"PACKAGE_VERSION=\"\\\"2.7.0\\\"\"",
-					"HAS_REMOTE_API=0",
-					"USE_OS_TZDB=1",
-					"MISSING_LEAP_SECONDS=0",
-				);
-				HEADER_SEARCH_PATHS = (
-					.,
-					genfiles,
-					valhalla,
-					third_party/rapidjson/include,
-					third_party/date/include,
-				);
-				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SYSTEM_HEADER_SEARCH_PATHS = "$(SRCROOT)/../build/iOS-Simulator/$(arch)/include";
-				TARGETED_DEVICE_FAMILY = "1,2";
+				MACH_O_TYPE = staticlib;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 			};
 			name = Debug;
 		};
 		C1B9B83A25DBC0F4001B4BFB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
-				CODE_SIGN_STYLE = Automatic;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					MOBILE,
-					"USE_STD_REGEX=1",
-					"RAPIDJSON_HAS_STDSTRING=1",
-					"PACKAGE_VERSION=\"\\\"2.7.0\\\"\"",
-					"HAS_REMOTE_API=0",
-					"USE_OS_TZDB=1",
-					"MISSING_LEAP_SECONDS=0",
-				);
-				HEADER_SEARCH_PATHS = (
-					.,
-					genfiles,
-					valhalla,
-					third_party/rapidjson/include,
-					third_party/date/include,
-				);
-				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SYSTEM_HEADER_SEARCH_PATHS = "$(SRCROOT)/../build/iOS-Simulator/$(arch)/include";
-				TARGETED_DEVICE_FAMILY = "1,2";
+				MACH_O_TYPE = staticlib;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		6C5BC3C925F6B0C5001FC3DD /* Build configuration list for PBXNativeTarget "valhalla2_micro" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6C5BC3CA25F6B0C5001FC3DD /* Debug */,
+				6C5BC3CB25F6B0C5001FC3DD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		C1B9B82A25DBC0F4001B4BFB /* Build configuration list for PBXProject "valhalla" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
