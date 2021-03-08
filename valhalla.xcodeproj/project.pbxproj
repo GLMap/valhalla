@@ -7,8 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C1B3012425ECE5C200B02D4A /* micro.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C1B300D725ECDF3F00B02D4A /* micro.cpp */; };
-		C1B3012525ECE5C200B02D4A /* ios.mm in Sources */ = {isa = PBXBuildFile; fileRef = C1EE536D25DBC80100F4C8D3 /* ios.mm */; };
+		6C5BC39E25F637FD001FC3DD /* micro.h in Headers */ = {isa = PBXBuildFile; fileRef = C1B300D825ECDF3F00B02D4A /* micro.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		6C5BC3A125F638A8001FC3DD /* micro.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C1B300D725ECDF3F00B02D4A /* micro.cpp */; };
+		6C5BC3AC25F63A90001FC3DD /* libvalhalla.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C1B3011A25ECE59A00B02D4A /* libvalhalla.a */; };
+		6C5BC3B725F68209001FC3DD /* ios.mm in Sources */ = {isa = PBXBuildFile; fileRef = C1EE536D25DBC80100F4C8D3 /* ios.mm */; };
 		C1B3012625ECE5C200B02D4A /* tz.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C1B9BB2625DBC49F001B4BFB /* tz.cpp */; };
 		C1B3012825ECE5CB00B02D4A /* options.pb.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B3008125ECDA2200B02D4A /* options.pb.cc */; };
 		C1B3012925ECE5CB00B02D4A /* api.pb.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B3008525ECDA2200B02D4A /* api.pb.cc */; };
@@ -147,6 +149,16 @@
 		C1B301C825ECE69C00B02D4A /* route_serializer.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B8CA25DBC210001B4BFB /* route_serializer.cc */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		6C5BC3AD25F63A97001FC3DD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C1B9B82725DBC0F4001B4BFB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C1B3011925ECE59A00B02D4A;
+			remoteInfo = valhalla;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXCopyFilesBuildPhase section */
 		C1B3011825ECE59A00B02D4A /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -160,6 +172,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		6C5BC38425F63606001FC3DD /* valhalla_micro.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = valhalla_micro.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		6C5BC38725F63606001FC3DD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		6C5BC38E25F63620001FC3DD /* Framework.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Framework.xcconfig; sourceTree = "<group>"; };
+		6C5BC3A425F638F5001FC3DD /* mobile.mk */ = {isa = PBXFileReference; lastKnownFileType = text; path = mobile.mk; sourceTree = "<group>"; };
 		C1B3007B25ECDA2200B02D4A /* info.pb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = info.pb.h; path = genfiles/valhalla/proto/info.pb.h; sourceTree = SOURCE_ROOT; };
 		C1B3007E25ECDA2200B02D4A /* incidents.pb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = incidents.pb.h; path = genfiles/valhalla/proto/incidents.pb.h; sourceTree = SOURCE_ROOT; };
 		C1B3007F25ECDA2200B02D4A /* directions.pb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = directions.pb.h; path = genfiles/valhalla/proto/directions.pb.h; sourceTree = SOURCE_ROOT; };
@@ -190,7 +206,7 @@
 		C1B300F825ECE10500B02D4A /* alternates.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = alternates.cc; sourceTree = "<group>"; };
 		C1B300F925ECE10500B02D4A /* dijkstras.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dijkstras.cc; sourceTree = "<group>"; };
 		C1B3010325ECE26000B02D4A /* proto_conversions.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = proto_conversions.cc; path = src/proto_conversions.cc; sourceTree = SOURCE_ROOT; };
-		C1B3011A25ECE59A00B02D4A /* libvalhalla_micro.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libvalhalla_micro.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		C1B3011A25ECE59A00B02D4A /* libvalhalla.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libvalhalla.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		C1B9B8B225DBC210001B4BFB /* pedestriancost.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pedestriancost.cc; sourceTree = "<group>"; };
 		C1B9B8B425DBC210001B4BFB /* motorscootercost.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = motorscootercost.cc; sourceTree = "<group>"; };
 		C1B9B8B825DBC210001B4BFB /* autocost.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = autocost.cc; sourceTree = "<group>"; };
@@ -311,6 +327,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		6C5BC38125F63605001FC3DD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6C5BC3AC25F63A90001FC3DD /* libvalhalla.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C1B3011725ECE59A00B02D4A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -321,10 +345,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		6C5BC3AB25F63A90001FC3DD /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		C1B9B82625DBC0F4001B4BFB = {
 			isa = PBXGroup;
 			children = (
+				6C5BC38E25F63620001FC3DD /* Framework.xcconfig */,
 				C1B300DC25ECDFE800B02D4A /* Base.xcconfig */,
+				6C5BC3A425F638F5001FC3DD /* mobile.mk */,
+				6C5BC38725F63606001FC3DD /* Info.plist */,
 				C1B300D725ECDF3F00B02D4A /* micro.cpp */,
 				C1B300D825ECDF3F00B02D4A /* micro.h */,
 				C1EE536D25DBC80100F4C8D3 /* ios.mm */,
@@ -332,13 +366,15 @@
 				C1B9BAE925DBC46C001B4BFB /* proto */,
 				C1B9B83125DBC0F4001B4BFB /* valhalla */,
 				C1B9B83025DBC0F4001B4BFB /* Products */,
+				6C5BC3AB25F63A90001FC3DD /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
 		C1B9B83025DBC0F4001B4BFB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				C1B3011A25ECE59A00B02D4A /* libvalhalla_micro.a */,
+				C1B3011A25ECE59A00B02D4A /* libvalhalla.a */,
+				6C5BC38425F63606001FC3DD /* valhalla_micro.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -583,10 +619,39 @@
 		};
 /* End PBXGroup section */
 
+/* Begin PBXHeadersBuildPhase section */
+		6C5BC37F25F63605001FC3DD /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6C5BC39E25F637FD001FC3DD /* micro.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
 /* Begin PBXNativeTarget section */
-		C1B3011925ECE59A00B02D4A /* valhalla_micro */ = {
+		6C5BC38325F63605001FC3DD /* valhalla_micro */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C1B3012025ECE59A00B02D4A /* Build configuration list for PBXNativeTarget "valhalla_micro" */;
+			buildConfigurationList = 6C5BC38925F63606001FC3DD /* Build configuration list for PBXNativeTarget "valhalla_micro" */;
+			buildPhases = (
+				6C5BC37F25F63605001FC3DD /* Headers */,
+				6C5BC38025F63605001FC3DD /* Sources */,
+				6C5BC38125F63605001FC3DD /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				6C5BC3AE25F63A97001FC3DD /* PBXTargetDependency */,
+			);
+			name = valhalla_micro;
+			productName = micro;
+			productReference = 6C5BC38425F63606001FC3DD /* valhalla_micro.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		C1B3011925ECE59A00B02D4A /* valhalla */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C1B3012025ECE59A00B02D4A /* Build configuration list for PBXNativeTarget "valhalla" */;
 			buildPhases = (
 				C1B3011625ECE59A00B02D4A /* Sources */,
 				C1B3011725ECE59A00B02D4A /* Frameworks */,
@@ -596,9 +661,9 @@
 			);
 			dependencies = (
 			);
-			name = valhalla_micro;
+			name = valhalla;
 			productName = valhalla_micro;
-			productReference = C1B3011A25ECE59A00B02D4A /* libvalhalla_micro.a */;
+			productReference = C1B3011A25ECE59A00B02D4A /* libvalhalla.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
@@ -609,6 +674,9 @@
 			attributes = {
 				LastUpgradeCheck = 1240;
 				TargetAttributes = {
+					6C5BC38325F63605001FC3DD = {
+						CreatedOnToolsVersion = 12.4;
+					};
 					C1B3011925ECE59A00B02D4A = {
 						CreatedOnToolsVersion = 12.4;
 					};
@@ -627,12 +695,21 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				C1B3011925ECE59A00B02D4A /* valhalla_micro */,
+				C1B3011925ECE59A00B02D4A /* valhalla */,
+				6C5BC38325F63605001FC3DD /* valhalla_micro */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
+		6C5BC38025F63605001FC3DD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6C5BC3A125F638A8001FC3DD /* micro.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C1B3011625ECE59A00B02D4A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -677,7 +754,6 @@
 				C1B3014D25ECE67500B02D4A /* transitdeparture.cc in Sources */,
 				C1B3015D25ECE67500B02D4A /* edgetracker.cc in Sources */,
 				C1B3012925ECE5CB00B02D4A /* api.pb.cc in Sources */,
-				C1B3012525ECE5C200B02D4A /* ios.mm in Sources */,
 				C1B3012625ECE5C200B02D4A /* tz.cpp in Sources */,
 				C1B301B925ECE69700B02D4A /* alternates.cc in Sources */,
 				C1B3019C25ECE68E00B02D4A /* transitcost.cc in Sources */,
@@ -738,7 +814,6 @@
 				C1B3014A25ECE67500B02D4A /* transittransfer.cc in Sources */,
 				C1B3018C25ECE68900B02D4A /* enhancedtrippath.cc in Sources */,
 				C1B3015A25ECE67500B02D4A /* location.cc in Sources */,
-				C1B3012425ECE5C200B02D4A /* micro.cpp in Sources */,
 				C1B301B325ECE69700B02D4A /* isochrone_action.cc in Sources */,
 				C1B3017125ECE67B00B02D4A /* trace_route_action.cc in Sources */,
 				C1B3018925ECE68900B02D4A /* maneuversbuilder.cc in Sources */,
@@ -761,6 +836,7 @@
 				C1B301B125ECE69700B02D4A /* astar_bss.cc in Sources */,
 				C1B301C525ECE69C00B02D4A /* height_serializer.cc in Sources */,
 				C1B3014925ECE67500B02D4A /* turn.cc in Sources */,
+				6C5BC3B725F68209001FC3DD /* ios.mm in Sources */,
 				C1B3018525ECE68400B02D4A /* polyline2.cc in Sources */,
 				C1B3018D25ECE68900B02D4A /* narrative_builder_factory.cc in Sources */,
 				C1B3018A25ECE68900B02D4A /* narrativebuilder.cc in Sources */,
@@ -780,12 +856,36 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		6C5BC3AE25F63A97001FC3DD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C1B3011925ECE59A00B02D4A /* valhalla */;
+			targetProxy = 6C5BC3AD25F63A97001FC3DD /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		6C5BC38A25F63606001FC3DD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6C5BC38E25F63620001FC3DD /* Framework.xcconfig */;
+			buildSettings = {
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+			};
+			name = Debug;
+		};
+		6C5BC38B25F63606001FC3DD /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6C5BC38E25F63620001FC3DD /* Framework.xcconfig */;
+			buildSettings = {
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+			};
+			name = Release;
+		};
 		C1B3012125ECE59A00B02D4A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				MACH_O_TYPE = staticlib;
-				PRODUCT_NAME = valhalla_micro;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 			};
 			name = Debug;
 		};
@@ -793,7 +893,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				MACH_O_TYPE = staticlib;
-				PRODUCT_NAME = valhalla_micro;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 			};
 			name = Release;
 		};
@@ -814,7 +914,16 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		C1B3012025ECE59A00B02D4A /* Build configuration list for PBXNativeTarget "valhalla_micro" */ = {
+		6C5BC38925F63606001FC3DD /* Build configuration list for PBXNativeTarget "valhalla_micro" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6C5BC38A25F63606001FC3DD /* Debug */,
+				6C5BC38B25F63606001FC3DD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C1B3012025ECE59A00B02D4A /* Build configuration list for PBXNativeTarget "valhalla" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C1B3012125ECE59A00B02D4A /* Debug */,

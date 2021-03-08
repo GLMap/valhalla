@@ -1,0 +1,30 @@
+//
+//  Framework.xcconfig
+//  micro
+//
+//  Created by Evgen Bodunov on 8.03.21.
+//
+
+PRODUCT_BUNDLE_IDENTIFIER = com.valhalla.micro
+PRODUCT_NAME = $(TARGET_NAME:c99extidentifier)
+
+DEFINES_MODULE = YES
+INFOPLIST_FILE = Info.plist
+LD_RUNPATH_SEARCH_PATHS = $(inherited) @executable_path/Frameworks @loader_path/Frameworks
+DYLIB_COMPATIBILITY_VERSION = 3
+DYLIB_CURRENT_VERSION = 3
+DYLIB_INSTALL_NAME_BASE = @rpath
+CURRENT_PROJECT_VERSION = 3
+VERSION_INFO_PREFIX =
+VERSIONING_SYSTEM = apple-generic
+INSTALL_PATH = $(LOCAL_LIBRARY_DIR)/Frameworks
+SKIP_INSTALL = NO
+COPY_PHASE_STRIP = YES
+ALWAYS_SEARCH_USER_PATHS = NO
+
+BUILD_LIBRARY_FOR_DISTRIBUTION = YES
+ENABLE_BITCODE = NO
+LLVM_LTO = YES_THIN
+DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
+
+OTHER_LDFLAGS = -fobjc-arc -ObjC -lz $(inherited)
