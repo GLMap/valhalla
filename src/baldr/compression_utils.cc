@@ -1,4 +1,5 @@
 #include "baldr/compression_utils.h"
+#include "midgard/logging.h"
 
 namespace valhalla {
 namespace baldr {
@@ -72,11 +73,13 @@ bool inflate(const std::function<void(z_stream&)>& src_func,
   // MAX_WBITS is the max size of the window and should be 15, this will work with headerless
   // defalted streams to work with gzip add 16, to work with both gzip and libz add 32
   z_stream stream{};
-  if (inflateInit2(&stream, MAX_WBITS + 32) != Z_OK)
+  int code = inflateInit2(&stream, MAX_WBITS + 32);
+  if (code != Z_OK) {
+    LOG_ERROR(std::string("inflateInit2 Error: ") + std::to_string(code) + ", " + stream.msg);
     return false;
+  }
 
   int flush = Z_NO_FLUSH;
-  int code = Z_OK;
   do {
     // if we need more src material
     try {
@@ -107,6 +110,7 @@ bool inflate(const std::function<void(z_stream&)>& src_func,
         case Z_DATA_ERROR:
         case Z_MEM_ERROR:
           inflateEnd(&stream);
+          LOG_ERROR(std::string("inflate Error: ") + std::to_string(code) + ", " + stream.msg);
           return false;
       }
       // only stop when we've got nothing more to put in the dst buffer
