@@ -34,7 +34,7 @@ constexpr float kDefaultCountryCrossingCost = 600.0f;    // Seconds
 constexpr float kDefaultCountryCrossingPenalty = 0.0f;   // Seconds
 constexpr float kDefaultBssCost = 120.0f;                // Seconds
 constexpr float kDefaultBssPenalty = 0.0f;               // Seconds
-constexpr float kDefaultServicePenalty = 15.0f;          // Seconds
+constexpr float kDefaultServicePenalty = 0.0f;           // Seconds
 
 // Maximum route distances
 constexpr uint32_t kMaxDistanceFoot = 100000;      // 100 km
@@ -294,7 +294,8 @@ public:
    */
   virtual Cost EdgeCost(const baldr::DirectedEdge* edge,
                         const graph_tile_ptr& tile,
-                        const uint32_t seconds) const override;
+                        const uint32_t seconds,
+                        uint8_t& flow_sources) const override;
 
   /**
    * Returns the cost to make the transition from the predecessor edge.
@@ -318,12 +319,16 @@ public:
    * @param  node  Node (intersection) where transition occurs.
    * @param  pred  the opposing current edge in the reverse tree.
    * @param  edge  the opposing predecessor in the reverse tree
+   * @param  has_measured_speed Do we have any of the measured speed types set?
+   * @param  internal_turn  Did we make an turn on a short internal edge.
    * @return  Returns the cost and time (seconds)
    */
   virtual Cost TransitionCostReverse(const uint32_t idx,
                                      const baldr::NodeInfo* node,
                                      const baldr::DirectedEdge* pred,
-                                     const baldr::DirectedEdge* edge) const override;
+                                     const baldr::DirectedEdge* edge,
+                                     const bool /*has_measured_speed*/,
+                                     const InternalTurn /*internal_turn*/) const override;
 
   /**
    * Get the cost factor for A* heuristics. This factor is multiplied
@@ -604,11 +609,12 @@ bool PedestrianCost::AllowedReverse(const baldr::DirectedEdge* edge,
 // (in seconds) to traverse the edge.
 Cost PedestrianCost::EdgeCost(const baldr::DirectedEdge* edge,
                               const graph_tile_ptr& tile,
-                              const uint32_t seconds) const {
+                              const uint32_t seconds,
+                              uint8_t& flow_sources) const {
 
   // Ferries are a special case - they use the ferry speed (stored on the edge)
   if (edge->use() == Use::kFerry) {
-    auto speed = tile->GetSpeed(edge, flow_mask_, seconds);
+    auto speed = tile->GetSpeed(edge, flow_mask_, seconds, false, &flow_sources);
     float sec = edge->length() * (kSecPerHour * 0.001f) / static_cast<float>(speed);
     return {sec * ferry_factor_, sec};
   }
@@ -674,7 +680,14 @@ Cost PedestrianCost::TransitionCost(const baldr::DirectedEdge* edge,
 Cost PedestrianCost::TransitionCostReverse(const uint32_t idx,
                                            const baldr::NodeInfo* node,
                                            const baldr::DirectedEdge* pred,
-                                           const baldr::DirectedEdge* edge) const {
+                                           const baldr::DirectedEdge* edge,
+                                           const bool /*has_measured_speed*/,
+                                           const InternalTurn /*internal_turn*/) const {
+
+  // Pedestrians should be able to make uturns on short internal edges; therefore, InternalTurn
+  // is ignored for now.
+  // TODO: do we want to update the cost if we have flow or speed from traffic.
+
   // Special cases: fixed penalty for steps/stairs
   if (edge->use() == Use::kSteps) {
     return {step_penalty_, 0.0f};
@@ -891,6 +904,7 @@ void ParsePedestrianCostOptions(const rapidjson::Document& doc,
     pbf_costing_options->set_use_living_streets(kDefaultUseLivingStreets);
     pbf_costing_options->set_service_penalty(kDefaultServicePenalty);
     pbf_costing_options->set_service_factor(kDefaultServiceFactor);
+    pbf_costing_options->set_closure_factor(kDefaultClosureFactor);
   }
 }
 

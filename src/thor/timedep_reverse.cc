@@ -12,14 +12,13 @@ namespace valhalla {
 namespace thor {
 
 // TODO - compute initial label count based on estimated route length
-constexpr uint64_t kInitialEdgeLabelCount = 500000;
+constexpr uint32_t kInitialEdgeLabelCount = 500000;
 
 // Number of iterations to allow with no convergence to the destination
 constexpr uint32_t kMaxIterationsWithoutConvergence = 1800000;
 
 // Default constructor
-TimeDepReverse::TimeDepReverse(uint32_t max_reserved_labels_count)
-    : TimeDepForward(max_reserved_labels_count) {
+TimeDepReverse::TimeDepReverse(const boost::property_tree::ptree& config) : TimeDepForward(config) {
   mode_ = TravelMode::kDrive;
   travel_type_ = 0;
   max_label_count_ = std::numeric_limits<uint32_t>::max();
@@ -38,6 +37,9 @@ void TimeDepReverse::Clear() {
   }
   edgelabels_rev_.clear();
   adjacencylist_rev_.clear();
+
+  // Set the ferry flag to false
+  has_ferry_ = false;
 }
 
 // Initialize prior to finding best path
@@ -214,8 +216,10 @@ inline bool TimeDepReverse::ExpandReverseInner(GraphReader& graphreader,
   // Get cost. Use opposing edge for EdgeCost. Separate the transition seconds so we
   // can properly recover elapsed time on the reverse path.
   auto transition_cost =
-      costing_->TransitionCostReverse(meta.edge->localedgeidx(), nodeinfo, opp_edge, opp_pred_edge);
-  auto edge_cost = costing_->EdgeCost(opp_edge, t2, time_info.second_of_week);
+      costing_->TransitionCostReverse(meta.edge->localedgeidx(), nodeinfo, opp_edge, opp_pred_edge,
+                                      pred.has_measured_speed(), pred.internal_turn());
+  uint8_t flow_sources;
+  auto edge_cost = costing_->EdgeCost(opp_edge, t2, time_info.second_of_week, flow_sources);
   Cost newcost = pred.cost() + edge_cost;
   newcost.cost += transition_cost.cost;
 
@@ -279,6 +283,9 @@ inline bool TimeDepReverse::ExpandReverseInner(GraphReader& graphreader,
                                mode_, transition_cost,
                                (pred.not_thru_pruning() || !meta.edge->not_thru()),
                                (pred.closure_pruning() || !(costing_->IsClosed(meta.edge, tile))),
+                               static_cast<bool>(flow_sources & kDefaultFlowMask),
+                               costing_->TurnType(meta.edge->localedgeidx(), nodeinfo, opp_edge,
+                                                  opp_pred_edge),
                                restriction_idx);
   adjacencylist_rev_.add(idx);
   *meta.edge_status = {EdgeSet::kTemporary, idx};
@@ -463,7 +470,9 @@ void TimeDepReverse::SetOrigin(GraphReader& graphreader,
     const DirectedEdge* opp_dir_edge = graphreader.GetOpposingEdge(edgeid);
 
     // Get cost
-    Cost cost = costing_->EdgeCost(directededge, tile, seconds_of_week) * edge.percent_along();
+    uint8_t flow_sources;
+    Cost cost =
+        costing_->EdgeCost(directededge, tile, seconds_of_week, flow_sources) * edge.percent_along();
     float dist = astarheuristic_.GetDistance(tile->get_node_ll(opp_dir_edge->endnode()));
 
     // We need to penalize this location based on its score (distance in meters from input)
@@ -487,7 +496,7 @@ void TimeDepReverse::SetOrigin(GraphReader& graphreader,
             // remaining must be zero.
             GraphId id(dest_path_edge.graph_id());
             const DirectedEdge* dest_edge = tile->directededge(id);
-            Cost remainder_cost = costing_->EdgeCost(dest_edge, tile, seconds_of_week) *
+            Cost remainder_cost = costing_->EdgeCost(dest_edge, tile, seconds_of_week, flow_sources) *
                                   (dest_path_edge.percent_along());
             // Remove the cost of the final "unused" part of the destination edge
             cost -= remainder_cost;
@@ -515,7 +524,8 @@ void TimeDepReverse::SetOrigin(GraphReader& graphreader,
     uint32_t idx = edgelabels_rev_.size();
     edgelabels_rev_.emplace_back(kInvalidLabel, opp_edge_id, edgeid, opp_dir_edge, cost, sortcost,
                                  dist, mode_, c, false, !(costing_->IsClosed(directededge, tile)),
-                                 -1);
+                                 static_cast<bool>(flow_sources & kDefaultFlowMask),
+                                 sif::InternalTurn::kNoTurn, -1);
     adjacencylist_rev_.add(idx);
 
     // Set the initial not_thru flag to false. There is an issue with not_thru

@@ -17,6 +17,7 @@ set(sources
   optimizer.cc
   route_action.cc
   route_matcher.cc
+  status_action.cc
   timedep_forward.cc
   timedep_reverse.cc
   timedistancematrix.cc
@@ -27,7 +28,7 @@ set(sources
   triplegbuilder_utils.h
   worker.cc)
 
-if (UNIX AND NOT APPLE)
+if (UNIX AND NOT APPLE AND ENABLE_SINGLE_FILES_WERROR)
   # Enables stricter compiler checks on a file-by-file basis
   # which allows us to migrate piecemeal
   set_source_files_properties(

@@ -11,7 +11,7 @@ The default logic for the OpenStreetMap tags, keys, and values used when routing
 The route request run locally takes the form of `localhost:8002/route?json={}`, where the JSON inputs inside the `{}` include location information, name and options for the costing model, and output options. Here is the JSON payload for an example request:
 
 ```
-{"locations":[{"lat":42.358528,"lon":-83.271400,"street":"Appleton"},{"lat":42.996613,"lon":-78.749855,"street":"Ranch Trail"}],"costing":"auto","costing_options":{"auto":{"country_crossing_penalty":2000.0}},"directions_options":{"units":"miles"},"id":"my_work_route"}
+{"locations":[{"lat":42.358528,"lon":-83.271400,"street":"Appleton"},{"lat":42.996613,"lon":-78.749855,"street":"Ranch Trail"}],"costing":"auto","costing_options":{"auto":{"country_crossing_penalty":2000.0}},"units":"miles","id":"my_work_route"}
 ```
 
 This request provides automobile routing between the Detroit, Michigan area and Buffalo, New York, with an optional street name parameter to improve navigation at the start and end points. It attempts to avoid routing north through Canada by adding a penalty for crossing international borders. The resulting route is displayed in miles.
@@ -106,13 +106,13 @@ These options are available for `auto`, `bus`, and `truck` costing methods.
 | `use_living_streets` | This value indicates the willingness to take living streets. This is a range of values between 0 and 1. Values near 0 attempt to avoid living streets and values near 1 will favor living streets. The default value is 0 for trucks, 0.1 for cars, buses, motor scooters and motorcycles. Note that sometimes living streets are required to complete a route so values of 0 are not guaranteed to avoid living streets entirely. |
 | `use_tracks` | This value indicates the willingness to take track roads. This is a range of values between 0 and 1. Values near 0 attempt to avoid tracks and values near 1 will favor tracks a little bit. The default value is 0 for autos, 0.5 for motor scooters and motorcycles. Note that sometimes tracks are required to complete a route so values of 0 are not guaranteed to avoid tracks entirely. |
 | `service_penalty` | A penalty applied for transition to generic service road. The default penalty is 0 trucks and 15 for cars, buses, motor scooters and motorcycles. |
-| `service_factor` | A factor that modifies (multiplies) the cost when generic service roads are encountered. The default `service_factor` is 1.2 for cars and buses and 1 for trucks, motor scooters and motorcycles. |
+| `service_factor` | A factor that modifies (multiplies) the cost when generic service roads are encountered. The default `service_factor` is 1. |
 | `country_crossing_cost` | A cost applied when encountering an international border. This cost is added to the estimated and elapsed times. The default cost is 600 seconds. |
 | `country_crossing_penalty` | A penalty applied for a country crossing. This penalty can be used to create paths that avoid spanning country boundaries. The default penalty is 0. |
 | `shortest` | Changes the metric to quasi-shortest, i.e. purely distance-based costing. Note, this will disable all other costings & penalties. Also note, `shortest` will not disable hierarchy pruning, leading to potentially sub-optimal routes for some costing models. The default is `false`. |
 | `top_speed` | Top speed the vehicle can go. Also used to avoid roads with higher speeds than this value. `top_speed` must be between 10 and 252 KPH. The default value is 140 KPH. |
 | `ignore_closures` | If set to `true`, ignores all closures, marked due to live traffic closures, during routing. **Note:** This option cannot be set if `location.search_filter.exclude_closures` is also specified in the request and will return an error if it is |
-
+| `closure_factor` | A factor that penalizes the cost when traversing a closed edge (eg: if `search_filter.exclude_closures` is `false` for origin and/or destination location and the route starts/ends on closed edges). Its value can range from `1.0` - don't penalize closed edges, to `10.0` - apply high cost penalty to closed edges. Default value is `9.0`. **Note:** This factor is applicable only for motorized modes of transport, i.e `auto`, `motorcycle`, `motor_scooter`, `bus`, `truck`, `hov` & `taxi`.
 ###### Truck-specific costing options
 
 In addition to the above, the following options are available for `truck` costing.
@@ -190,7 +190,7 @@ These options are available for pedestrian costing methods.
 | `use_ferry` | This value indicates the willingness to take ferries. This is range of values between 0 and 1. Values near 0 attempt to avoid ferries and values near 1 will favor ferries. The default value is 0.5. Note that sometimes ferries are required to complete a route so values of 0 are not guaranteed to avoid ferries entirely. |
 | `use_living_streets` | This value indicates the willingness to take living streets. This is a range of values between 0 and 1. Values near 0 attempt to avoid living streets and values near 1 will favor living streets. The default value is 0.6. Note that sometimes living streets are required to complete a route so values of 0 are not guaranteed to avoid living streets entirely. |
 | `use_tracks` | This value indicates the willingness to take track roads. This is a range of values between 0 and 1. Values near 0 attempt to avoid tracks and values near 1 will favor tracks a little bit. The default value is 0.5. Note that sometimes tracks are required to complete a route so values of 0 are not guaranteed to avoid tracks entirely. |
-| `service_penalty` | A penalty applied for transition to generic service road. The default penalty is 15. |
+| `service_penalty` | A penalty applied for transition to generic service road. The default penalty is 0. |
 | `service_factor` | A factor that modifies (multiplies) the cost when generic service roads are encountered. The default `service_factor` is 1. |
 | `max_hiking_difficulty` | This value indicates the maximum difficulty of hiking trails that is allowed. Values between 0 and 6 are allowed. The values correspond to *sac_scale* values within OpenStreetMap, see reference [here](https://wiki.openstreetmap.org/wiki/Key:sac_scale). The default value is 1 which means that well cleared trails that are mostly flat or slightly sloped are allowed. Higher difficulty trails can be allowed by specifying a higher value for max_hiking_difficulty.
 |`bss_rent_cost`| This value is useful when `bikeshare` is chosen as travel mode. It is meant to give the time will be used to rent a bike from a bike share station. This value will be displayed in the final directions and used to calculate the whole duation. The default value is 120 seconds.|
@@ -222,7 +222,7 @@ When using `filters`, you need to include a [Onestop ID](https://transit.land/do
 A multimodal request at the current date and time:
 
 ```
-{"locations":[{"lat":40.730930,"lon":-73.991379,"street":"Wanamaker Place"},{"lat":40.749706,"lon":-73.991562,"street":"Penn Plaza"}],"costing":"multimodal","directions_options":{"units":"miles"}}
+{"locations":[{"lat":40.730930,"lon":-73.991379,"street":"Wanamaker Place"},{"lat":40.749706,"lon":-73.991562,"street":"Penn Plaza"}],"costing":"multimodal","units":"miles"}
 ```
 
 A multimodal request departing on 2016-03-29 at 08:00:
@@ -240,10 +240,12 @@ A multimodal request for a route favoring buses and a person walking at a set sp
 A multimodal request with a filter for certain Onestop IDs:
 
 ```
-{"locations":[{"lat":40.730930,"lon":-73.991379,"street":"Wanamaker Place"},{"lat":40.749706,"lon":-73.991562,"street":"Penn Plaza"}],"costing":"multimodal","costing_options":{"transit":{"filters":{"stops":{"ids":["s-dr5rsq8pqg-8st~nyu&#60;r21n","s-dr5rsr9wyg-14st&#126;unionsq&#60;r20n"],"action":"exclude"},"routes":{"ids":["r-dr5r-r"],"action":"exclude"},"operators":{"ids":["o-dr5r-path"],"action":"include"}}}},"directions_options":{"units":"miles"}}
+{"locations":[{"lat":40.730930,"lon":-73.991379,"street":"Wanamaker Place"},{"lat":40.749706,"lon":-73.991562,"street":"Penn Plaza"}],"costing":"multimodal","costing_options":{"transit":{"filters":{"stops":{"ids":["s-dr5rsq8pqg-8st~nyu&#60;r21n","s-dr5rsr9wyg-14st&#126;unionsq&#60;r20n"],"action":"exclude"},"routes":{"ids":["r-dr5r-r"],"action":"exclude"},"operators":{"ids":["o-dr5r-path"],"action":"include"}}}},"units":"miles"}
 ```
 
 #### Directions options
+
+Directions options should be specified at the top level of the JSON, and usage of the `directions_options` nested structure is deprecated.
 
 | Options | Description |
 | :------------------ | :----------- |
@@ -280,6 +282,7 @@ A multimodal request with a filter for certain Onestop IDs:
 | Options | Description |
 | :------------------ | :----------- |
 | `avoid_locations` |  A set of locations to exclude or avoid within a route can be specified using a JSON array of avoid_locations. The avoid_locations have the same format as the locations list. At a minimum each avoid location must include latitude and longitude. The avoid_locations are mapped to the closest road or roads and these roads are excluded from the route path computation.|
+| `avoid_polygons` |  One or multiple exterior rings of polygons in the form of nested JSON arrays, e.g. `[[[lon1, lat1], [lon2,lat2]],[[lon1,lat1],[lon2,lat2]]]`. Roads intersecting these rings will be avoided during path finding. If you only need to avoid a few specific roads, it's **much** more efficient to use `avoid_locations`. Valhalla will close open rings (i.e. copy the first coordingate to the last position).|
 | `date_time` | This is the local date and time at the location.<ul><li>`type`<ul><li>0 - Current departure time.</li><li>1 - Specified departure time</li><li>2 - Specified arrival time. Not yet implemented for multimodal costing method.</li></li>3 - Invariant specified time. Time does not vary over the course of the path. Not implemented for multimodal or bike share routing</li></ul></li><li>`value` - the date and time is specified in ISO 8601 format (YYYY-MM-DDThh:mm) in the local time zone of departure or arrival.  For example "2016-07-03T08:06"</li></ul><ul><b>NOTE: This option is not supported for Valhalla's matrix service.</b><ul> |
 | `out_format` | Output format. If no `out_format` is specified, JSON is returned. Future work includes PBF (protocol buffer) support. |
 | `id` | Name your route request. If `id` is specified, the naming will be sent thru to the response. |

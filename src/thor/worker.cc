@@ -31,10 +31,6 @@ namespace {
 // route starts to become suspect (due to user breaks and other factors).
 constexpr float kDefaultMaxTimeDependentDistance = 500000.0f; // 500 km
 
-// Maximum capacity of edge labels container that allowed to keep reserved.
-// It's used to prevent memory from infinite growth.
-constexpr uint32_t kMaxReservedLabelsCount = 1000000;
-
 // Maximum edge score - base this on costing type.
 // Large values can cause very bad performance. Setting this back
 // to 2 hours for bike and pedestrian and 12 hours for driving routes.
@@ -56,7 +52,7 @@ constexpr float kDistanceScale = 10.f;
 std::string serialize_to_pbf(Api& request) {
   std::string buf;
   if (!request.SerializeToString(&buf)) {
-    LOG_ERROR("Failed serializing to pbf in Thor::Worker - trace_route");
+    LOG_ERROR("Failed serializing to pbf in Thor::Worker");
     throw valhalla_exception_t{401, boost::optional<std::string>(
                                         "Failed serializing to pbf in Thor::Worker")};
   }
@@ -71,17 +67,11 @@ namespace thor {
 
 thor_worker_t::thor_worker_t(const boost::property_tree::ptree& config,
                              const std::shared_ptr<baldr::GraphReader>& graph_reader)
-    : mode(valhalla::sif::TravelMode::kPedestrian),
-      bidir_astar(config.get<uint32_t>("thor.max_reserved_labels_count", kMaxReservedLabelsCount)),
-      bss_astar(config.get<uint32_t>("thor.max_reserved_labels_count", kMaxReservedLabelsCount)),
-      multi_modal_astar(
-          config.get<uint32_t>("thor.max_reserved_labels_count", kMaxReservedLabelsCount)),
-      timedep_forward(
-          config.get<uint32_t>("thor.max_reserved_labels_count", kMaxReservedLabelsCount)),
-      timedep_reverse(
-          config.get<uint32_t>("thor.max_reserved_labels_count", kMaxReservedLabelsCount)),
-      isochrone_gen(config.get<uint32_t>("thor.max_reserved_labels_count", kMaxReservedLabelsCount)),
-      matcher_factory(config, graph_reader), reader(graph_reader), controller{} {
+    : mode(valhalla::sif::TravelMode::kPedestrian), bidir_astar(config.get_child("thor")),
+      bss_astar(config.get_child("thor")), multi_modal_astar(config.get_child("thor")),
+      timedep_forward(config.get_child("thor")), timedep_reverse(config.get_child("thor")),
+      isochrone_gen(config.get_child("thor")), matcher_factory(config, graph_reader),
+      reader(graph_reader), controller{} {
   // If we weren't provided with a graph reader make our own
   if (!reader)
     reader = matcher_factory.graphreader();
@@ -92,8 +82,9 @@ thor_worker_t::thor_worker_t(const boost::property_tree::ptree& config,
   for (const auto& kv : config.get_child("service_limits")) {
     if (kv.first == "max_avoid_locations" || kv.first == "max_reachability" ||
         kv.first == "max_radius" || kv.first == "max_timedep_distance" ||
-        kv.first == "max_alternates" || kv.first == "skadi" || kv.first == "trace" ||
-        kv.first == "isochrone" || kv.first == "centroid") {
+        kv.first == "max_alternates" || kv.first == "max_avoid_polygons_length" ||
+        kv.first == "skadi" || kv.first == "trace" || kv.first == "isochrone" ||
+        kv.first == "centroid") {
       continue;
     }
 
@@ -175,6 +166,11 @@ thor_worker_t::work(const std::list<zmq::message_t>& job,
         result.messages.emplace_back(serialize_to_pbf(request));
         break;
       }
+      case Options::status: {
+        status(request);
+        result.messages.emplace_back(serialize_to_pbf(request));
+        break;
+      }
       default:
         throw valhalla_exception_t{400}; // this should never happen
     }
@@ -189,6 +185,10 @@ thor_worker_t::work(const std::list<zmq::message_t>& job,
 }
 
 void run_service(const boost::property_tree::ptree& config) {
+  // gracefully shutdown when asked via SIGTERM
+  prime_server::quiesce(config.get<unsigned int>("httpd.service.drain_seconds", 28),
+                        config.get<unsigned int>("httpd.service.shutting_seconds", 1));
+
   // gets requests from thor proxy
   auto upstream_endpoint = config.get<std::string>("thor.service.proxy") + "_out";
   // sends them on to odin

@@ -207,7 +207,7 @@ void SetShapeAttributes(const AttributesController& controller,
                                 static_cast<std::uint8_t>(traffic_speed.congestion2),
                                 {},
                                 traffic_speed.closed(1)});
-        if (traffic_speed.speed3 != UNKNOWN_TRAFFIC_SPEED_RAW) {
+        if (traffic_speed.breakpoint2 < 255) {
           cuts.emplace_back(cut_t{1,
                                   speed,
                                   static_cast<std::uint8_t>(traffic_speed.congestion3),
@@ -265,7 +265,7 @@ void SetShapeAttributes(const AttributesController& controller,
   }
 
   // Find the first cut to the right of where we start on this edge
-  auto edgeinfo = tile->edgeinfo(edge->edgeinfo_offset());
+  auto edgeinfo = tile->edgeinfo(edge);
   double distance_total_pct = src_pct;
   auto cut_itr = std::find_if(cuts.cbegin(), cuts.cend(),
                               [distance_total_pct](const decltype(cuts)::value_type& s) {
@@ -328,6 +328,9 @@ void SetShapeAttributes(const AttributesController& controller,
     }
     distance_total_pct = next_total;
     double time = distance / cut_itr->speed; // seconds
+    if (std::isnan(time)) {
+      time = 0.;
+    }
 
     // Set shape attributes time per shape point if requested
     if (controller.attributes.at(kShapeAttributesTime)) {
@@ -344,7 +347,11 @@ void SetShapeAttributes(const AttributesController& controller,
     // Set shape attributes speed per shape point if requested
     if (controller.attributes.at(kShapeAttributesSpeed)) {
       // convert speed to decimeters per sec and then round to an integer
-      leg.mutable_shape_attributes()->add_speed((distance * kDecimeterPerMeter / time) + 0.5);
+      double speed = (distance * kDecimeterPerMeter / time) + 0.5;
+      if (std::isnan(speed) || time == 0.) { // avoid NaN
+        speed = 0.;
+      }
+      leg.mutable_shape_attributes()->add_speed(speed);
     }
 
     // Set the maxspeed if requested
@@ -496,7 +503,7 @@ TripLeg_Edge* AddTripEdge(const AttributesController& controller,
   TripLeg_Edge* trip_edge = trip_node->mutable_edge();
 
   // Get the edgeinfo
-  auto edgeinfo = graphtile->edgeinfo(directededge->edgeinfo_offset());
+  auto edgeinfo = graphtile->edgeinfo(directededge);
 
   // Add names to edge if requested
   if (controller.attributes.at(kEdgeNames)) {
@@ -651,8 +658,9 @@ TripLeg_Edge* AddTripEdge(const AttributesController& controller,
     // know whether or not the costing actually cares about the speed of the edge. Perhaps a
     // refactor of costing to have a GetSpeed function which EdgeCost calls internally but which we
     // can also call externally
+    uint8_t flow_sources;
     auto speed = directededge->length() /
-                 costing->EdgeCost(directededge, graphtile, second_of_week).secs * 3.6;
+                 costing->EdgeCost(directededge, graphtile, second_of_week, flow_sources).secs * 3.6;
     trip_edge->set_speed(speed);
   }
 
@@ -855,6 +863,14 @@ TripLeg_Edge* AddTripEdge(const AttributesController& controller,
 
   if (controller.attributes.at(kEdgeBicycleNetwork)) {
     trip_edge->set_bicycle_network(directededge->bike_network());
+  }
+
+  if (controller.attributes.at(kEdgeSacScale)) {
+    trip_edge->set_sac_scale(GetTripLegSacScale(directededge->sac_scale()));
+  }
+
+  if (controller.attributes.at(kEdgeShoulder)) {
+    trip_edge->set_shoulder(directededge->shoulder());
   }
 
   if (controller.attributes.at(kEdgeSidewalk)) {
@@ -1282,7 +1298,7 @@ void TripLegBuilder::Build(
 
     // Process the shape for edges where a route discontinuity occurs
     uint32_t begin_index = (is_first_edge) ? 0 : trip_shape.size() - 1;
-    auto edgeinfo = graphtile->edgeinfo(directededge->edgeinfo_offset());
+    auto edgeinfo = graphtile->edgeinfo(directededge);
     if (edge_trimming && !edge_trimming->empty() && edge_trimming->count(edge_index) > 0) {
       // Get edge shape and reverse it if directed edge is not forward.
       auto edge_shape = edgeinfo.shape();

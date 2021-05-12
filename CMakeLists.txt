@@ -7,7 +7,7 @@
 # This is secondary build configuration provided for convenient development
 # on Windows and using CMake-enabled IDEs.
 #
-cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 project(valhalla LANGUAGES CXX C)
 
 include(FindPkgConfig)
@@ -33,6 +33,9 @@ option(ENABLE_TESTS "Enable Valhalla tests" ON)
 option(ENABLE_WERROR "Convert compiler warnings to errors. Requires ENABLE_COMPILER_WARNINGS=ON to take effect" OFF)
 option(ENABLE_BENCHMARKS "Enable microbenchmarking" ON)
 option(ENABLE_THREAD_SAFE_TILE_REF_COUNT "If ON tiles reference counters are thread safe" OFF)
+option(ENABLE_SINGLE_FILES_WERROR "Convert compiler warnings to errors for single files" ON)
+# useful to workaround issues likes this https://stackoverflow.com/questions/24078873/cmake-generated-xcode-project-wont-compile
+option(ENABLE_STATIC_LIBRARY_MODULES "If ON builds Valhalla modules as STATIC library targets" OFF)
 
 set(LOGGING_LEVEL "" CACHE STRING "Logging level, default is INFO")
 set_property(CACHE LOGGING_LEVEL PROPERTY STRINGS "NONE;ALL;ERROR;WARN;INFO;DEBUG;TRACE")
@@ -68,16 +71,18 @@ if(NOT MSVC_IDE) # TODO: May need to be extended for Xcode, CLion, etc.
   endif()
 endif()
 
-if(CMAKE_BUILD_TYPE MATCHES Debug)
+if(CMAKE_BUILD_TYPE STREQUAL Debug)
   message(STATUS "Configuring in debug mode")
-elseif(CMAKE_BUILD_TYPE MATCHES Release)
+elseif(CMAKE_BUILD_TYPE STREQUAL Release)
   message(STATUS "Configuring in release mode")
-elseif(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
+elseif(CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo)
   message(STATUS "Configuring in release mode with debug flags")
-elseif(CMAKE_BUILD_TYPE MATCHES MinRelSize)
+elseif(CMAKE_BUILD_TYPE STREQUAL MinRelSize)
   message(STATUS "Configuring in release mode with minimized size")
+elseif(CMAKE_BUILD_TYPE STREQUAL None)
+  message(STATUS "Configuring without a mode, no optimization flags will be set")
 else()
-  message(STATUS "Unrecognized build type - will use cmake defaults")
+  message(FATAL_ERROR "Unrecognized build type. Use one of Debug, Release, RelWithDebInfo, MinRelSize, None")
 endif()
 
 function(create_source_groups prefix)
@@ -239,11 +244,17 @@ add_subdirectory(src)
 
 ## Python bindings
 if(ENABLE_PYTHON_BINDINGS)
-  #TODO: need to make sure they actually have python
-  add_subdirectory(src/bindings/python)
-  install(FILES COPYING CHANGELOG.md
-    DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/doc/python-valhalla"
-    COMPONENT python)
+  # favors Py3, falls back to Py2
+  find_package(Python COMPONENTS Development Interpreter)
+  if (Python_FOUND)
+    add_subdirectory(src/bindings/python)
+    install(FILES COPYING CHANGELOG.md
+      DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/doc/python-valhalla"
+      COMPONENT python)
+  else()
+    set(ENABLE_PYTHON_BINDINGS OFF)
+    message(WARNING "Skipping Python bindings... Install a development Python version including headers to compile the bindings.")
+  endif()
 endif()
 
 ## Executable targets
