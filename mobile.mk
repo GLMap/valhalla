@@ -1,4 +1,5 @@
 SRC = \
+	src/loki/polygon_search.cc \
 	src/loki/matrix_action.cc \
 	src/loki/height_action.cc \
 	src/loki/transit_available_action.cc \
@@ -32,6 +33,7 @@ SRC = \
 	src/thor/triplegbuilder.cc \
 	src/thor/astar_bss.cc \
 	src/thor/alternates.cc \
+	src/meili/geometry_helpers.cc \
 	src/meili/topk_search.cc \
 	src/meili/map_matcher.cc \
 	src/meili/map_matcher_factory.cc \

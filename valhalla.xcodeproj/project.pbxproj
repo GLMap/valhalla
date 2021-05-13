@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6C03FD60264D50E600F84B73 /* geometry_helpers.cc in Sources */ = {isa = PBXBuildFile; fileRef = 6C03FD5F264D50E600F84B73 /* geometry_helpers.cc */; };
+		6C03FD62264D510700F84B73 /* polygon_search.cc in Sources */ = {isa = PBXBuildFile; fileRef = 6C03FD61264D510700F84B73 /* polygon_search.cc */; };
 		6C5BC39E25F637FD001FC3DD /* micro.h in Headers */ = {isa = PBXBuildFile; fileRef = C1B300D825ECDF3F00B02D4A /* micro.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		6C5BC3A125F638A8001FC3DD /* micro.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C1B300D725ECDF3F00B02D4A /* micro.cpp */; };
 		6C5BC3AC25F63A90001FC3DD /* libvalhalla.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C1B3011A25ECE59A00B02D4A /* libvalhalla.a */; };
@@ -172,6 +174,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		6C03FD5F264D50E600F84B73 /* geometry_helpers.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = geometry_helpers.cc; sourceTree = "<group>"; };
+		6C03FD61264D510700F84B73 /* polygon_search.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = polygon_search.cc; sourceTree = "<group>"; };
 		6C5BC38425F63606001FC3DD /* valhalla_micro.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = valhalla_micro.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6C5BC38725F63606001FC3DD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6C5BC38E25F63620001FC3DD /* Framework.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Framework.xcconfig; sourceTree = "<group>"; };
@@ -458,6 +462,7 @@
 		C1B9B8F225DBC210001B4BFB /* loki */ = {
 			isa = PBXGroup;
 			children = (
+				6C03FD61264D510700F84B73 /* polygon_search.cc */,
 				C1B9B8F425DBC210001B4BFB /* height_action.cc */,
 				C1B9B8FB25DBC210001B4BFB /* isochrone_action.cc */,
 				C1B9B90625DBC210001B4BFB /* locate_action.cc */,
@@ -530,6 +535,7 @@
 		C1B9B95725DBC210001B4BFB /* meili */ = {
 			isa = PBXGroup;
 			children = (
+				6C03FD5F264D50E600F84B73 /* geometry_helpers.cc */,
 				C1B9B96925DBC210001B4BFB /* candidate_search.cc */,
 				C1B300EA25ECE0C100B02D4A /* config.cc */,
 				C1B9B95C25DBC210001B4BFB /* map_matcher_factory.cc */,
@@ -720,6 +726,7 @@
 				C1B3015E25ECE67500B02D4A /* tilehierarchy.cc in Sources */,
 				C1B3015225ECE67500B02D4A /* merge.cc in Sources */,
 				C1B3019225ECE68900B02D4A /* narrative_dictionary.cc in Sources */,
+				6C03FD62264D510700F84B73 /* polygon_search.cc in Sources */,
 				C1B3018B25ECE68900B02D4A /* worker.cc in Sources */,
 				C1B301BA25ECE69700B02D4A /* centroid.cc in Sources */,
 				C1B3014625ECE67500B02D4A /* graphtile.cc in Sources */,
@@ -797,6 +804,7 @@
 				C1B3019B25ECE68E00B02D4A /* nocost.cc in Sources */,
 				C1B3018125ECE68400B02D4A /* pointll.cc in Sources */,
 				C1B3019825ECE68E00B02D4A /* motorcyclecost.cc in Sources */,
+				6C03FD60264D50E600F84B73 /* geometry_helpers.cc in Sources */,
 				C1B3017C25ECE67F00B02D4A /* routing.cc in Sources */,
 				C1B301AF25ECE69700B02D4A /* timedep_forward.cc in Sources */,
 				C1B3017025ECE67B00B02D4A /* transit_available_action.cc in Sources */,
