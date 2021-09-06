@@ -139,6 +139,15 @@ std::shared_ptr<GraphReader::tile_source_rt_t> GraphReader::getSourceForRT(const
   return rv;
 }
 
+tile_gone_error_t::tile_gone_error_t(const std::string& errormessage)
+    : std::runtime_error(errormessage) {
+}
+
+    : std::runtime_error(std::move(prefix) + ", tile no longer available " +
+tile_gone_error_t::tile_gone_error_t(std::string prefix, baldr::GraphId edgeid)
+                         std::to_string(edgeid.Tile_Base())) {
+}
+
 GraphReader::tile_extract_t::tile_extract_t(const boost::property_tree::ptree& pt) {
   // if you really meant to load it
   if (pt.get_optional<std::string>("tile_extract")) {

@@ -124,15 +124,15 @@ TEST(GraphTileBuilder, TestDuplicateEdgeInfo) {
   EXPECT_NEAR(ei.mean_elevation(), 555.0f, kElevationBinSize);
   EXPECT_EQ(ei.speed_limit(), 120);
 
-  auto n1 = test2.GetNames(0, false);
+  auto n1 = ei.GetNames();
   EXPECT_EQ(n1.size(), 1);
   EXPECT_EQ(n1.at(0), "einzelweg");
 
-  auto n2 = test2.GetNames(0); // defaults to false
+  auto n2 = ei.GetNames(); // defaults to false
   EXPECT_EQ(n2.size(), 1);
   EXPECT_EQ(n2.at(0), "einzelweg");
 
-  auto n3 = test2.GetNames(0, true);
+  auto n3 = ei.GetTaggedValues();
   EXPECT_EQ(n3.size(), 1);
   EXPECT_EQ(n3.at(0), "1xyz tunnel"); // we always return the tag type in getnames
 
@@ -161,11 +161,9 @@ TEST(GraphTileBuilder, TestDuplicateEdgeInfo) {
   EXPECT_EQ(n4.first, "einzelweg");
   EXPECT_EQ(n4.second, false);
 
-  auto tagged_names_and_types = ei.GetTaggedNamesAndTypes();
-  for (const auto& tagged_name_and_type : tagged_names_and_types) {
-    EXPECT_EQ(tagged_name_and_type.first, "xyz tunnel");
-    EXPECT_EQ(tagged_name_and_type.second, 1);
-  }
+  const auto& tags = ei.GetTags();
+  EXPECT_EQ(tags.size(), 1);
+  EXPECT_EQ(tags.find(TaggedValue::kTunnel)->second, "xyz tunnel");
 }
 
 TEST(GraphTileBuilder, TestAddBins) {
@@ -294,7 +292,7 @@ TEST(GraphTileBuilder, TestBinEdges) {
       "JiGlJqAfDbAtE~A~GgBdFyKlJy[xWqMvMqTlKoPfCeKiBkHeF}E{KoD{JaLsGwSeEg~BqR";
   auto decoded_shape = valhalla::midgard::decode<std::vector<PointLL>>(encoded_shape5);
   auto encoded_shape7 = valhalla::midgard::encode7(decoded_shape);
-  graph_tile_ptr fake = new fake_tile(encoded_shape5);
+  graph_tile_ptr fake{new fake_tile(encoded_shape5)};
   auto info = fake->edgeinfo(fake->directededge(0));
   EXPECT_EQ(info.encoded_shape(), encoded_shape7);
   GraphTileBuilder::tweeners_t tweeners;

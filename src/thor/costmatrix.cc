@@ -294,7 +294,7 @@ void CostMatrix::ForwardSearch(const uint32_t index, const uint32_t n, GraphRead
       // Skip this edge if no access is allowed (based on costing method)
       // or if a complex restriction prevents transition onto this edge.
       uint8_t restriction_idx = -1;
-      if (!costing_->Allowed(directededge, pred, tile, edgeid, 0, 0, restriction_idx) ||
+      if (!costing_->Allowed(directededge, false, pred, tile, edgeid, 0, 0, restriction_idx) ||
           costing_->Restricted(directededge, pred, edgelabels, tile, edgeid, true)) {
         continue;
       }
@@ -586,12 +586,15 @@ void CostMatrix::BackwardSearch(const uint32_t index, GraphReader& graphreader) 
 
       // Get cost. Use opposing edge for EdgeCost. Separate the transition seconds so
       // we can properly recover elapsed time on the reverse path.
-      Cost tc = costing_->TransitionCostReverse(directededge->localedgeidx(), nodeinfo, opp_edge,
-                                                opp_pred_edge, pred.has_measured_speed(),
-                                                pred.internal_turn());
       uint8_t flow_sources;
-      Cost newcost = pred.cost() + tc +
-                     costing_->EdgeCost(opp_edge, tile, kConstrainedFlowSecondOfDay, flow_sources);
+      Cost newcost =
+          pred.cost() + costing_->EdgeCost(opp_edge, tile, kConstrainedFlowSecondOfDay, flow_sources);
+
+      Cost tc = costing_->TransitionCostReverse(directededge->localedgeidx(), nodeinfo, opp_edge,
+                                                opp_pred_edge,
+                                                static_cast<bool>(flow_sources & kDefaultFlowMask),
+                                                pred.internal_turn());
+      newcost += tc;
 
       // Check if edge is temporarily labeled and this path has less cost. If
       // less cost the predecessor is updated along with new cost and distance.

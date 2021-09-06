@@ -13,7 +13,9 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#ifndef _MSC_VER
 #include <sys/mman.h>
+#endif
 #include <sys/stat.h>
 
 #include <gmock/gmock.h>
@@ -84,6 +86,7 @@ using LiveTrafficCustomize = std::function<void(valhalla::baldr::GraphReader&,
 void customize_live_traffic_data(const boost::property_tree::ptree& config,
                                  const LiveTrafficCustomize& setter_cb);
 
+#ifdef DATA_TOOLS
 using HistoricalTrafficCustomize =
     std::function<boost::optional<std::array<float, kBucketsPerWeek>>(DirectedEdge&)>;
 void customize_historical_traffic(const boost::property_tree::ptree& config,
@@ -91,5 +94,6 @@ void customize_historical_traffic(const boost::property_tree::ptree& config,
 
 using EdgesCustomize = std::function<void(const GraphId&, DirectedEdge&)>;
 void customize_edges(const boost::property_tree::ptree& config, const EdgesCustomize& setter_cb);
+#endif
 
 } // namespace test
