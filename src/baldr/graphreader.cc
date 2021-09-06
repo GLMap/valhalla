@@ -143,8 +143,8 @@ tile_gone_error_t::tile_gone_error_t(const std::string& errormessage)
     : std::runtime_error(errormessage) {
 }
 
-    : std::runtime_error(std::move(prefix) + ", tile no longer available " +
 tile_gone_error_t::tile_gone_error_t(std::string prefix, baldr::GraphId edgeid)
+    : std::runtime_error(std::move(prefix) + ", tile no longer available " +
                          std::to_string(edgeid.Tile_Base())) {
 }
 

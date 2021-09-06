@@ -10,8 +10,6 @@ SRC = \
 	src/loki/route_action.cc \
 	src/loki/locate_action.cc \
 	src/loki/reach.cc \
-	src/thor/timedep_forward.cc \
-	src/thor/timedep_reverse.cc \
 	src/thor/matrix_action.cc \
 	src/thor/route_matcher.cc \
 	src/thor/bidirectional_astar.cc \
@@ -133,6 +131,8 @@ GENERATED_HEADERS = \
 	genfiles/locales.h
 
 GENERATED_SOURCES = \
+	genfiles/valhalla/proto/status.pb.cc \
+	genfiles/valhalla/proto/sign.pb.cc \
 	genfiles/valhalla/proto/trip.pb.cc \
 	genfiles/valhalla/proto/info.pb.cc \
 	genfiles/valhalla/proto/api.pb.cc \
@@ -161,8 +161,11 @@ MICRO_LIB = libvalhalla_micro.so
 FLAGS = -std=c++17 -DMOBILE -DNDEBUG=1 -DUSE_STD_REGEX=1 -DRAPIDJSON_HAS_STDSTRING=1 \
  -DPACKAGE_VERSION="\"3.1.0\"" \
  -DVALHALLA_VERSION_MAJOR=3 -DVALHALLA_VERSION_MINOR=1 -DVALHALLA_VERSION_PATCH=0 \
- -I. -Ivalhalla -Igenfiles -Igenfiles/valhalla -Ithird_party/robin-hood-hashing/src/include \
- -Ithird_party/rapidjson/include -Ithird_party/date/include
+ -I. -Ivalhalla -Igenfiles -Igenfiles/valhalla \
+ -Ithird_party/cpp-statsd-client/include \
+ -Ithird_party/robin-hood-hashing/src/include \
+ -Ithird_party/rapidjson/include \
+ -Ithird_party/date/include
 PROTOC = ../build/macOS/x86_64/bin/protoc
 
 .SUFFIXES: .cc .cpp .mm .proto
