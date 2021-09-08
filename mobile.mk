@@ -31,6 +31,7 @@ SRC = \
 	src/thor/triplegbuilder.cc \
 	src/thor/astar_bss.cc \
 	src/thor/alternates.cc \
+	src/thor/unidirectional_astar.cc \
 	src/meili/geometry_helpers.cc \
 	src/meili/topk_search.cc \
 	src/meili/map_matcher.cc \
@@ -60,6 +61,7 @@ SRC = \
 	src/midgard/util.cc \
 	src/midgard/tiles.cc \
 	src/midgard/point2.cc \
+	src/midgard/point_tile_index.cc \
 	src/midgard/logging.cc \
 	src/midgard/polyline2.cc \
 	src/worker.cc \

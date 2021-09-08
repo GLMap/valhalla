@@ -64,7 +64,7 @@ LIBS_PATH_YES[sdk=macosx*] = $(SRCROOT)/../../libs/build/Catalyst/$(arch)
 
 LIBRARY_SEARCH_PATHS = $(inherited) $(LIBS_PATH_$(IS_MACCATALYST))/lib
 SYSTEM_HEADER_SEARCH_PATHS = $(LIBS_PATH_$(IS_MACCATALYST))/include
-HEADER_SEARCH_PATHS = . valhalla genfiles genfiles/valhalla third_party/robin-hood-hashing/src/include third_party/rapidjson/include third_party/date/include
+HEADER_SEARCH_PATHS = . valhalla genfiles genfiles/valhalla third_party/robin-hood-hashing/src/include third_party/rapidjson/include third_party/date/include third_party/cpp-statsd-client/include
 
 OTHER_LDFLAGS = $(inherited) -lprotobuf -lz
 
