@@ -1,4 +1,9 @@
-## Release Date: 2021-??-?? Valhalla 3.1.4
+## Release Date: 2021-??-?? Valhalla 3.1.5
+* **Removed**
+* **Bug Fix**
+* **Enhancement**
+
+## Release Date: 2021-10-07 Valhalla 3.1.4
 * **Removed**
 * **Bug Fix**
    * FIXED: Revert default speed boost for turn channels [#3232](https://github.com/valhalla/valhalla/pull/3232)
@@ -16,6 +21,10 @@
    * FIXED: Setting statsd tags in config via valhalla_build_config [#3225](https://github.com/valhalla/valhalla/pull/3225)
    * FIXED: Cache for gzipped elevation tiles [#3120](https://github.com/valhalla/valhalla/pull/3120)
    * FIXED: Current time conversion regression introduced in unidirectional algorithm refractor [#3278](https://github.com/valhalla/valhalla/issues/3278)
+   * FIXED: Make combine_route_stats.py properly quote CSV output (best practice improvement) [#3328](https://github.com/valhalla/valhalla/pull/3328)
+   * FIXED: Merge edge segment records in map matching properly so that resulting edge indices in trace_attributes are valid [#3280](https://github.com/valhalla/valhalla/pull/3280)
+   * FIXED: Shape walking map matcher now sets correct edge candidates used in the match for origin and destination location [#3329](https://github.com/valhalla/valhalla/pull/3329)
+   * FIXED: Better hash function of GraphId [#3332](https://github.com/valhalla/valhalla/pull/3332)
 
 * **Enhancement**
    * CHANGED: Favor turn channels more [#3222](https://github.com/valhalla/valhalla/pull/3222)
@@ -36,6 +45,14 @@
    * ADDED: Added traffic signal and stop sign check for stop impact. These traffic signals and stop sign are located on edges. [#3279](https://github.com/valhalla/valhalla/pull/3279)
    * CHANGED: Improved sharing criterion to obtain more reasonable alternatives; extended alternatives search [#3302](https://github.com/valhalla/valhalla/pull/3302)
    * ADDED: pull ubuntu:20.04 base image before building [#3233](https://github.com/valhalla/valhalla/pull/3223)
+   * CHANGED: Improve Loki nearest-neighbour performance for large radius searches in open space [#3233](https://github.com/valhalla/valhalla/pull/3324)
+   * ADDED: testing infrastructure for scripts and valhalla_build_config tests [#3308](https://github.com/valhalla/valhalla/pull/3308)
+   * ADDED: Shape points and information about where intermediate locations are placed along the legs of a route [#3274](https://github.com/valhalla/valhalla/pull/3274)
+   * CHANGED: Improved existing hov lane transition test case to make more realistic [#3330](https://github.com/valhalla/valhalla/pull/3330)
+   * CHANGED: Update python usage innall scripts to python3 [#3337](https://github.com/valhalla/valhalla/pull/3337)
+   * ADDED: Added `exclude_cash_only_tolls` request parameter [#3341](https://github.com/valhalla/valhalla/pull/3341)
+   * CHANGED: Update api-reference for street_names [#3342](https://github.com/valhalla/valhalla/pull/3342)
+   * ADDED: Disable msse2 flags when building on Apple Silicon chip [#3327](https://github.com/valhalla/valhalla/pull/3327)
 
 ## Release Date: 2021-07-20 Valhalla 3.1.3
 * **Removed**
@@ -56,7 +73,7 @@
    * FIXED: googletest wasn't really updated in #3166 [#3187](https://github.com/valhalla/valhalla/pull/3187)
    * FIXED: Minor fix of benchmark code [#3190](https://github.com/valhalla/valhalla/pull/3190)
    * FIXED: avoid_polygons intersected edges as polygons instead of linestrings [#3194]((https://github.com/valhalla/valhalla/pull/3194)
-   * FIXED: when binning horizontal edge shapes using single precision floats (converted from not double precision floats) allowed for the possiblity of marking many many tiles no where near the shape [#3204](https://github.com/valhalla/valhalla/pull/3204) 
+   * FIXED: when binning horizontal edge shapes using single precision floats (converted from not double precision floats) allowed for the possiblity of marking many many tiles no where near the shape [#3204](https://github.com/valhalla/valhalla/pull/3204)
    * FIXED: Fix improper iterator usage in ManeuversBuilder [#3205](https://github.com/valhalla/valhalla/pull/3205)
    * FIXED: Modified approach for retrieving signs from a directed edge #3166 [#3208](https://github.com/valhalla/valhalla/pull/3208)
    * FIXED: Improve turn channel classification: detect slip lanes [#3196](https://github.com/valhalla/valhalla/pull/3196)
@@ -102,11 +119,11 @@
    * FIXED: Highway/ramp lane bifurcation [#3088](https://github.com/valhalla/valhalla/pull/3088)
    * FIXED: out of bound access of tile hierarchy in base_ll function in graphheader [#3089](https://github.com/valhalla/valhalla/pull/3089)
    * FIXED: include shortcuts in avoid edge set for avoid_polygons [#3090](https://github.com/valhalla/valhalla/pull/3090)
-  
+
 * **Enhancement**
    * CHANGED: Refactor timedep forward/reverse to reduce code repetition [#2987](https://github.com/valhalla/valhalla/pull/2987)
    * CHANGED: Sync translation files with Transifex command line tool [#3030](https://github.com/valhalla/valhalla/pull/3030)
-   * CHANGED: Use osm tags in links reclassification algorithm in order to reduce false positive downgrades [#3042](https://github.com/valhalla/valhalla/pull/3042) 
+   * CHANGED: Use osm tags in links reclassification algorithm in order to reduce false positive downgrades [#3042](https://github.com/valhalla/valhalla/pull/3042)
    * CHANGED: Use CircleCI XL instances for linux based builds [#3043](https://github.com/valhalla/valhalla/pull/3043)
    * ADDED: ci: Enable undefined sanitizer [#2999](https://github.com/valhalla/valhalla/pull/2999)
    * ADDED: Optionally pass preconstructed graphreader to connectivity map [#3046](https://github.com/valhalla/valhalla/pull/3046)
