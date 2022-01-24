@@ -17,9 +17,66 @@ using namespace valhalla::midgard;
 
 namespace {
 
-constexpr size_t DEFAULT_MAX_CACHE_SIZE = 1073741824; // 1 gig
-constexpr size_t AVERAGE_TILE_SIZE = 2097152;         // 2 megs
-constexpr size_t AVERAGE_MM_TILE_SIZE = 1024;         // 1k
+constexpr static size_t DEFAULT_MAX_CACHE_SIZE = 1073741824; // 1 gig
+constexpr static size_t AVERAGE_TILE_SIZE = 2097152;         // 2 megs
+constexpr static size_t AVERAGE_MM_TILE_SIZE = 1024;         // 1k
+
+constexpr static int columns[] = {360 / 4, 360 / 1, 360 * 4};
+
+#define LE_CHR(a, b, c, d) (((a) << 24) | ((b) << 16) | ((c) << 8) | (d))
+constexpr static uint32_t TAR_FORMAT_ID = LE_CHR('1', 'X', 'B', 'B');
+struct TarTileIndexElementV1 {
+  uint32_t id, offset;
+};
+struct TarTileIndexElementV2 {
+  uint32_t offset;
+  uint32_t x, y;
+  uint8_t z;
+} __attribute__((packed));
+
+class MemoryMapHandle {
+private:
+  void *_mem, *_aligned;
+  uint32_t _size;
+
+public:
+  MemoryMapHandle() : _size(0), _aligned(MAP_FAILED), _mem(nullptr) {
+  }
+
+  MemoryMapHandle(int fd, uint32_t offset, uint32_t size) {
+    auto pageSize = (uint32_t)sysconf(_SC_PAGE_SIZE);
+    uint32_t alignedOffset = offset & ~(pageSize - 1);
+    uint32_t startOffset = offset - alignedOffset;
+    _size += startOffset;
+    int flags = PROT_READ;
+    _aligned = ::mmap(nullptr, _size, flags, MAP_PRIVATE, fd, (off_t)alignedOffset);
+    if (_aligned != MAP_FAILED) {
+      ::madvise(_aligned, _size, MADV_RANDOM | MADV_DONTNEED);
+      _mem = (char*)_aligned + startOffset;
+    } else {
+      _mem = nullptr;
+    }
+  }
+  MemoryMapHandle(const MemoryMapHandle&) = delete;
+  ~MemoryMapHandle() {
+    if (_aligned != MAP_FAILED)
+      ::munmap(_aligned, _size);
+  }
+
+  MemoryMapHandle& operator=(MemoryMapHandle&& other) {
+    std::swap(_size, other._size);
+    std::swap(_aligned, other._aligned);
+    std::swap(_mem, other._mem);
+    return *this;
+  }
+
+  template <class Type> inline const Type* get() const {
+    return (const Type*)_mem;
+  }
+  inline operator bool() const {
+    return _mem != nullptr;
+  }
+};
 
 } // namespace
 
@@ -28,108 +85,210 @@ namespace baldr {
 
 class GraphReader::tile_source_rt_t {
 public:
-  tile_source_rt_t(const std::string &file_path):
-  _file_path(file_path)
-  {
-    struct stat stat;
-    if (lstat(file_path.c_str(), &stat) != 0)
+  tile_source_rt_t(const std::string& file_path) : _file_path(file_path), _version(0) {
+    auto fd = ::open(file_path.c_str(), O_RDONLY);
+    if (fd < 0)
       return;
 
-    FILE *f = ::fopen(file_path.c_str(), "r");
-    if(!f)
-        return;
-
-    uint32_t count;
-    if(::fread(&count, 1, sizeof(count), f) != sizeof(count))
-    {
-        fclose(f);
-        return;
+    if (::read(fd, &_tileCount, sizeof(_tileCount)) != sizeof(_tileCount)) {
+      ::close(fd);
+      return;
+    }
+    auto fileSize = ::lseek(fd, 0, SEEK_END);
+    if (fileSize < 0) {
+      ::close(fd);
+      return;
     }
 
-    uint32_t headerSize = sizeof(count) + count * (sizeof(uint32_t)+sizeof(uint32_t));
-    GraphId prevID;
     uint32_t prevOffset = std::numeric_limits<uint32_t>::max();
-    for(uint32_t i=0; i<count; ++i)
-    {
-      uint32_t id, offset;
-      bool success = ::fread(&id, 1, sizeof(id), f) == sizeof(id);
-      success &= ::fread(&offset, 1, sizeof(id), f) == sizeof(offset);
-      offset += headerSize;
-      if(!success || offset > stat.st_size)
-      {
-        _tileOffsets.clear();
-        break;
+    GraphId prevID;
+    if (_tileCount == TAR_FORMAT_ID) {
+      ::lseek(fd, fileSize - sizeof(_tileCount), SEEK_SET);
+      if (::read(fd, &_tileCount, sizeof(_tileCount)) != sizeof(_tileCount)) {
+        ::close(fd);
+        return;
       }
-      if(prevOffset < offset)
-      {
-        _tileOffsets.emplace(prevID, std::make_pair(prevOffset, offset-prevOffset));
-      }
-      prevID = GraphId(id);
-      prevOffset = offset;
+      if (fileSize <=
+          sizeof(uint32_t) + sizeof(_tileCount) + _tileCount * sizeof(TarTileIndexElementV2))
+        return;
+
+      auto indexSize = _tileCount * sizeof(TarTileIndexElementV2);
+      _tileEndOffset = fileSize - sizeof(uint32_t) - indexSize;
+      _mmap = MemoryMapHandle(fd, _tileEndOffset, indexSize);
+      _version = 2;
+    } else {
+      auto indexSize = _tileCount * sizeof(TarTileIndexElementV1);
+      _mmap = MemoryMapHandle(fd, sizeof(_tileCount), indexSize);
+      _tileEndOffset = fileSize;
+      _version = 1;
     }
-    ::fclose(f);
-
-    if(prevOffset < stat.st_size)
-      _tileOffsets.emplace(prevID, std::make_pair(prevOffset, stat.st_size-prevOffset));
-
-    if(_tileOffsets.empty())
-      LOG_WARN("Tile extract could not be loaded");
-    else
-      LOG_INFO("Tile extract successfully loaded");
+    close(fd);
+    LOG_INFO("Tile extract successfully loaded");
   }
 
   ~tile_source_rt_t() = default;
 
-  size_t getAverageTileSize(){
+  size_t getAverageTileSize() {
     return AVERAGE_MM_TILE_SIZE;
   }
 
-  bool DoesTileExist(const GraphId& graphid){
-    return _tileOffsets.find(graphid) != _tileOffsets.end() ? true : false;
+  bool DoesTileExist(const GraphId& graphid) {
+    switch (_version) {
+      case 1: {
+        auto start = _mmap.get<TarTileIndexElementV1>();
+        auto end = start + _tileCount;
+        const auto* tile = std::upper_bound(start, end, graphid.tile_value(),
+                                            [](auto value, auto elem) { return value < elem.id; });
+        if (tile != end)
+          tile--;
+        return tile->id == graphid.tile_value();
+      }
+      case 2: {
+        auto start = _mmap.get<TarTileIndexElementV2>();
+        auto end = start + _tileCount;
+        TarTileIndexElementV2 value;
+        value.z = graphid.level();
+        value.y = graphid.tileid() / columns[value.z];
+        value.x = graphid.tileid() - value.y * columns[value.z];
+        const auto* tile = std::upper_bound(start, end, value, [](auto value, auto elem) {
+          if (value.z != elem.z)
+            return value.z < elem.z;
+          if (value.x != elem.x)
+            return value.x < elem.x;
+          return value.y < elem.y;
+        });
+        if (tile != end)
+          tile--;
+        return tile->x == value.x && tile->y == value.y && tile->z == value.z;
+      }
+      default:
+        throw std::runtime_error("Invalid format");
+    }
   }
 
-  void FillTileSet(std::unordered_set<GraphId> &result){
-    for(const auto& t : _tileOffsets)
-      result.emplace(t.first);
+  void FillTileSet(std::unordered_set<GraphId>& result) {
+    switch (_version) {
+      case 1: {
+        auto start = _mmap.get<TarTileIndexElementV1>();
+        for (auto it = start; it != start + _tileCount; ++it) {
+          result.emplace(GraphId(it->id));
+        }
+        break;
+      }
+      case 2: {
+        auto start = _mmap.get<TarTileIndexElementV2>();
+        for (auto it = start; it != start + _tileCount; ++it) {
+          auto id = columns[it->z] * it->y + it->x;
+          result.emplace(GraphId(id, it->z, 0));
+        }
+        break;
+      }
+      default:
+        throw std::runtime_error("Invalid format");
+    }
   }
 
-  void FillTileSet(std::unordered_set<GraphId> &result, const uint8_t level){
-    for(const auto& t : _tileOffsets)
-      if(GraphId(t.first).level() == level)
-        result.emplace(t.first);
+  void FillTileSet(std::unordered_set<GraphId>& result, const uint8_t level) {
+    switch (_version) {
+      case 1: {
+        auto start = _mmap.get<TarTileIndexElementV1>();
+        for (auto it = start; it != start + _tileCount; ++it) {
+          auto id = GraphId(it->id);
+          if (id.level() == level)
+            result.emplace(id);
+        }
+        break;
+      }
+      case 2: {
+        auto start = _mmap.get<TarTileIndexElementV2>();
+        for (auto it = start; it != start + _tileCount; ++it) {
+          if (it->z == level) {
+            auto id = columns[it->z] * it->y + it->x;
+            result.emplace(GraphId(id, it->z, 0));
+          }
+        }
+        break;
+      }
+      default:
+        throw std::runtime_error("Invalid format");
+    }
   }
 
-  std::pair<graph_tile_ptr, uint32_t> GetGraphTile(const GraphId& base){
-    auto it = _tileOffsets.find(base);
-    if(it == _tileOffsets.cend())
-      return std::make_pair(nullptr, (uint32_t)0);
-
-    auto tile = GraphTile::Create(base, _file_path, it->second.first, it->second.second);
-    return std::make_pair(tile, it->second.second);
+  std::pair<graph_tile_ptr, uint32_t> GetGraphTile(const GraphId& base) {
+    switch (_version) {
+      case 1: {
+        auto start = _mmap.get<TarTileIndexElementV1>();
+        auto end = start + _tileCount;
+        const auto* tile = std::upper_bound(start, end, base.tile_value(),
+                                            [](auto value, auto elem) { return value < elem.id; });
+        if (tile != end)
+          tile--;
+        if (tile->id == base.tile_value()) {
+          uint32_t headerSize = sizeof(_tileCount) + _tileCount * sizeof(TarTileIndexElementV1);
+          uint32_t tileOffset = headerSize + tile->offset;
+          uint32_t tileSize = (tile == end - 1) ? (_tileEndOffset - tileOffset) : (tile[1].offset - tile->offset);
+          auto tile = GraphTile::Create(base, _file_path, tileOffset, tileSize);
+          return std::make_pair(tile, tileSize);
+        }
+        break;
+      }
+      case 2: {
+        auto start = _mmap.get<TarTileIndexElementV2>();
+        auto end = start + _tileCount;
+        TarTileIndexElementV2 value;
+        value.z = base.level();
+        value.y = base.tileid() / columns[value.z];
+        value.x = base.tileid() - value.y * columns[value.z];
+        const auto* tile = std::upper_bound(start, end, value, [](auto value, auto elem) {
+          if (value.z != elem.z)
+            return value.z < elem.z;
+          if (value.x != elem.x)
+            return value.x < elem.x;
+          return value.y < elem.y;
+        });
+        if (tile != end)
+          tile--;
+        if (tile->x == value.x && tile->y == value.y && tile->z == value.z) {
+          uint32_t tileOffset = tile->offset;
+          uint32_t tileSize = ((tile == end - 1) ? _tileEndOffset : tile[1].offset) - tileOffset;
+          tileOffset += sizeof(uint32_t);
+          tileSize -= sizeof(uint32_t);
+          auto tile = GraphTile::Create(base, _file_path, tileOffset, tileSize);
+          return std::make_pair(tile, tileSize);
+        }
+        break;
+      }
+      default:
+        throw std::runtime_error("Invalid format");
+    }
+    return std::make_pair(nullptr, (uint32_t)0);
   }
 
-  const std::unordered_map<GraphId, std::pair<uint32_t, uint32_t>> &getTiles(){
-    return _tileOffsets;
+  bool empty() {
+    return !_mmap;
   }
+
 private:
-  std::unordered_map<GraphId, std::pair<uint32_t, uint32_t>> _tileOffsets;
+  MemoryMapHandle _mmap;
   std::string _file_path;
+  int64_t _tileEndOffset;
+  uint32_t _tileCount;
+  uint8_t _version;
 };
 
-std::shared_ptr<GraphReader::tile_source_rt_t> GraphReader::getSourceForRT(const std::string &path)
-{
+std::shared_ptr<GraphReader::tile_source_rt_t> GraphReader::getSourceForRT(const std::string& path) {
   static std::mutex mutex;
-  static std::map<std::string, std::shared_ptr<tile_source_rt_t> > cachedSources;
+  static std::map<std::string, std::shared_ptr<tile_source_rt_t>> cachedSources;
 
   std::shared_ptr<tile_source_rt_t> rv;
   mutex.lock();
   auto it = cachedSources.find(path);
-  if(it!=cachedSources.end()){
+  if (it != cachedSources.end()) {
     rv = it->second;
   } else {
     rv = std::make_shared<GraphReader::tile_source_rt_t>(path);
-    //Does something readed from tar ?
-    if(rv->getTiles().size() != 0){
+    // Does something readed from tar ?
+    if (!rv->empty()) {
       cachedSources[path] = rv;
     } else {
       rv = nullptr;
@@ -543,13 +702,11 @@ GraphReader::GraphReader(const boost::property_tree::ptree& pt,
       tile_url_(pt.get<std::string>("tile_url", "")), cache_(TileCacheFactory::createTileCache(pt)) {
 
   auto tile_extracts = pt.get_child_optional("tile_extracts");
-  if(tile_extracts)
-  {
-    for(const auto &p : tile_extracts.get())
-    {
+  if (tile_extracts) {
+    for (const auto& p : tile_extracts.get()) {
       auto tile_source_extract = getSourceForRT(p.second.get_value<std::string>());
-      //Does something readed from tar ?
-      if(tile_source_extract)
+      // Does something readed from tar ?
+      if (tile_source_extract)
         tile_sources_.emplace_back(tile_source_extract);
     }
   }
@@ -591,10 +748,10 @@ bool GraphReader::DoesTileExist(const GraphId& graphid) const {
   if (!graphid.Is_Valid() || graphid.level() > TileHierarchy::get_max_level()) {
     return false;
   }
-  for(const auto &source : tile_sources_) {
-     if(source->DoesTileExist(graphid))
-        return true;
-   }
+  for (const auto& source : tile_sources_) {
+    if (source->DoesTileExist(graphid))
+      return true;
+  }
   // if you are using an extract only check that
   if (!tile_extract_->tiles.empty()) {
     return tile_extract_->tiles.find(graphid) != tile_extract_->tiles.cend();
@@ -641,11 +798,11 @@ graph_tile_ptr GraphReader::GetGraphTile(const GraphId& graphid) {
     return cached;
   }
 
-  //Load tile from source.
-  for(const auto &source : tile_sources_) {
-      auto [tile, size] = source->GetGraphTile(base);
-      if (tile)
-        return cache_->Put(base, tile, size);
+  // Load tile from source.
+  for (const auto& source : tile_sources_) {
+    auto [tile, size] = source->GetGraphTile(base);
+    if (tile)
+      return cache_->Put(base, tile, size);
   }
   // Try getting it from the memmapped tar extract
   if (!tile_extract_->tiles.empty()) {
@@ -972,8 +1129,8 @@ std::unordered_set<GraphId> GraphReader::GetTileSet() const {
     }
   }
 
-  for(const auto &source : tile_sources_){
-      source->FillTileSet(tiles);
+  for (const auto& source : tile_sources_) {
+    source->FillTileSet(tiles);
   }
   // give them back
   return tiles;
@@ -1005,7 +1162,7 @@ std::unordered_set<GraphId> GraphReader::GetTileSet(const uint8_t level) const {
       }
     }
   }
-  for(const auto &source : tile_sources_)
+  for (const auto& source : tile_sources_)
     source->FillTileSet(tiles, level);
   return tiles;
 }
