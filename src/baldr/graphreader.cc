@@ -43,13 +43,12 @@ public:
   MemoryMapHandle() : _size(0), _aligned(MAP_FAILED), _mem(nullptr) {
   }
 
-  MemoryMapHandle(int fd, uint32_t offset, uint32_t size) {
+  MemoryMapHandle(int fd, uint32_t offset, uint32_t size): _size(size) {
     auto pageSize = (uint32_t)sysconf(_SC_PAGE_SIZE);
     uint32_t alignedOffset = offset & ~(pageSize - 1);
     uint32_t startOffset = offset - alignedOffset;
     _size += startOffset;
-    int flags = PROT_READ;
-    _aligned = ::mmap(nullptr, _size, flags, MAP_PRIVATE, fd, (off_t)alignedOffset);
+    _aligned = ::mmap(nullptr, _size, PROT_READ, MAP_PRIVATE, fd, (off_t)alignedOffset);
     if (_aligned != MAP_FAILED) {
       ::madvise(_aligned, _size, MADV_RANDOM | MADV_DONTNEED);
       _mem = (char*)_aligned + startOffset;
