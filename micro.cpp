@@ -18,6 +18,7 @@
 #include <valhalla/loki/worker.h>
 #include <valhalla/thor/worker.h>
 #include <valhalla/odin/worker.h>
+#include <valhalla/odin/narrative_builder_factory.h>
 #include <valhalla/tyr/serializers.h>
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream.hpp>
@@ -32,6 +33,15 @@ EXPORT void SetTZDataPath(const std::string &path) {
     date::set_install(path);
 }
 #endif
+
+EXPORT void GetApproachAlert(const std::string& locale, bool imperial, double distance, const std::string& instruction, std::string &result) {
+    valhalla::Options options;
+    options.set_language(locale);
+    options.set_units(imperial ? Options::miles : Options::kilometers);
+    auto builder = valhalla::odin::NarrativeBuilderFactory::Create(options, nullptr);
+    // принимает расстояние в милях или в километрах. в зависимости от юнитов, так что мы конвертим наши метры в то что он хочет
+    result = builder->FormVerbalAlertApproachInstruction((distance / 1000.0) / (imperial ? midgard::kKmPerMile : 1), instruction);
+}
 
 EXPORT void Execute(const std::string &valhallaConfig, const std::vector<std::string> &tars,
                      const std::string &json, bool optimize, const std::function<void()> &interrupt, std::string &result) {
