@@ -904,6 +904,7 @@
 			buildSettings = {
 				MACH_O_TYPE = staticlib;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				STRIP_INSTALLED_PRODUCT = NO;
 			};
 			name = Debug;
 		};
@@ -912,6 +913,7 @@
 			buildSettings = {
 				MACH_O_TYPE = staticlib;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				STRIP_INSTALLED_PRODUCT = NO;
 			};
 			name = Release;
 		};
