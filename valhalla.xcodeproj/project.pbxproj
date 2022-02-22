@@ -688,7 +688,7 @@
 		C1B9B82725DBC0F4001B4BFB /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1240;
+				LastUpgradeCheck = 1320;
 				TargetAttributes = {
 					6C5BC38325F63605001FC3DD = {
 						CreatedOnToolsVersion = 12.4;
@@ -889,7 +889,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 6C5BC38E25F63620001FC3DD /* Framework.xcconfig */;
 			buildSettings = {
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 			};
 			name = Debug;
 		};
@@ -897,7 +896,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 6C5BC38E25F63620001FC3DD /* Framework.xcconfig */;
 			buildSettings = {
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 			};
 			name = Release;
 		};
