@@ -58,8 +58,10 @@ EXPORT void Execute(const std::string &valhallaConfig, const std::vector<std::st
         }
         config.add_child("mjolnir.tile_extracts", tile_extracts);
 
-        valhalla::loki::loki_worker_t loki_worker(config);
-        valhalla::thor::thor_worker_t thor_worker(config);
+        auto graph_reader = std::make_shared<baldr::GraphReader>(config.get_child("mjolnir"));
+        
+        valhalla::loki::loki_worker_t loki_worker(config, graph_reader);
+        valhalla::thor::thor_worker_t thor_worker(config, graph_reader);
         valhalla::odin::odin_worker_t odin_worker(config);
 
         loki_worker.set_interrupt(&interrupt);

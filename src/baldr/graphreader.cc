@@ -93,6 +93,14 @@ public:
       ::close(fd);
       return;
     }
+    
+    struct stat stat;
+    if (::fstat(fd, &stat) < 0) {
+      ::close(fd);
+      return;
+    }
+    _mtime = stat.st_mtime;
+    
     auto fileSize = ::lseek(fd, 0, SEEK_END);
     if (fileSize < 0) {
       ::close(fd);
@@ -263,6 +271,14 @@ public:
     return std::make_pair(nullptr, (uint32_t)0);
   }
 
+  bool changed() {
+    struct stat stat;
+    if (::stat(_file_path.c_str(), &stat) < 0) {
+      return true;
+    }
+    return stat.st_mtime != _mtime;
+  }
+    
   bool empty() {
     return !_mmap;
   }
@@ -273,6 +289,7 @@ private:
   int64_t _tileEndOffset;
   uint32_t _tileCount;
   uint8_t _version;
+  time_t _mtime;
 };
 
 std::shared_ptr<GraphReader::tile_source_rt_t> GraphReader::getSourceForRT(const std::string& path) {
@@ -282,7 +299,7 @@ std::shared_ptr<GraphReader::tile_source_rt_t> GraphReader::getSourceForRT(const
   std::shared_ptr<tile_source_rt_t> rv;
   mutex.lock();
   auto it = cachedSources.find(path);
-  if (it != cachedSources.end()) {
+  if (it != cachedSources.end() && !it->second->changed()) {
     rv = it->second;
   } else {
     rv = std::make_shared<GraphReader::tile_source_rt_t>(path);
