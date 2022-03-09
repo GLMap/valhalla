@@ -8,6 +8,7 @@
 PRODUCT_BUNDLE_IDENTIFIER = com.valhalla.micro
 PRODUCT_NAME = $(TARGET_NAME:c99extidentifier)
 
+MACH_O_TYPE = staticlib
 DEFINES_MODULE = YES
 INFOPLIST_FILE = Info.plist
 LD_RUNPATH_SEARCH_PATHS = $(inherited) @executable_path/Frameworks @loader_path/Frameworks
