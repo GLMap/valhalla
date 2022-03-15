@@ -15,6 +15,7 @@
 #include <stdexcept>
 #include <string>
 #include <sys/stat.h>
+#include <sys/mman.h>
 #include <vector>
 
 #ifdef _WIN32
@@ -474,5 +475,58 @@ inline std::uintmax_t remove_all(const path& p) {
 
   return num_removed;
 }
+    
+class MemoryMapHandle {
+private:
+  void *_mem, *_aligned;
+  uint32_t _size;
+
+public:
+  MemoryMapHandle() : _size(0), _aligned(MAP_FAILED), _mem(nullptr) {
+  }
+
+  MemoryMapHandle(int fd, uint32_t offset, uint32_t size): _size(size) {
+    auto pageSize = (uint32_t)sysconf(_SC_PAGE_SIZE);
+    uint32_t alignedOffset = offset & ~(pageSize - 1);
+    uint32_t startOffset = offset - alignedOffset;
+    _size += startOffset;
+    _aligned = ::mmap(nullptr, _size, PROT_READ, MAP_PRIVATE, fd, (off_t)alignedOffset);
+    if (_aligned != MAP_FAILED) {
+      ::madvise(_aligned, _size, MADV_RANDOM | MADV_DONTNEED);
+      _mem = (char*)_aligned + startOffset;
+    } else {
+      _mem = nullptr;
+    }
+  }
+  MemoryMapHandle(const MemoryMapHandle&) = delete;
+
+  MemoryMapHandle(MemoryMapHandle&& other) {
+    _size = 0;
+    _aligned = nullptr;
+    _mem = MAP_FAILED;
+    std::swap(_size, other._size);
+    std::swap(_aligned, other._aligned);
+    std::swap(_mem, other._mem);
+  }
+    
+  ~MemoryMapHandle() {
+    if (_aligned != MAP_FAILED)
+      ::munmap(_aligned, _size);
+  }
+
+  MemoryMapHandle& operator=(MemoryMapHandle&& other) {
+    std::swap(_size, other._size);
+    std::swap(_aligned, other._aligned);
+    std::swap(_mem, other._mem);
+    return *this;
+  }
+
+  template <class Type> inline const Type* get() const {
+    return (const Type*)_mem;
+  }
+  inline operator bool() const {
+    return _mem != nullptr;
+  }
+};
 
 } // namespace filesystem

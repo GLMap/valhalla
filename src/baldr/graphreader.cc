@@ -1,7 +1,6 @@
 #include <fstream>
 #include <iostream>
 #include <string>
-#include <sys/stat.h>
 #include <utility>
 
 #include "baldr/connectivity_map.h"
@@ -33,50 +32,6 @@ struct TarTileIndexElementV2 {
   uint32_t x, y;
   uint8_t z;
 } __attribute__((packed));
-
-class MemoryMapHandle {
-private:
-  void *_mem, *_aligned;
-  uint32_t _size;
-
-public:
-  MemoryMapHandle() : _size(0), _aligned(MAP_FAILED), _mem(nullptr) {
-  }
-
-  MemoryMapHandle(int fd, uint32_t offset, uint32_t size): _size(size) {
-    auto pageSize = (uint32_t)sysconf(_SC_PAGE_SIZE);
-    uint32_t alignedOffset = offset & ~(pageSize - 1);
-    uint32_t startOffset = offset - alignedOffset;
-    _size += startOffset;
-    _aligned = ::mmap(nullptr, _size, PROT_READ, MAP_PRIVATE, fd, (off_t)alignedOffset);
-    if (_aligned != MAP_FAILED) {
-      ::madvise(_aligned, _size, MADV_RANDOM | MADV_DONTNEED);
-      _mem = (char*)_aligned + startOffset;
-    } else {
-      _mem = nullptr;
-    }
-  }
-  MemoryMapHandle(const MemoryMapHandle&) = delete;
-  ~MemoryMapHandle() {
-    if (_aligned != MAP_FAILED)
-      ::munmap(_aligned, _size);
-  }
-
-  MemoryMapHandle& operator=(MemoryMapHandle&& other) {
-    std::swap(_size, other._size);
-    std::swap(_aligned, other._aligned);
-    std::swap(_mem, other._mem);
-    return *this;
-  }
-
-  template <class Type> inline const Type* get() const {
-    return (const Type*)_mem;
-  }
-  inline operator bool() const {
-    return _mem != nullptr;
-  }
-};
-
 } // namespace
 
 namespace valhalla {
@@ -121,11 +76,11 @@ public:
 
       auto indexSize = _tileCount * sizeof(TarTileIndexElementV2);
       _tileEndOffset = fileSize - sizeof(uint32_t) - indexSize;
-      _mmap = MemoryMapHandle(fd, _tileEndOffset, indexSize);
+      _mmap = filesystem::MemoryMapHandle(fd, _tileEndOffset, indexSize);
       _version = 2;
     } else {
       auto indexSize = _tileCount * sizeof(TarTileIndexElementV1);
-      _mmap = MemoryMapHandle(fd, sizeof(_tileCount), indexSize);
+      _mmap = filesystem::MemoryMapHandle(fd, sizeof(_tileCount), indexSize);
       _tileEndOffset = fileSize;
       _version = 1;
     }
@@ -146,7 +101,7 @@ public:
         auto end = start + _tileCount;
         const auto* tile = std::upper_bound(start, end, graphid.tile_value(),
                                             [](auto value, auto elem) { return value < elem.id; });
-        if (tile != end)
+        if (tile != start)
           tile--;
         return tile->id == graphid.tile_value();
       }
@@ -164,7 +119,7 @@ public:
             return value.x < elem.x;
           return value.y < elem.y;
         });
-        if (tile != end)
+        if (tile != start)
           tile--;
         return tile->x == value.x && tile->y == value.y && tile->z == value.z;
       }
@@ -228,7 +183,7 @@ public:
         auto end = start + _tileCount;
         const auto* tile = std::upper_bound(start, end, base.tile_value(),
                                             [](auto value, auto elem) { return value < elem.id; });
-        if (tile != end)
+        if (tile != start)
           tile--;
         if (tile->id == base.tile_value()) {
           uint32_t headerSize = sizeof(_tileCount) + _tileCount * sizeof(TarTileIndexElementV1);
@@ -253,7 +208,7 @@ public:
             return value.x < elem.x;
           return value.y < elem.y;
         });
-        if (tile != end)
+        if (tile != start)
           tile--;
         if (tile->x == value.x && tile->y == value.y && tile->z == value.z) {
           uint32_t tileOffset = tile->offset;
@@ -284,7 +239,7 @@ public:
   }
 
 private:
-  MemoryMapHandle _mmap;
+  filesystem::MemoryMapHandle _mmap;
   std::string _file_path;
   int64_t _tileEndOffset;
   uint32_t _tileCount;

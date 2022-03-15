@@ -16,6 +16,7 @@
 #include <cstring>
 #include <ctime>
 #include <fstream>
+#include <fcntl.h>
 #include <iomanip>
 #include <iostream>
 #include <locale>
@@ -154,37 +155,33 @@ graph_tile_ptr GraphTile::Create(const GraphId& graphid,
   return graph_tile_ptr{new GraphTile(graphid, std::move(memory), std::move(traffic_memory))};
 }
 
-class MallocGraphMemory final : public GraphMemory {
+class MMapGraphMemory final : public GraphMemory {
+private:
+    filesystem::MemoryMapHandle _mmap;
 public:
-  MallocGraphMemory(char *data_in, uint32_t size_in){
-      data = data_in;
+  MMapGraphMemory(filesystem::MemoryMapHandle &&mmap, size_t size_in): _mmap(std::move(mmap)) {
+      data = _mmap.get<const char>();
       size = size_in;
   };
-  ~MallocGraphMemory() { free(data); }
+  ~MMapGraphMemory() = default;
 };
 
 graph_tile_ptr GraphTile::Create(const GraphId& graphid, const std::string& file, uint32_t offset, uint32_t size) {
-    // Don't bother with invalid ids
-    if (!graphid.Is_Valid() || graphid.level() > TileHierarchy::get_max_level())
-      return nullptr;
-
-    FILE *f = ::fopen(file.c_str(), "r");
-    if(!f)
-      return nullptr;
-    if(::fseek(f, offset, SEEK_SET))
-    {
-      ::fclose(f);
-      return nullptr;
-    }
-    char *buf = (char *)malloc(size);
-    if(buf && ::fread(buf, 1, size, f) != size) {
-      free(buf);
-        buf = nullptr;
-    }
-    ::fclose(f);
-    if(buf == nullptr)
-        return nullptr;
-    return new GraphTile(graphid, std::make_unique<const MallocGraphMemory>(buf, size));
+  // Don't bother with invalid ids
+  if (!graphid.Is_Valid() || graphid.level() > TileHierarchy::get_max_level())
+    return nullptr;
+  
+  auto fd = ::open(file.c_str(), O_RDONLY);
+  if(fd < 0)
+    return nullptr;
+  
+  auto mmap = filesystem::MemoryMapHandle(fd, offset, size);
+  ::close(fd);
+  
+  if(!mmap)
+    return nullptr;
+  
+  return new GraphTile(graphid, std::make_unique<const MMapGraphMemory>(std::move(mmap), size));
 }
 
 // the right c-tor for GraphTile
