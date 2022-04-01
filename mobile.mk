@@ -147,7 +147,7 @@ THRID_PARTY_SOURCES = \
 	third_party/date/src/tz.cpp
 
 ifeq "$(LIBS_PLATFORM)" "catalyst"
-	# IOS_SOURCES := third_party/date/src/ios.mm
+	IOS_SOURCES := third_party/date/src/ios.mm
 	LDFLAGS := $(LDFLAGS) -framework CoreFoundation 
 else ifeq "$(LIBS_PLATFORM)" "android"
 	LDFLAGS := $(LDFLAGS) -landroid -llog
