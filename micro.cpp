@@ -43,7 +43,7 @@ EXPORT void GetApproachAlert(const std::string& locale, bool imperial, double di
     result = builder->FormVerbalAlertApproachInstruction((distance / 1000.0) / (imperial ? midgard::kKmPerMile : 1), instruction);
 }
 
-EXPORT void Execute(const std::string &valhallaConfig, const std::vector<std::string> &tars,
+EXPORT void Execute(const std::string &valhallaConfig, const std::vector<std::string> &tars, FileOpenFunction fileOpenFunction,
                      const std::string &json, bool optimize, const std::function<void()> &interrupt, std::string &result) {
     try {
         boost::property_tree::ptree config;
@@ -58,7 +58,7 @@ EXPORT void Execute(const std::string &valhallaConfig, const std::vector<std::st
         }
         config.add_child("mjolnir.tile_extracts", tile_extracts);
 
-        auto graph_reader = std::make_shared<baldr::GraphReader>(config.get_child("mjolnir"));
+        auto graph_reader = std::make_shared<baldr::GraphReader>(config.get_child("mjolnir"), fileOpenFunction);
         
         valhalla::loki::loki_worker_t loki_worker(config, graph_reader);
         valhalla::thor::thor_worker_t thor_worker(config, graph_reader);

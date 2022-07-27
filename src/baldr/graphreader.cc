@@ -37,10 +37,15 @@ struct TarTileIndexElementV2 {
 namespace valhalla {
 namespace baldr {
 
+static int posixFileOpenFunction(const std::string &path) {
+    return ::open(path.c_str(), O_RDONLY);
+}
+
 class GraphReader::tile_source_rt_t {
 public:
-  tile_source_rt_t(const std::string& file_path) : _file_path(file_path), _version(0) {
-    auto fd = ::open(file_path.c_str(), O_RDONLY);
+  tile_source_rt_t(const std::string& file_path, FileOpenFunction fileOpenFunction) :
+    _file_path(file_path), _fileOpenFunction(fileOpenFunction ? fileOpenFunction : posixFileOpenFunction), _version(0) {
+    auto fd = _fileOpenFunction(file_path);
     if (fd < 0)
       return;
 
@@ -240,6 +245,7 @@ public:
 
 private:
   filesystem::MemoryMapHandle _mmap;
+  FileOpenFunction _fileOpenFunction;
   std::string _file_path;
   int64_t _tileEndOffset;
   uint32_t _tileCount;
@@ -247,7 +253,7 @@ private:
   time_t _mtime;
 };
 
-std::shared_ptr<GraphReader::tile_source_rt_t> GraphReader::getSourceForRT(const std::string& path) {
+std::shared_ptr<GraphReader::tile_source_rt_t> GraphReader::getSourceForRT(const std::string& path, FileOpenFunction fileOpenFunction) {
   static std::mutex mutex;
   static std::map<std::string, std::shared_ptr<tile_source_rt_t>> cachedSources;
 
@@ -257,7 +263,7 @@ std::shared_ptr<GraphReader::tile_source_rt_t> GraphReader::getSourceForRT(const
   if (it != cachedSources.end() && !it->second->changed()) {
     rv = it->second;
   } else {
-    rv = std::make_shared<GraphReader::tile_source_rt_t>(path);
+    rv = std::make_shared<GraphReader::tile_source_rt_t>(path, fileOpenFunction);
     // Does something readed from tar ?
     if (!rv->empty()) {
       cachedSources[path] = rv;
@@ -666,6 +672,7 @@ TileCache* TileCacheFactory::createTileCache(const boost::property_tree::ptree& 
 
 // Constructor using separate tile files
 GraphReader::GraphReader(const boost::property_tree::ptree& pt,
+                         FileOpenFunction fileOpenFunction,
                          std::unique_ptr<tile_getter_t>&& tile_getter)
     : tile_extract_(get_extract_instance(pt)), tile_dir_(pt.get<std::string>("tile_dir", "")),
       tile_getter_(std::move(tile_getter)),
@@ -675,7 +682,7 @@ GraphReader::GraphReader(const boost::property_tree::ptree& pt,
   auto tile_extracts = pt.get_child_optional("tile_extracts");
   if (tile_extracts) {
     for (const auto& p : tile_extracts.get()) {
-      auto tile_source_extract = getSourceForRT(p.second.get_value<std::string>());
+      auto tile_source_extract = getSourceForRT(p.second.get_value<std::string>(), fileOpenFunction);
       // Does something readed from tar ?
       if (tile_source_extract)
         tile_sources_.emplace_back(tile_source_extract);
