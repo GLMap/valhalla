@@ -15,13 +15,14 @@
 
 #include <system_error>
 
-#include <valhalla/loki/worker.h>
-#include <valhalla/thor/worker.h>
-#include <valhalla/odin/worker.h>
-#include <valhalla/odin/narrative_builder_factory.h>
-#include <valhalla/tyr/serializers.h>
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream.hpp>
+#include <valhalla/loki/worker.h>
+#include <valhalla/odin/markup_formatter.h>
+#include <valhalla/odin/narrative_builder_factory.h>
+#include <valhalla/odin/worker.h>
+#include <valhalla/thor/worker.h>
+#include <valhalla/tyr/serializers.h>
 
 #pragma clang diagnostic pop
 
@@ -38,7 +39,8 @@ EXPORT void GetApproachAlert(const std::string& locale, bool imperial, double di
     valhalla::Options options;
     options.set_language(locale);
     options.set_units(imperial ? Options::miles : Options::kilometers);
-    auto builder = valhalla::odin::NarrativeBuilderFactory::Create(options, nullptr);
+    valhalla::odin::MarkupFormatter markup_formatter;
+    auto builder = valhalla::odin::NarrativeBuilderFactory::Create(options, nullptr, markup_formatter);
     // принимает расстояние в милях или в километрах. в зависимости от юнитов, так что мы конвертим наши метры в то что он хочет
     result = builder->FormVerbalAlertApproachInstruction((distance / 1000.0) / (imperial ? midgard::kKmPerMile : 1), instruction);
 }
@@ -59,7 +61,7 @@ EXPORT void Execute(const std::string &valhallaConfig, const std::vector<std::st
         config.add_child("mjolnir.tile_extracts", tile_extracts);
 
         auto graph_reader = std::make_shared<baldr::GraphReader>(config.get_child("mjolnir"), fileOpenFunction);
-        
+
         valhalla::loki::loki_worker_t loki_worker(config, graph_reader);
         valhalla::thor::thor_worker_t thor_worker(config, graph_reader);
         valhalla::odin::odin_worker_t odin_worker(config);
@@ -70,14 +72,14 @@ EXPORT void Execute(const std::string &valhallaConfig, const std::vector<std::st
 
         valhalla::Api request;
         valhalla::ParseApi(json, optimize ? valhalla::Options::optimized_route : valhalla::Options::route, request);
-        
+
         //check the request and locate the locations in the graph
         if (optimize)
             loki_worker.matrix(request);
         else
             loki_worker.route(request);
         //route between the locations in the graph to find the best path
-        if (optimize) { 
+        if (optimize) {
             thor_worker.optimized_route(request);
         } else {
             thor_worker.route(request);
