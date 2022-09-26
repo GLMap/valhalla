@@ -1,6 +1,7 @@
 SRC = \
 	src/baldr/accessrestriction.cc \
 	src/baldr/admin.cc \
+	src/baldr/attributes_controller.cc \
 	src/baldr/compression_utils.cc \
 	src/baldr/connectivity_map.cc \
 	src/baldr/curler.cc \
@@ -70,6 +71,7 @@ SRC = \
 	src/odin/enhancedtrippath.cc \
 	src/odin/maneuver.cc \
 	src/odin/maneuversbuilder.cc \
+	src/odin/markup_formatter.cc \
 	src/odin/narrative_builder_factory.cc \
 	src/odin/narrative_dictionary.cc \
 	src/odin/narrativebuilder.cc \
@@ -107,6 +109,7 @@ SRC = \
 	src/thor/optimizer.cc \
 	src/thor/route_action.cc \
 	src/thor/route_matcher.cc \
+	src/thor/timedistancebssmatrix.cc \
 	src/thor/timedistancematrix.cc \
 	src/thor/trace_attributes_action.cc \
 	src/thor/trace_route_action.cc \
