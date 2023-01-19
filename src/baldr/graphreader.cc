@@ -20,7 +20,7 @@ namespace {
 constexpr static size_t DEFAULT_MAX_CACHE_SIZE = 1073741824; // 1 gig
 constexpr static size_t AVERAGE_TILE_SIZE = 2097152;         // 2 megs
 constexpr static size_t AVERAGE_MM_TILE_SIZE = 1024;         // 1k
-    
+
 struct tile_index_entry {
   uint64_t offset;  // byte offset from the beginning of the tar
   uint32_t tile_id; // just level and tileindex hence fitting in 32bits
@@ -61,14 +61,14 @@ public:
       ::close(fd);
       return;
     }
-    
+
     struct stat stat;
     if (::fstat(fd, &stat) < 0) {
       ::close(fd);
       return;
     }
     _mtime = stat.st_mtime;
-    
+
     auto fileSize = ::lseek(fd, 0, SEEK_END);
     if (fileSize < 0) {
       ::close(fd);
@@ -246,7 +246,7 @@ public:
     }
     return stat.st_mtime != _mtime;
   }
-    
+
   bool empty() {
     return !_mmap;
   }
@@ -292,7 +292,8 @@ tile_gone_error_t::tile_gone_error_t(std::string prefix, baldr::GraphId edgeid)
                          std::to_string(edgeid.Tile_Base())) {
 }
 
-GraphReader::tile_extract_t::tile_extract_t(const boost::property_tree::ptree& pt) {
+GraphReader::tile_extract_t::tile_extract_t(const boost::property_tree::ptree& pt,
+                                            bool traffic_readonly) {
   // A lambda for loading the contents of a graph tile tar from an index file
   bool traffic_from_index = false;
   auto index_loader = [this, &traffic_from_index](const std::string& filename,
@@ -304,12 +305,11 @@ GraphReader::tile_extract_t::tile_extract_t(const boost::property_tree::ptree& p
 
     // get the info
     decltype(midgard::tar::contents) contents;
-    auto entry_size = sizeof(tile_index_entry);
     auto entries = midgard::iterable_t<tile_index_entry>(reinterpret_cast<tile_index_entry*>(
                                                              const_cast<char*>(index_begin)),
                                                          size / sizeof(tile_index_entry));
     for (const auto& entry : entries) {
-      auto inserted = contents.insert(
+      contents.insert(
           std::make_pair(std::to_string(entry.tile_id),
                          std::make_pair(const_cast<char*>(file_begin + entry.offset), entry.size)));
       if (!traffic_from_index) {
@@ -333,7 +333,7 @@ GraphReader::tile_extract_t::tile_extract_t(const boost::property_tree::ptree& p
     try {
       // load the tar
       // TODO: use the "scan" to iterate over tar
-      archive.reset(new midgard::tar(pt.get<std::string>("tile_extract"), true, index_loader));
+      archive.reset(new midgard::tar(pt.get<std::string>("tile_extract"), true, true, index_loader));
       // map files to graph ids
       if (tiles.empty()) {
         for (const auto& c : archive->contents) {
@@ -375,8 +375,8 @@ GraphReader::tile_extract_t::tile_extract_t(const boost::property_tree::ptree& p
     try {
       // load the tar
       traffic_from_index = true;
-      traffic_archive.reset(
-          new midgard::tar(pt.get<std::string>("traffic_extract"), true, index_loader));
+      traffic_archive.reset(new midgard::tar(pt.get<std::string>("traffic_extract"), traffic_readonly,
+                                             true, index_loader));
       if (traffic_tiles.empty()) {
         LOG_WARN(
             "Traffic extract contained no index file, expect degraded performance for tile (re-)loading.");
@@ -725,8 +725,9 @@ TileCache* TileCacheFactory::createTileCache(const boost::property_tree::ptree& 
 // Constructor using separate tile files
 GraphReader::GraphReader(const boost::property_tree::ptree& pt,
                          FileOpenFunction fileOpenFunction,
-                         std::unique_ptr<tile_getter_t>&& tile_getter)
-    : tile_extract_(new tile_extract_t(pt)),
+                         std::unique_ptr<tile_getter_t>&& tile_getter,
+                         bool traffic_readonly)
+    : tile_extract_(new tile_extract_t(pt, traffic_readonly)),
       tile_dir_(tile_extract_->tiles.empty() ? pt.get<std::string>("tile_dir", "") : ""),
       tile_getter_(std::move(tile_getter)),
       max_concurrent_users_(pt.get<size_t>("max_concurrent_reader_users", 1)),
