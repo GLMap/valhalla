@@ -13,10 +13,15 @@
 		6C5BC3A125F638A8001FC3DD /* micro.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C1B300D725ECDF3F00B02D4A /* micro.cpp */; };
 		6C5BC3AC25F63A90001FC3DD /* libvalhalla.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C1B3011A25ECE59A00B02D4A /* libvalhalla.a */; };
 		6C5BC3B725F68209001FC3DD /* ios.mm in Sources */ = {isa = PBXBuildFile; fileRef = C1EE536D25DBC80100F4C8D3 /* ios.mm */; };
+		6C5C284E2A8176FB00CA0B04 /* transit.pb.cc in Sources */ = {isa = PBXBuildFile; fileRef = 6C5C284B2A8176FB00CA0B04 /* transit.pb.cc */; };
+		6C5C284F2A8176FB00CA0B04 /* common.pb.cc in Sources */ = {isa = PBXBuildFile; fileRef = 6C5C284C2A8176FB00CA0B04 /* common.pb.cc */; };
+		6C5C28502A8176FB00CA0B04 /* transit_fetch.pb.cc in Sources */ = {isa = PBXBuildFile; fileRef = 6C5C284D2A8176FB00CA0B04 /* transit_fetch.pb.cc */; };
+		6C5C28552A8177B400CA0B04 /* attributes_controller.cc in Sources */ = {isa = PBXBuildFile; fileRef = 6C5C28542A8177B400CA0B04 /* attributes_controller.cc */; };
 		6CF4A0AB26E66736006D7601 /* sign.pb.cc in Sources */ = {isa = PBXBuildFile; fileRef = 6CF4A0A826E66736006D7601 /* sign.pb.cc */; };
 		6CF4A0AC26E66736006D7601 /* status.pb.cc in Sources */ = {isa = PBXBuildFile; fileRef = 6CF4A0A926E66736006D7601 /* status.pb.cc */; };
 		6CF4A0AE26E6684A006D7601 /* point_tile_index.cc in Sources */ = {isa = PBXBuildFile; fileRef = 6CF4A0AD26E6684A006D7601 /* point_tile_index.cc */; };
 		6CF4A0B026E66A14006D7601 /* unidirectional_astar.cc in Sources */ = {isa = PBXBuildFile; fileRef = 6CF4A0AF26E66A14006D7601 /* unidirectional_astar.cc */; };
+		6CFCACED2A817A8500936445 /* markup_formatter.cc in Sources */ = {isa = PBXBuildFile; fileRef = 6CFCACEC2A817A8500936445 /* markup_formatter.cc */; };
 		C1B3012625ECE5C200B02D4A /* tz.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C1B9BB2625DBC49F001B4BFB /* tz.cpp */; };
 		C1B3012825ECE5CB00B02D4A /* options.pb.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B3008125ECDA2200B02D4A /* options.pb.cc */; };
 		C1B3012925ECE5CB00B02D4A /* api.pb.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B3008525ECDA2200B02D4A /* api.pb.cc */; };
@@ -24,7 +29,6 @@
 		C1B3012B25ECE5CB00B02D4A /* directions.pb.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B3008025ECDA2200B02D4A /* directions.pb.cc */; };
 		C1B3012C25ECE5CB00B02D4A /* info.pb.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B3008E25ECDA2300B02D4A /* info.pb.cc */; };
 		C1B3012D25ECE5CB00B02D4A /* incidents.pb.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B3008725ECDA2200B02D4A /* incidents.pb.cc */; };
-		C1B3012E25ECE5CB00B02D4A /* tripcommon.pb.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B3008C25ECDA2300B02D4A /* tripcommon.pb.cc */; };
 		C1B3013F25ECE66D00B02D4A /* proto_conversions.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B3010325ECE26000B02D4A /* proto_conversions.cc */; };
 		C1B3014125ECE67000B02D4A /* worker.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1EE536A25DBC7E800F4C8D3 /* worker.cc */; };
 		C1B3014325ECE67500B02D4A /* verbal_text_formatter_factory.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B91A25DBC210001B4BFB /* verbal_text_formatter_factory.cc */; };
@@ -138,7 +142,6 @@
 		C1B301B725ECE69700B02D4A /* isochrone.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B98D25DBC210001B4BFB /* isochrone.cc */; };
 		C1B301B925ECE69700B02D4A /* alternates.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B300F825ECE10500B02D4A /* alternates.cc */; };
 		C1B301BA25ECE69700B02D4A /* centroid.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B300F525ECE10500B02D4A /* centroid.cc */; };
-		C1B301BB25ECE69700B02D4A /* attributes_controller.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B97B25DBC210001B4BFB /* attributes_controller.cc */; };
 		C1B301BC25ECE69700B02D4A /* bidirectional_astar.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B97525DBC210001B4BFB /* bidirectional_astar.cc */; };
 		C1B301BE25ECE69C00B02D4A /* serializers.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B8CF25DBC210001B4BFB /* serializers.cc */; };
 		C1B301BF25ECE69C00B02D4A /* matrix_serializer.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B8CB25DBC210001B4BFB /* matrix_serializer.cc */; };
@@ -182,12 +185,20 @@
 		6C5BC38725F63606001FC3DD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6C5BC38E25F63620001FC3DD /* Framework.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Framework.xcconfig; sourceTree = "<group>"; };
 		6C5BC3A425F638F5001FC3DD /* mobile.mk */ = {isa = PBXFileReference; lastKnownFileType = text; path = mobile.mk; sourceTree = "<group>"; };
+		6C5C284B2A8176FB00CA0B04 /* transit.pb.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = transit.pb.cc; sourceTree = "<group>"; };
+		6C5C284C2A8176FB00CA0B04 /* common.pb.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = common.pb.cc; sourceTree = "<group>"; };
+		6C5C284D2A8176FB00CA0B04 /* transit_fetch.pb.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = transit_fetch.pb.cc; sourceTree = "<group>"; };
+		6C5C28512A81771100CA0B04 /* common.pb.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = common.pb.h; sourceTree = "<group>"; };
+		6C5C28522A81771100CA0B04 /* transit_fetch.pb.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = transit_fetch.pb.h; sourceTree = "<group>"; };
+		6C5C28532A81771100CA0B04 /* transit.pb.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = transit.pb.h; sourceTree = "<group>"; };
+		6C5C28542A8177B400CA0B04 /* attributes_controller.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = attributes_controller.cc; sourceTree = "<group>"; };
 		6CF4A0A726E66736006D7601 /* status.pb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = status.pb.h; sourceTree = "<group>"; };
 		6CF4A0A826E66736006D7601 /* sign.pb.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sign.pb.cc; sourceTree = "<group>"; };
 		6CF4A0A926E66736006D7601 /* status.pb.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = status.pb.cc; sourceTree = "<group>"; };
 		6CF4A0AA26E66736006D7601 /* sign.pb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sign.pb.h; sourceTree = "<group>"; };
 		6CF4A0AD26E6684A006D7601 /* point_tile_index.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = point_tile_index.cc; sourceTree = "<group>"; };
 		6CF4A0AF26E66A14006D7601 /* unidirectional_astar.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = unidirectional_astar.cc; sourceTree = "<group>"; };
+		6CFCACEC2A817A8500936445 /* markup_formatter.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = markup_formatter.cc; sourceTree = "<group>"; };
 		C1B3007B25ECDA2200B02D4A /* info.pb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = info.pb.h; path = genfiles/valhalla/proto/info.pb.h; sourceTree = SOURCE_ROOT; };
 		C1B3007E25ECDA2200B02D4A /* incidents.pb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = incidents.pb.h; path = genfiles/valhalla/proto/incidents.pb.h; sourceTree = SOURCE_ROOT; };
 		C1B3007F25ECDA2200B02D4A /* directions.pb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = directions.pb.h; path = genfiles/valhalla/proto/directions.pb.h; sourceTree = SOURCE_ROOT; };
@@ -199,8 +210,6 @@
 		C1B3008725ECDA2200B02D4A /* incidents.pb.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = incidents.pb.cc; path = genfiles/valhalla/proto/incidents.pb.cc; sourceTree = SOURCE_ROOT; };
 		C1B3008825ECDA2200B02D4A /* api.pb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = api.pb.h; path = genfiles/valhalla/proto/api.pb.h; sourceTree = SOURCE_ROOT; };
 		C1B3008B25ECDA2200B02D4A /* trip.pb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = trip.pb.h; path = genfiles/valhalla/proto/trip.pb.h; sourceTree = SOURCE_ROOT; };
-		C1B3008C25ECDA2300B02D4A /* tripcommon.pb.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tripcommon.pb.cc; path = genfiles/valhalla/proto/tripcommon.pb.cc; sourceTree = SOURCE_ROOT; };
-		C1B3008D25ECDA2300B02D4A /* tripcommon.pb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tripcommon.pb.h; path = genfiles/valhalla/proto/tripcommon.pb.h; sourceTree = SOURCE_ROOT; };
 		C1B3008E25ECDA2300B02D4A /* info.pb.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = info.pb.cc; path = genfiles/valhalla/proto/info.pb.cc; sourceTree = SOURCE_ROOT; };
 		C1B300D725ECDF3F00B02D4A /* micro.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = micro.cpp; sourceTree = "<group>"; };
 		C1B300D825ECDF3F00B02D4A /* micro.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = micro.h; sourceTree = "<group>"; };
@@ -311,7 +320,6 @@
 		C1B9B97725DBC210001B4BFB /* trace_attributes_action.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = trace_attributes_action.cc; sourceTree = "<group>"; };
 		C1B9B97825DBC210001B4BFB /* trace_route_action.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = trace_route_action.cc; sourceTree = "<group>"; };
 		C1B9B97925DBC210001B4BFB /* map_matcher.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = map_matcher.cc; sourceTree = "<group>"; };
-		C1B9B97B25DBC210001B4BFB /* attributes_controller.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = attributes_controller.cc; sourceTree = "<group>"; };
 		C1B9B98025DBC210001B4BFB /* isochrone_action.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = isochrone_action.cc; sourceTree = "<group>"; };
 		C1B9B98225DBC210001B4BFB /* optimizer.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = optimizer.cc; sourceTree = "<group>"; };
 		C1B9B98925DBC210001B4BFB /* multimodal.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = multimodal.cc; sourceTree = "<group>"; };
@@ -452,6 +460,7 @@
 				C1B9B8F125DBC210001B4BFB /* enhancedtrippath.cc */,
 				C1B9B8E925DBC210001B4BFB /* maneuver.cc */,
 				C1B9B8DB25DBC210001B4BFB /* maneuversbuilder.cc */,
+				6CFCACEC2A817A8500936445 /* markup_formatter.cc */,
 				C1B9B8D925DBC210001B4BFB /* narrative_builder_factory.cc */,
 				C1B9B8EA25DBC210001B4BFB /* narrative_dictionary.cc */,
 				C1B9B8EE25DBC210001B4BFB /* narrativebuilder.cc */,
@@ -490,6 +499,7 @@
 			children = (
 				C1B9B92E25DBC210001B4BFB /* accessrestriction.cc */,
 				C1B9B91D25DBC210001B4BFB /* admin.cc */,
+				6C5C28542A8177B400CA0B04 /* attributes_controller.cc */,
 				C1B9B93225DBC210001B4BFB /* compression_utils.cc */,
 				C1B9B95025DBC210001B4BFB /* connectivity_map.cc */,
 				C1B9B93925DBC210001B4BFB /* curler.cc */,
@@ -562,7 +572,6 @@
 			children = (
 				C1B300F825ECE10500B02D4A /* alternates.cc */,
 				C1B300F425ECE10500B02D4A /* astar_bss.cc */,
-				C1B9B97B25DBC210001B4BFB /* attributes_controller.cc */,
 				C1B9B97525DBC210001B4BFB /* bidirectional_astar.cc */,
 				C1B300F525ECE10500B02D4A /* centroid.cc */,
 				C1B9B99625DBC210001B4BFB /* costmatrix.cc */,
@@ -610,12 +619,10 @@
 		C1B9BAE925DBC46C001B4BFB /* proto */ = {
 			isa = PBXGroup;
 			children = (
-				6CF4A0A826E66736006D7601 /* sign.pb.cc */,
-				6CF4A0AA26E66736006D7601 /* sign.pb.h */,
-				6CF4A0A926E66736006D7601 /* status.pb.cc */,
-				6CF4A0A726E66736006D7601 /* status.pb.h */,
 				C1B3008525ECDA2200B02D4A /* api.pb.cc */,
 				C1B3008825ECDA2200B02D4A /* api.pb.h */,
+				6C5C284C2A8176FB00CA0B04 /* common.pb.cc */,
+				6C5C28512A81771100CA0B04 /* common.pb.h */,
 				C1B3008025ECDA2200B02D4A /* directions.pb.cc */,
 				C1B3007F25ECDA2200B02D4A /* directions.pb.h */,
 				C1B3008725ECDA2200B02D4A /* incidents.pb.cc */,
@@ -624,10 +631,16 @@
 				C1B3007B25ECDA2200B02D4A /* info.pb.h */,
 				C1B3008125ECDA2200B02D4A /* options.pb.cc */,
 				C1B3008325ECDA2200B02D4A /* options.pb.h */,
+				6CF4A0A826E66736006D7601 /* sign.pb.cc */,
+				6CF4A0AA26E66736006D7601 /* sign.pb.h */,
+				6CF4A0A926E66736006D7601 /* status.pb.cc */,
+				6CF4A0A726E66736006D7601 /* status.pb.h */,
+				6C5C284D2A8176FB00CA0B04 /* transit_fetch.pb.cc */,
+				6C5C28522A81771100CA0B04 /* transit_fetch.pb.h */,
+				6C5C284B2A8176FB00CA0B04 /* transit.pb.cc */,
+				6C5C28532A81771100CA0B04 /* transit.pb.h */,
 				C1B3008225ECDA2200B02D4A /* trip.pb.cc */,
 				C1B3008B25ECDA2200B02D4A /* trip.pb.h */,
-				C1B3008C25ECDA2300B02D4A /* tripcommon.pb.cc */,
-				C1B3008D25ECDA2300B02D4A /* tripcommon.pb.h */,
 			);
 			name = proto;
 			path = genfiles/valhalla/proto;
@@ -761,9 +774,11 @@
 				C1B301A525ECE69700B02D4A /* optimizer.cc in Sources */,
 				6CF4A0AE26E6684A006D7601 /* point_tile_index.cc in Sources */,
 				C1B3018E25ECE68900B02D4A /* signs.cc in Sources */,
+				6C5C284F2A8176FB00CA0B04 /* common.pb.cc in Sources */,
 				C1B3017E25ECE68400B02D4A /* linesegment2.cc in Sources */,
 				C1B301A325ECE69200B02D4A /* util.cc in Sources */,
 				C1B301BC25ECE69700B02D4A /* bidirectional_astar.cc in Sources */,
+				6C5C28502A8176FB00CA0B04 /* transit_fetch.pb.cc in Sources */,
 				C1B301AC25ECE69700B02D4A /* route_matcher.cc in Sources */,
 				C1B3012825ECE5CB00B02D4A /* options.pb.cc in Sources */,
 				C1B301B725ECE69700B02D4A /* isochrone.cc in Sources */,
@@ -791,7 +806,6 @@
 				C1B3017625ECE67F00B02D4A /* topk_search.cc in Sources */,
 				C1B301AD25ECE69700B02D4A /* timedistancematrix.cc in Sources */,
 				C1B3015025ECE67500B02D4A /* graphtileheader.cc in Sources */,
-				C1B301BB25ECE69700B02D4A /* attributes_controller.cc in Sources */,
 				C1B3015925ECE67500B02D4A /* edgeinfo.cc in Sources */,
 				C1B3014825ECE67500B02D4A /* streetnames.cc in Sources */,
 				C1B3016C25ECE67B00B02D4A /* reach.cc in Sources */,
@@ -801,7 +815,6 @@
 				C1B3015125ECE67500B02D4A /* laneconnectivity.cc in Sources */,
 				C1B3019E25ECE68E00B02D4A /* dynamiccost.cc in Sources */,
 				C1B3018425ECE68400B02D4A /* ellipse.cc in Sources */,
-				C1B3012E25ECE5CB00B02D4A /* tripcommon.pb.cc in Sources */,
 				C1B3015C25ECE67500B02D4A /* transitschedule.cc in Sources */,
 				C1B3016425ECE67500B02D4A /* streetname_us.cc in Sources */,
 				C1B3019F25ECE68E00B02D4A /* bicyclecost.cc in Sources */,
@@ -815,6 +828,7 @@
 				C1B3019925ECE68E00B02D4A /* hierarchylimits.cc in Sources */,
 				C1B3014325ECE67500B02D4A /* verbal_text_formatter_factory.cc in Sources */,
 				C1B3019B25ECE68E00B02D4A /* nocost.cc in Sources */,
+				6C5C28552A8177B400CA0B04 /* attributes_controller.cc in Sources */,
 				C1B3018125ECE68400B02D4A /* pointll.cc in Sources */,
 				C1B3019825ECE68E00B02D4A /* motorcyclecost.cc in Sources */,
 				6C03FD60264D50E600F84B73 /* geometry_helpers.cc in Sources */,
@@ -836,6 +850,7 @@
 				C1B3015A25ECE67500B02D4A /* location.cc in Sources */,
 				C1B301B325ECE69700B02D4A /* isochrone_action.cc in Sources */,
 				C1B3017125ECE67B00B02D4A /* trace_route_action.cc in Sources */,
+				6C5C284E2A8176FB00CA0B04 /* transit.pb.cc in Sources */,
 				C1B3018925ECE68900B02D4A /* maneuversbuilder.cc in Sources */,
 				C1B3013F25ECE66D00B02D4A /* proto_conversions.cc in Sources */,
 				C1B3017325ECE67F00B02D4A /* match_route.cc in Sources */,
@@ -850,6 +865,7 @@
 				C1B3012A25ECE5CB00B02D4A /* trip.pb.cc in Sources */,
 				C1B3015425ECE67500B02D4A /* verbal_text_formatter_us_co.cc in Sources */,
 				C1B301C325ECE69C00B02D4A /* locate_serializer.cc in Sources */,
+				6CFCACED2A817A8500936445 /* markup_formatter.cc in Sources */,
 				C1B3014525ECE67500B02D4A /* datetime.cc in Sources */,
 				C1B3018F25ECE68900B02D4A /* maneuver.cc in Sources */,
 				C1B3019725ECE68E00B02D4A /* recost.cc in Sources */,
