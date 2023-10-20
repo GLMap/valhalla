@@ -135,6 +135,7 @@ GENERATED_HEADERS = \
 	genfiles/valhalla/valhalla.h
 
 GENERATED_SOURCES = \
+	genfiles/valhalla/proto/matrix.pb.cc \
 	genfiles/valhalla/proto/api.pb.cc \
 	genfiles/valhalla/proto/common.pb.cc \
 	genfiles/valhalla/proto/directions.pb.cc \
