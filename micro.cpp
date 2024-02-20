@@ -18,6 +18,7 @@
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <valhalla/loki/worker.h>
+#include <valhalla/mjolnir/timeparsing.h>
 #include <valhalla/odin/markup_formatter.h>
 #include <valhalla/odin/narrative_builder_factory.h>
 #include <valhalla/odin/worker.h>
@@ -99,6 +100,10 @@ EXPORT void Execute(const std::string &valhallaConfig, const std::vector<std::st
     {
         throw std::system_error(ex.code, std::generic_category(), ex.message);
     }
+}
+
+void GetTimeRange(const std::string& condition, std::vector<uint64_t> &result) {
+    result = mjolnir::get_time_range(condition);
 }
 
 }

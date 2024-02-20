@@ -67,6 +67,7 @@ SRC = \
 	src/midgard/polyline2.cc \
 	src/midgard/tiles.cc \
 	src/midgard/util.cc \
+	src/mjolnir/timeparsing.cc \
 	src/odin/directionsbuilder.cc \
 	src/odin/enhancedtrippath.cc \
 	src/odin/maneuver.cc \
