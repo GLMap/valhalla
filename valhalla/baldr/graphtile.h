@@ -42,6 +42,18 @@ const std::string SUFFIX_NON_COMPRESSED = ".gph";
 const std::string SUFFIX_COMPRESSED = ".gph.gz";
 
 class tile_getter_t;
+
+class MMapGraphMemory final : public GraphMemory {
+private:
+    filesystem::MemoryMapHandle _mmap;
+public:
+  MMapGraphMemory(filesystem::MemoryMapHandle &&mmap, size_t size_in): _mmap(std::move(mmap)) {
+      data = _mmap.get<const char>();
+      size = size_in;
+  };
+  ~MMapGraphMemory() = default;
+};
+
 /**
  * Graph information for a tile within the Tiled Hierarchical Graph.
  */

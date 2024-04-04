@@ -46,7 +46,7 @@ EXPORT void GetApproachAlert(const std::string& locale, bool imperial, double di
     result = builder->FormVerbalAlertApproachInstruction((distance / 1000.0) / (imperial ? midgard::kKmPerMile : 1), instruction);
 }
 
-EXPORT void Execute(const std::string &valhallaConfig, const std::vector<std::string> &tars, FileOpenFunction fileOpenFunction,
+EXPORT void Execute(const std::string &valhallaConfig, const std::vector<std::string> &tars, const std::function<int(const std::string &)> &fileOpenFunction,
                      const std::string &json, bool optimize, const std::function<void()> &interrupt, std::string &result) {
     try {
         boost::property_tree::ptree config;

@@ -50,9 +50,29 @@ static int posixFileOpenFunction(const std::string &path) {
 }
 
 class GraphReader::tile_source_rt_t {
+private:
+
+  graph_tile_ptr createTile(const GraphId& graphid, uint32_t offset, uint32_t size) {
+    // Don't bother with invalid ids
+    if (!graphid.Is_Valid() || graphid.level() > TileHierarchy::get_max_level())
+      return nullptr;
+    
+    auto fd = _fileOpenFunction(_file_path);
+    if(fd < 0)
+      return nullptr;
+    
+    auto mmap = filesystem::MemoryMapHandle(fd, offset, size);
+    ::close(fd);
+    
+    if(!mmap)
+      return nullptr;
+    
+    return GraphTile::Create(graphid, std::make_unique<const MMapGraphMemory>(std::move(mmap), size));
+  }
+  
 public:
-  tile_source_rt_t(const std::string& file_path, FileOpenFunction fileOpenFunction) :
-    _file_path(file_path), _fileOpenFunction(fileOpenFunction ? fileOpenFunction : posixFileOpenFunction), _version(0) {
+  tile_source_rt_t(const std::string& file_path, std::function<int(const std::string &)> fileOpenFunction) :
+    _file_path(file_path), _fileOpenFunction(fileOpenFunction ? std::move(fileOpenFunction) : posixFileOpenFunction), _version(0) {
     auto fd = _fileOpenFunction(file_path);
     if (fd < 0)
       return;
@@ -202,7 +222,7 @@ public:
           uint32_t headerSize = sizeof(_tileCount) + _tileCount * sizeof(TarTileIndexElementV1);
           uint32_t tileOffset = headerSize + tile->offset;
           uint32_t tileSize = (tile == end - 1) ? (_tileEndOffset - tileOffset) : (tile[1].offset - tile->offset);
-          auto tile = GraphTile::Create(base, _file_path, tileOffset, tileSize);
+          auto tile = createTile(base, tileOffset, tileSize);
           return std::make_pair(tile, tileSize);
         }
         break;
@@ -228,7 +248,7 @@ public:
           uint32_t tileSize = ((tile == end - 1) ? _tileEndOffset : tile[1].offset) - tileOffset;
           tileOffset += sizeof(uint32_t);
           tileSize -= sizeof(uint32_t);
-          auto tile = GraphTile::Create(base, _file_path, tileOffset, tileSize);
+          auto tile = createTile(base, tileOffset, tileSize);
           return std::make_pair(tile, tileSize);
         }
         break;
@@ -241,9 +261,11 @@ public:
 
   bool changed() {
     struct stat stat;
-    if (::stat(_file_path.c_str(), &stat) < 0) {
+    auto fd = _fileOpenFunction(_file_path);
+    auto errc = ::fstat(fd, &stat);
+    ::close(fd);
+    if (errc < 0) 
       return true;
-    }
     return stat.st_mtime != _mtime;
   }
 
@@ -253,7 +275,7 @@ public:
 
 private:
   filesystem::MemoryMapHandle _mmap;
-  FileOpenFunction _fileOpenFunction;
+  std::function<int(const std::string &)> _fileOpenFunction;
   std::string _file_path;
   int64_t _tileEndOffset;
   uint32_t _tileCount;
@@ -261,7 +283,7 @@ private:
   time_t _mtime;
 };
 
-std::shared_ptr<GraphReader::tile_source_rt_t> GraphReader::getSourceForRT(const std::string& path, FileOpenFunction fileOpenFunction) {
+std::shared_ptr<GraphReader::tile_source_rt_t> GraphReader::getSourceForRT(const std::string& path, std::function<int(const std::string &)> fileOpenFunction) {
   static std::mutex mutex;
   static std::map<std::string, std::shared_ptr<tile_source_rt_t>> cachedSources;
 
@@ -724,7 +746,7 @@ TileCache* TileCacheFactory::createTileCache(const boost::property_tree::ptree& 
 
 // Constructor using separate tile files
 GraphReader::GraphReader(const boost::property_tree::ptree& pt,
-                         FileOpenFunction fileOpenFunction,
+                         const std::function<int(const std::string &)> &fileOpenFunction,
                          std::unique_ptr<tile_getter_t>&& tile_getter,
                          bool traffic_readonly)
     : tile_extract_(new tile_extract_t(pt, traffic_readonly)),

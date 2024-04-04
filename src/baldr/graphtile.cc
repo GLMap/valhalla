@@ -157,17 +157,6 @@ graph_tile_ptr GraphTile::Create(const GraphId& graphid,
   return graph_tile_ptr{new GraphTile(graphid, std::move(memory), std::move(traffic_memory))};
 }
 
-class MMapGraphMemory final : public GraphMemory {
-private:
-    filesystem::MemoryMapHandle _mmap;
-public:
-  MMapGraphMemory(filesystem::MemoryMapHandle &&mmap, size_t size_in): _mmap(std::move(mmap)) {
-      data = _mmap.get<const char>();
-      size = size_in;
-  };
-  ~MMapGraphMemory() = default;
-};
-
 graph_tile_ptr GraphTile::Create(const GraphId& graphid, const std::string& file, uint32_t offset, uint32_t size) {
   // Don't bother with invalid ids
   if (!graphid.Is_Valid() || graphid.level() > TileHierarchy::get_max_level())

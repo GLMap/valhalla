@@ -24,8 +24,6 @@
 namespace valhalla {
 namespace baldr {
 
-typedef int (*FileOpenFunction)(const std::string &path);
-
 struct tile_gone_error_t : public std::runtime_error {
   explicit tile_gone_error_t(const std::string& errormessage);
   tile_gone_error_t(std::string prefix, baldr::GraphId edgeid);
@@ -446,7 +444,7 @@ public:
    * read-only (default).
    */
   explicit GraphReader(const boost::property_tree::ptree& pt,
-                       FileOpenFunction fileOpenFunction = nullptr,
+                       const std::function<int(const std::string &)> &fileOpenFunction = nullptr,
                        std::unique_ptr<tile_getter_t>&& tile_getter = nullptr,
                        bool traffic_readonly = true);
 
@@ -990,7 +988,7 @@ protected:
   get_extract_instance(const boost::property_tree::ptree& pt);
 
   class tile_source_rt_t;
-  static std::shared_ptr<tile_source_rt_t> getSourceForRT(const std::string &path, FileOpenFunction fileOpenFunction);
+  static std::shared_ptr<tile_source_rt_t> getSourceForRT(const std::string &path, std::function<int(const std::string &)> fileOpenFunction);
   std::vector<std::shared_ptr<tile_source_rt_t>> tile_sources_;
 
   // Information about where the tiles are kept
