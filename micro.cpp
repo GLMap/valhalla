@@ -46,22 +46,15 @@ EXPORT void GetApproachAlert(const std::string& locale, bool imperial, double di
     result = builder->FormVerbalAlertApproachInstruction((distance / 1000.0) / (imperial ? midgard::kKmPerMile : 1), instruction);
 }
 
-EXPORT void Execute(const std::string &valhallaConfig, const std::vector<std::string> &tars, const std::function<int(const std::string &)> &fileOpenFunction,
+EXPORT void Execute(const std::string &valhallaConfig, const std::vector<std::function<int(void)>> &tars,
                      const std::string &json, bool optimize, const std::function<void()> &interrupt, std::string &result) {
     try {
         boost::property_tree::ptree config;
         std::stringstream stream;
         stream << valhallaConfig;
         rapidjson::read_json(stream, config);
-        boost::property_tree::ptree tile_extracts;
-        for(const auto &path : tars) {
-            boost::property_tree::ptree tile_extract;
-            tile_extract.put("", path);
-            tile_extracts.push_back(std::make_pair("", tile_extract));
-        }
-        config.add_child("mjolnir.tile_extracts", tile_extracts);
 
-        auto graph_reader = std::make_shared<baldr::GraphReader>(config.get_child("mjolnir"), fileOpenFunction);
+        auto graph_reader = std::make_shared<baldr::GraphReader>(config.get_child("mjolnir"), tars);
 
         valhalla::loki::loki_worker_t loki_worker(config, graph_reader);
         valhalla::thor::thor_worker_t thor_worker(config, graph_reader);

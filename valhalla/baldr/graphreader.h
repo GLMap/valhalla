@@ -444,7 +444,7 @@ public:
    * read-only (default).
    */
   explicit GraphReader(const boost::property_tree::ptree& pt,
-                       const std::function<int(const std::string &)> &fileOpenFunction = nullptr,
+                       const std::vector<std::function<int(void)>> &files = std::vector<std::function<int(void)>>(),
                        std::unique_ptr<tile_getter_t>&& tile_getter = nullptr,
                        bool traffic_readonly = true);
 
@@ -988,7 +988,7 @@ protected:
   get_extract_instance(const boost::property_tree::ptree& pt);
 
   class tile_source_rt_t;
-  static std::shared_ptr<tile_source_rt_t> getSourceForRT(const std::string &path, std::function<int(const std::string &)> fileOpenFunction);
+  static std::shared_ptr<tile_source_rt_t> getSourceForRT(const std::string &path, std::function<int(void)> fileOpenFunction);
   std::vector<std::shared_ptr<tile_source_rt_t>> tile_sources_;
 
   // Information about where the tiles are kept

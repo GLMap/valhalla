@@ -45,10 +45,6 @@ struct TarTileIndexElementV2 {
 namespace valhalla {
 namespace baldr {
 
-static int posixFileOpenFunction(const std::string &path) {
-    return ::open(path.c_str(), O_RDONLY);
-}
-
 class GraphReader::tile_source_rt_t {
 private:
 
@@ -57,7 +53,7 @@ private:
     if (!graphid.Is_Valid() || graphid.level() > TileHierarchy::get_max_level())
       return nullptr;
     
-    auto fd = _fileOpenFunction(_file_path);
+    auto fd = _fileOpenFunction();
     if(fd < 0)
       return nullptr;
     
@@ -71,9 +67,8 @@ private:
   }
   
 public:
-  tile_source_rt_t(const std::string& file_path, std::function<int(const std::string &)> fileOpenFunction) :
-    _file_path(file_path), _fileOpenFunction(fileOpenFunction ? std::move(fileOpenFunction) : posixFileOpenFunction), _version(0) {
-    auto fd = _fileOpenFunction(file_path);
+  tile_source_rt_t(std::function<int(void)> fileOpenFunction) : _fileOpenFunction(std::move(fileOpenFunction)), _version(0) {
+    auto fd = _fileOpenFunction();
     if (fd < 0)
       return;
 
@@ -261,7 +256,7 @@ public:
 
   bool changed() {
     struct stat stat;
-    auto fd = _fileOpenFunction(_file_path);
+    auto fd = _fileOpenFunction();
     auto errc = ::fstat(fd, &stat);
     ::close(fd);
     if (errc < 0) 
@@ -275,15 +270,14 @@ public:
 
 private:
   filesystem::MemoryMapHandle _mmap;
-  std::function<int(const std::string &)> _fileOpenFunction;
-  std::string _file_path;
+  std::function<int(void)> _fileOpenFunction;
   int64_t _tileEndOffset;
   uint32_t _tileCount;
   uint8_t _version;
   time_t _mtime;
 };
 
-std::shared_ptr<GraphReader::tile_source_rt_t> GraphReader::getSourceForRT(const std::string& path, std::function<int(const std::string &)> fileOpenFunction) {
+std::shared_ptr<GraphReader::tile_source_rt_t> GraphReader::getSourceForRT(const std::string& path, std::function<int(void)> fileOpenFunction) {
   static std::mutex mutex;
   static std::map<std::string, std::shared_ptr<tile_source_rt_t>> cachedSources;
 
@@ -293,7 +287,7 @@ std::shared_ptr<GraphReader::tile_source_rt_t> GraphReader::getSourceForRT(const
   if (it != cachedSources.end() && !it->second->changed()) {
     rv = it->second;
   } else {
-    rv = std::make_shared<GraphReader::tile_source_rt_t>(path, fileOpenFunction);
+    rv = std::make_shared<GraphReader::tile_source_rt_t>(fileOpenFunction);
     // Does something readed from tar ?
     if (!rv->empty()) {
       cachedSources[path] = rv;
@@ -746,7 +740,7 @@ TileCache* TileCacheFactory::createTileCache(const boost::property_tree::ptree& 
 
 // Constructor using separate tile files
 GraphReader::GraphReader(const boost::property_tree::ptree& pt,
-                         const std::function<int(const std::string &)> &fileOpenFunction,
+                         const std::vector<std::function<int(void)>> &files,
                          std::unique_ptr<tile_getter_t>&& tile_getter,
                          bool traffic_readonly)
     : tile_extract_(new tile_extract_t(pt, traffic_readonly)),
@@ -754,15 +748,12 @@ GraphReader::GraphReader(const boost::property_tree::ptree& pt,
       tile_getter_(std::move(tile_getter)),
       max_concurrent_users_(pt.get<size_t>("max_concurrent_reader_users", 1)),
       tile_url_(pt.get<std::string>("tile_url", "")), cache_(TileCacheFactory::createTileCache(pt)) {
-
-  auto tile_extracts = pt.get_child_optional("tile_extracts");
-  if (tile_extracts) {
-    for (const auto& p : tile_extracts.get()) {
-      auto tile_source_extract = getSourceForRT(p.second.get_value<std::string>(), fileOpenFunction);
+  
+  for(auto fof : files) {      
       // Does something readed from tar ?
-      if (tile_source_extract)
+      if (auto tile_source_extract = std::make_shared<GraphReader::tile_source_rt_t>(fof); tile_source_extract)
         tile_sources_.emplace_back(tile_source_extract);
-    }
+
   }
 
   // Make a tile fetcher if we havent passed one in from somewhere else
