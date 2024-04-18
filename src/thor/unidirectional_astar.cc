@@ -19,8 +19,7 @@ UnidirectionalAStar<expansion_direction, FORWARD>::UnidirectionalAStar(
     : PathAlgorithm(config.get<uint32_t>("max_reserved_labels_count_astar",
                                          kInitialEdgeLabelCountAstar),
                     config.get<bool>("clear_reserved_memory", false)),
-      max_label_count_(std::numeric_limits<uint32_t>::max()), mode_(travel_mode_t::kDrive),
-      travel_type_(0), access_mode_{kAutoAccess} {
+      mode_(travel_mode_t::kDrive), travel_type_(0), access_mode_(kAutoAccess) {
 }
 
 // Default constructor
@@ -80,7 +79,7 @@ bool UnidirectionalAStar<expansion_direction, FORWARD>::Expand(GraphReader& grap
               : time_info.reverse(pred.cost().secs, static_cast<int>(nodeinfo->timezone()));
 
   if (!costing_->Allowed(nodeinfo)) {
-    const DirectedEdge* opp_edge;
+    const DirectedEdge* opp_edge = nullptr;
     const GraphId opp_edge_id = graphreader.GetOpposingEdgeId(pred.edgeid(), opp_edge, tile);
     // Check if edge is null before using it (can happen with regional data sets)
     pred.set_deadend(true);
@@ -275,16 +274,22 @@ inline bool UnidirectionalAStar<expansion_direction, FORWARD>::ExpandInner(
                                (pred.closure_pruning() || !(costing_->IsClosed(meta.edge, tile))),
                                0 != (flow_sources & kDefaultFlowMask),
                                costing_->TurnType(pred.opp_local_idx(), nodeinfo, meta.edge),
-                               restriction_idx);
+                               restriction_idx, 0,
+                               meta.edge->destonly() ||
+                                   (costing_->is_hgv() && meta.edge->destonly_hgv()),
+                               meta.edge->forwardaccess() & kTruckAccess);
     } else {
       edgelabels_.emplace_back(pred_idx, meta.edge_id, opp_edge_id, meta.edge, cost, sortcost, dist,
                                mode_, transition_cost,
                                (pred.not_thru_pruning() || !meta.edge->not_thru()),
-                               (pred.closure_pruning() || !(costing_->IsClosed(meta.edge, tile))),
+                               (pred.closure_pruning() || !(costing_->IsClosed(opp_edge, endtile))),
                                0 != (flow_sources & kDefaultFlowMask),
                                costing_->TurnType(meta.edge->localedgeidx(), nodeinfo, opp_edge,
                                                   opp_pred_edge),
-                               restriction_idx);
+                               restriction_idx, 0,
+                               opp_edge->destonly() ||
+                                   (costing_->is_hgv() && opp_edge->destonly_hgv()),
+                               opp_edge->forwardaccess() & kTruckAccess);
     }
 
     auto& edge_label = edgelabels_.back();
@@ -368,7 +373,7 @@ std::vector<PathInfo> UnidirectionalAStar<ExpansionType::forward>::FormPath(cons
   std::vector<PathInfo> path;
   for (auto edgelabel_index = dest; edgelabel_index != kInvalidLabel;
        edgelabel_index = edgelabels_[edgelabel_index].predecessor()) {
-    const EdgeLabel& edgelabel = edgelabels_[edgelabel_index];
+    const auto& edgelabel = edgelabels_[edgelabel_index];
     path.emplace_back(edgelabel.mode(), edgelabel.cost(), edgelabel.edgeid(), 0,
                       edgelabel.path_distance(), edgelabel.restriction_idx(),
                       edgelabel.transition_cost());
@@ -463,7 +468,7 @@ std::vector<std::vector<PathInfo>> UnidirectionalAStar<expansion_direction, FORW
   midgard::PointLL destination_new(destination.correlation().edges(0).ll().lng(),
                                    destination.correlation().edges(0).ll().lat());
   Init(origin_new, destination_new);
-  float mindist = astarheuristic_.GetDistance(origin_new);
+  float mindist = astarheuristic_.GetDistance(FORWARD ? origin_new : destination_new);
 
   auto& startpoint = FORWARD ? origin : destination;
   auto& endpoint = FORWARD ? destination : origin;
@@ -483,19 +488,11 @@ std::vector<std::vector<PathInfo>> UnidirectionalAStar<expansion_direction, FORW
   uint32_t nc = 0; // Count of iterations with no convergence
                    // towards destination
   std::pair<int32_t, float> best_path = std::make_pair(-1, 0.0f);
-  size_t total_labels = 0;
+  size_t n = 0;
   while (true) {
     // Allow this process to be aborted
-    size_t current_labels = edgelabels_.size();
-    if (interrupt &&
-        total_labels / kInterruptIterationsInterval < current_labels / kInterruptIterationsInterval) {
+    if (interrupt && (++n % kInterruptIterationsInterval) == 0) {
       (*interrupt)();
-    }
-    total_labels = current_labels;
-
-    // Abort if max label count is exceeded
-    if (total_labels > max_label_count_) {
-      return {};
     }
 
     // Get next element from adjacency list. Check that it is valid. An
@@ -761,13 +758,19 @@ void UnidirectionalAStar<expansion_direction, FORWARD>::SetOrigin(
         edgelabels_.emplace_back(kInvalidLabel, edgeid, GraphId(), directededge, cost, sortcost, dist,
                                  mode_, Cost{}, false, !(costing_->IsClosed(directededge, tile)),
                                  0 != (flow_sources & kDefaultFlowMask), sif::InternalTurn::kNoTurn,
-                                 kInvalidRestriction);
+                                 kInvalidRestriction, 0,
+                                 directededge->destonly() ||
+                                     (costing_->is_hgv() && directededge->destonly_hgv()),
+                                 directededge->forwardaccess() & kTruckAccess);
       } else {
         edgelabels_.emplace_back(kInvalidLabel, opp_edge_id, edgeid, opp_dir_edge, cost, sortcost,
                                  dist, mode_, Cost{}, false,
                                  !(costing_->IsClosed(directededge, tile)),
                                  0 != (flow_sources & kDefaultFlowMask), sif::InternalTurn::kNoTurn,
-                                 kInvalidRestriction);
+                                 kInvalidRestriction, 0,
+                                 directededge->destonly() ||
+                                     (costing_->is_hgv() && directededge->destonly_hgv()),
+                                 directededge->forwardaccess() & kTruckAccess);
       }
 
       auto& edge_label = edgelabels_.back();

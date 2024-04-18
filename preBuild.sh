@@ -11,5 +11,5 @@ for file in date_time/*; do
     output="genfiles/$output.h"
 
     echo $file $output $variable
-    cmake -P cmake/Binary2Header.cmake $file $output --variable-name $variable --skip 1 --raw
+    cmake -P cmake/ValhallaBin2Header.cmake $file $output --variable-name $variable --skip 1 --raw
 done

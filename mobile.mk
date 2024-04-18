@@ -142,6 +142,7 @@ GENERATED_SOURCES = \
 	genfiles/valhalla/proto/directions.pb.cc \
 	genfiles/valhalla/proto/incidents.pb.cc \
 	genfiles/valhalla/proto/info.pb.cc \
+	genfiles/valhalla/proto/isochrone.pb.cc \
 	genfiles/valhalla/proto/options.pb.cc \
 	genfiles/valhalla/proto/sign.pb.cc \
 	genfiles/valhalla/proto/status.pb.cc \
@@ -152,21 +153,15 @@ GENERATED_SOURCES = \
 THRID_PARTY_CPP_SOURCES = \
 	third_party/date/src/tz.cpp
 
-THRID_PARTY_C_SOURCES = \
-	third_party/lz4/lib/lz4.c \
-    third_party/lz4/lib/lz4hc.c \
-    third_party/lz4/lib/lz4frame.c \
-    third_party/lz4/lib/xxhash.c
-
 ifeq "$(LIBS_PLATFORM)" "catalyst"
 	IOS_SOURCES := third_party/date/src/ios.mm
-	LDFLAGS := $(LDFLAGS) -framework CoreFoundation
+	LDFLAGS := $(LDFLAGS) -llz4 -framework CoreFoundation
 else ifeq "$(LIBS_PLATFORM)" "android"
-	LDFLAGS := $(LDFLAGS) -landroid -llog
+	LDFLAGS := $(LDFLAGS) -llz4 -landroid -llog
 endif
 
 SRC := $(GENERATED_SOURCES) $(SRC)
-OBJ = $(SRC:.cc=.o) $(THRID_PARTY_CPP_SOURCES:.cpp=.o) $(THRID_PARTY_C_SOURCES:.c=.o) $(IOS_SOURCES:.mm=.o)
+OBJ = $(SRC:.cc=.o) $(THRID_PARTY_CPP_SOURCES:.cpp=.o) $(IOS_SOURCES:.mm=.o)
 LIB = libvalhalla.a
 MICRO_SRC = micro.cpp
 MICRO_OBJ = $(MICRO_SRC:.cpp=.o)
@@ -177,7 +172,6 @@ CXXFLAGS += -std=c++17 -DMOBILE -DNDEBUG=1 -DUSE_STD_REGEX=1 -DRAPIDJSON_HAS_STD
  -Ithird_party/cpp-statsd-client/include \
  -Ithird_party/robin-hood-hashing/src/include \
  -Ithird_party/rapidjson/include \
- -Ithird_party/lz4/lib \
  -Ithird_party/date/include
 PROTOC = ../build/macOS/x86_64/bin/protoc
 
@@ -208,9 +202,9 @@ genfiles:
 genfiles/date_time_zonespec.h: genfiles date_time/*
 	./preBuild.sh
 genfiles/admin_lua_proc.h: genfiles lua/admin.lua
-	cmake -P cmake/Binary2Header.cmake lua/admin.lua genfiles/admin_lua_proc.h --variable-name lua_admin_lua
+	cmake -P cmake/ValhallaBin2Header.cmake lua/admin.lua genfiles/admin_lua_proc.h --variable-name lua_admin_lua
 genfiles/graph_lua_proc.h: genfiles lua/graph.lua
-	cmake -P cmake/Binary2Header.cmake lua/graph.lua genfiles/graph_lua_proc.h --variable-name lua_graph_lua
+	cmake -P cmake/ValhallaBin2Header.cmake lua/graph.lua genfiles/graph_lua_proc.h --variable-name lua_graph_lua
 genfiles/locales.h: genfiles locales/*.json
 	-cd locales && ./make_locales.sh *.json > ../genfiles/locales.h
 genfiles/config.h: genfiles
