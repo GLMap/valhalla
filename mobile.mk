@@ -121,7 +121,10 @@ SRC = \
 	src/tyr/isochrone_serializer.cc \
 	src/tyr/locate_serializer.cc \
 	src/tyr/matrix_serializer.cc \
+	src/tyr/route_serializer_osrm.cc \
+	src/tyr/route_serializer_valhalla.cc \
 	src/tyr/route_serializer.cc \
+	src/tyr/route_summary_cache.cc \
 	src/tyr/serializers.cc \
 	src/tyr/trace_serializer.cc \
 	src/tyr/transit_available_serializer.cc \
@@ -153,11 +156,11 @@ GENERATED_SOURCES = \
 THRID_PARTY_CPP_SOURCES = \
 	third_party/date/src/tz.cpp
 
-ifeq "$(LIBS_PLATFORM)" "catalyst"
-	IOS_SOURCES := third_party/date/src/ios.mm
-	LDFLAGS := $(LDFLAGS) -llz4 -framework CoreFoundation
-else ifeq "$(LIBS_PLATFORM)" "android"
+ifeq "$(LIBS_PLATFORM)" "android"
 	LDFLAGS := $(LDFLAGS) -llz4 -landroid -llog
+else
+	IOS_SOURCES := third_party/date/src/ios.mm
+	LDFLAGS := $(LDFLAGS) -llz4 -lprotobuf-lite -lz -framework CoreFoundation
 endif
 
 SRC := $(GENERATED_SOURCES) $(SRC)
@@ -166,6 +169,7 @@ LIB = libvalhalla.a
 MICRO_SRC = micro.cpp
 MICRO_OBJ = $(MICRO_SRC:.cpp=.o)
 MICRO_LIB = libvalhalla_micro.a
+MICRO_DYNAMIC = libvalhalla_micro.dylib
 
 CXXFLAGS += -std=c++17 -DMOBILE -DNDEBUG=1 -DUSE_STD_REGEX=1 -DRAPIDJSON_HAS_STDSTRING=1 \
  -I. -Ivalhalla -Igenfiles -Igenfiles/valhalla \
@@ -189,12 +193,16 @@ PROTOC = ../build/macOS/x86_64/bin/protoc
 .mm.o:
 	$(CXX) $(FLAGS) $(CPPFLAGS) ${CXXFLAGS} -x objective-c++ -c $< -o $@
 
-all: $(MICRO_LIB)
+all: $(MICRO_LIB) $(MICRO_DYNAMIC)
 
 $(OBJ): $(GENERATED_HEADERS)
 
 $(MICRO_LIB): $(OBJ) $(MICRO_OBJ)
 	$(AR) cr $(MICRO_LIB) $(MICRO_OBJ) $(OBJ)
+
+# build dynamic version to make sure, we have all symbols
+$(MICRO_DYNAMIC): $(OBJ) $(MICRO_OBJ)
+	$(CXX) -shared -o $(MICRO_DYNAMIC) $(MICRO_OBJ) $(OBJ) $(LDFLAGS)
 
 genfiles:
 	mkdir -p genfiles
@@ -229,10 +237,15 @@ ifndef PREFIX
 PREFIX = /usr/local
 endif
 
-install: $(MICRO_LIB)
-	mkdir -p ${PREFIX}/lib ${PREFIX}/include/valhalla
-	cp $(MICRO_LIB) ${PREFIX}/lib
-	cp micro.h ${PREFIX}/include/valhalla
+install: $(MICRO_LIB) $(MICRO_DYNAMIC)
+	mkdir -p $(PREFIX)/lib $(PREFIX)/include/valhalla
+	cp $(MICRO_LIB) $(PREFIX)/lib
+	cp micro.h $(PREFIX)/include/valhalla
+	rm -rf ../../glmap/Resources/framework/tzdata/*
+	files=$$(find third_party/tz -type f -regex "[0-9a-z_/]*\.tab" -o -regex ".*/tz/[0-9a-z_/]*"); \
+	for file in $$files; do \
+		cp $$file ../../glmap/Resources/framework/tzdata/; \
+	done
 
 clean:
-	rm -f $(OBJ) $(GENERATED_SOURCES) $(GENERATED_HEADERS) $(LIB) $(MICRO_LIB) $(MICRO_OBJ)
+	@rm -f $(OBJ) $(GENERATED_SOURCES) $(GENERATED_HEADERS) $(LIB) $(MICRO_LIB) $(MICRO_DYNAMIC) $(MICRO_OBJ)
