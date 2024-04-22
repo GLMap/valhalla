@@ -157,7 +157,7 @@ THRID_PARTY_CPP_SOURCES = \
 	third_party/date/src/tz.cpp
 
 ifeq "$(LIBS_PLATFORM)" "android"
-	LDFLAGS := $(LDFLAGS) -llz4 -landroid -llog
+	LDFLAGS := $(LDFLAGS) -llz4 -lprotobuf-lite -lz -landroid -llog
 else
 	IOS_SOURCES := third_party/date/src/ios.mm
 	LDFLAGS := $(LDFLAGS) -llz4 -lprotobuf-lite -lz -framework CoreFoundation
@@ -246,6 +246,8 @@ install: $(MICRO_LIB) $(MICRO_DYNAMIC)
 	for file in $$files; do \
 		cp $$file ../../glmap/Resources/framework/tzdata/; \
 	done
+	#copy version from the NEWS file
+	head -n 3 third_party/tz/NEWS > ../../glmap/Resources/framework/tzdata/NEWS
 
 clean:
 	@rm -f $(OBJ) $(GENERATED_SOURCES) $(GENERATED_HEADERS) $(LIB) $(MICRO_LIB) $(MICRO_DYNAMIC) $(MICRO_OBJ)
