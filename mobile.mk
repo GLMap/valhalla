@@ -36,6 +36,7 @@ SRC = \
 	src/baldr/verbal_text_formatter_us.cc \
 	src/baldr/verbal_text_formatter.cc \
 	src/loki/height_action.cc \
+	src/loki/isochrone_action.cc \
 	src/loki/locate_action.cc \
 	src/loki/matrix_action.cc \
 	src/loki/node_search.cc \
@@ -43,6 +44,7 @@ SRC = \
 	src/loki/reach.cc \
 	src/loki/route_action.cc \
 	src/loki/search.cc \
+	src/loki/status_action.cc \
 	src/loki/trace_route_action.cc \
 	src/loki/transit_available_action.cc \
 	src/loki/worker.cc \
@@ -101,6 +103,7 @@ SRC = \
 	src/thor/centroid.cc \
 	src/thor/costmatrix.cc \
 	src/thor/dijkstras.cc \
+	src/thor/expansion_action.cc \
 	src/thor/isochrone_action.cc \
 	src/thor/isochrone.cc \
 	src/thor/map_matcher.cc \
@@ -110,6 +113,7 @@ SRC = \
 	src/thor/optimizer.cc \
 	src/thor/route_action.cc \
 	src/thor/route_matcher.cc \
+	src/thor/status_action.cc \
 	src/thor/timedistancebssmatrix.cc \
 	src/thor/timedistancematrix.cc \
 	src/thor/trace_attributes_action.cc \
@@ -117,6 +121,7 @@ SRC = \
 	src/thor/triplegbuilder.cc \
 	src/thor/unidirectional_astar.cc \
 	src/thor/worker.cc \
+	src/tyr/actor.cc \
 	src/tyr/height_serializer.cc \
 	src/tyr/isochrone_serializer.cc \
 	src/tyr/locate_serializer.cc \
