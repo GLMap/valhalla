@@ -88,7 +88,7 @@ public:
       return;
     }
 
-    uint32_t prevOffset = std::numeric_limits<uint32_t>::max();
+    // uint32_t prevOffset = std::numeric_limits<uint32_t>::max();
     GraphId prevID;
     if (_tileCount == TAR_FORMAT_ID) {
       ::lseek(fd, fileSize - sizeof(_tileCount), SEEK_SET);
@@ -96,7 +96,7 @@ public:
         ::close(fd);
         return;
       }
-      if (fileSize <=
+      if ((unsigned long)fileSize <=
           sizeof(uint32_t) + sizeof(_tileCount) + _tileCount * sizeof(TarTileIndexElementV2))
         return;
 

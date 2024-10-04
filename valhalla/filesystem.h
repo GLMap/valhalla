@@ -502,7 +502,7 @@ private:
   uint32_t _size;
 
 public:
-  MemoryMapHandle() : _size(0), _aligned(MAP_FAILED), _mem(nullptr) {
+  MemoryMapHandle() : _mem(nullptr), _aligned(MAP_FAILED), _size(0) {
   }
 
   MemoryMapHandle(int fd, uint32_t offset, uint32_t size): _size(size) {

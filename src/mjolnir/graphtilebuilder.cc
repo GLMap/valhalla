@@ -21,12 +21,12 @@ namespace mjolnir {
 
 namespace {
 
-std::vector<ComplexRestrictionBuilder> DeserializeRestrictions(char* restrictions,
+std::vector<ComplexRestrictionBuilder> DeserializeRestrictions(const char* restrictions,
                                                                size_t restrictions_size) {
   std::vector<ComplexRestrictionBuilder> builders;
   size_t offset = 0;
   while (offset < restrictions_size) {
-    const ComplexRestriction* cr = reinterpret_cast<ComplexRestriction*>(restrictions + offset);
+    const ComplexRestriction* cr = reinterpret_cast<const ComplexRestriction*>(restrictions + offset);
     ComplexRestrictionBuilder builder(*cr);
     if (cr->via_count()) {
       std::vector<GraphId> vias;
@@ -930,7 +930,7 @@ uint32_t GraphTileBuilder::AddAdmin(const std::string& country_name,
 // Gets a non-const node from existing tile data.
 NodeInfo& GraphTileBuilder::node(const size_t idx) {
   if (idx < header_->nodecount()) {
-    return nodes_[idx];
+    return const_cast<NodeInfo&>(nodes_[idx]);
   }
   throw std::runtime_error("GraphTileBuilder NodeInfo index out of bounds");
 }
@@ -946,7 +946,7 @@ NodeInfo& GraphTileBuilder::node_builder(const size_t idx) {
 // Gets a non-const directed edge from existing tile data.
 DirectedEdge& GraphTileBuilder::directededge(const size_t idx) {
   if (idx < header_->directededgecount()) {
-    return directededges_[idx];
+    return const_cast<DirectedEdge&>(directededges_[idx]);
   }
   throw std::runtime_error("GraphTile DirectedEdge id out of bounds");
 }
@@ -954,7 +954,7 @@ DirectedEdge& GraphTileBuilder::directededge(const size_t idx) {
 // Gets a non-const directed edge extension from existing tile data.
 DirectedEdgeExt& GraphTileBuilder::directededge_ext(const size_t idx) {
   if (idx < header_->directededgecount()) {
-    return ext_directededges_[idx];
+    return const_cast<DirectedEdgeExt&>(ext_directededges_[idx]);
   }
   throw std::runtime_error("GraphTile DirectedEdgeExt id out of bounds");
 }
@@ -994,7 +994,7 @@ DirectedEdgeExt& GraphTileBuilder::directededge_ext_builder(const size_t idx) {
 // Gets a non-const access restriction from existing tile data.
 AccessRestriction& GraphTileBuilder::accessrestriction(const size_t idx) {
   if (idx < header_->access_restriction_count()) {
-    return access_restrictions_[idx];
+    return const_cast<AccessRestriction&>(access_restrictions_[idx]);
   }
   throw std::runtime_error("GraphTileBuilder access restriction index is out of bounds");
 }
@@ -1010,7 +1010,7 @@ AccessRestriction& GraphTileBuilder::accessrestriction_builder(const size_t idx)
 // Gets a non-const sign from existing tile data.
 valhalla::baldr::Sign& GraphTileBuilder::sign(const size_t idx) {
   if (idx < header_->signcount()) {
-    return signs_[idx];
+    return const_cast<valhalla::baldr::Sign&>(signs_[idx]);
   }
   throw std::runtime_error("GraphTileBuilder sign index is out of bounds");
 }
@@ -1026,7 +1026,7 @@ valhalla::baldr::Sign& GraphTileBuilder::sign_builder(const size_t idx) {
 // Gets a turn lane at the specified index.
 TurnLanes& GraphTileBuilder::turnlane_builder(const size_t idx) {
   if (idx < header_->turnlane_count()) {
-    return turnlanes_[idx];
+    return const_cast<TurnLanes&>(turnlanes_[idx]);
   }
   throw std::runtime_error("GraphTileBuilder turn lane index is out of bounds");
 }
