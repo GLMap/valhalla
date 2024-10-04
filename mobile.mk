@@ -25,6 +25,7 @@ SRC = \
 	src/baldr/streetnames_us.cc \
 	src/baldr/streetnames.cc \
 	src/baldr/tilehierarchy.cc \
+	src/baldr/timedomain.cc \
 	src/baldr/transitdeparture.cc \
 	src/baldr/transitroute.cc \
 	src/baldr/transitschedule.cc \
@@ -122,6 +123,7 @@ SRC = \
 	src/thor/unidirectional_astar.cc \
 	src/thor/worker.cc \
 	src/tyr/actor.cc \
+	src/tyr/expansion_serializer.cc \
 	src/tyr/height_serializer.cc \
 	src/tyr/isochrone_serializer.cc \
 	src/tyr/locate_serializer.cc \
@@ -148,6 +150,7 @@ GENERATED_SOURCES = \
 	genfiles/valhalla/proto/api.pb.cc \
 	genfiles/valhalla/proto/common.pb.cc \
 	genfiles/valhalla/proto/directions.pb.cc \
+	genfiles/valhalla/proto/expansion.pb.cc \
 	genfiles/valhalla/proto/incidents.pb.cc \
 	genfiles/valhalla/proto/info.pb.cc \
 	genfiles/valhalla/proto/isochrone.pb.cc \
