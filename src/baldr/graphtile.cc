@@ -19,8 +19,6 @@
 #include <fstream>
 #include <fcntl.h>
 #include <iomanip>
-#include <iostream>
-#include <locale>
 #include <string>
 #include <thread>
 #include <utility>

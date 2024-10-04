@@ -99,7 +99,7 @@ constexpr uint8_t kMaxTrafficSpeed = 252; // ~157 MPH
 // clamped to this maximum value.
 constexpr uint32_t kMaxSpeedKph = std::max(kMaxTrafficSpeed, kMaxAssumedSpeed);
 
-constexpr uint32_t kMaxAssumedTruckSpeed = 90; // ~ 56 MPH
+constexpr uint32_t kMaxAssumedTruckSpeed = 120; // ~75 MPH
 
 // Minimum speed. This is a stop gap for dubious traffic data. While its possible
 // to measure a probe going this slow via stop and go traffic over a long enough
@@ -385,6 +385,7 @@ enum class TaggedValue : uint8_t { // must start at 1 due to nulls
   kLevel = 4,
   kLevelRef = 5,
   kLandmark = 6,
+  kConditionalSpeedLimits = 7,
   // we used to have bug when we encoded 1 and 2 as their ASCII codes, but not actual 1 and 2 values
   // see https://github.com/valhalla/valhalla/issues/3262
   kTunnel = static_cast<uint8_t>('1'),

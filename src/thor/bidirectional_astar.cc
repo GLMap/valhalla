@@ -361,8 +361,9 @@ inline bool BidirectionalAStar::ExpandInner(baldr::GraphReader& graphreader,
             ? GraphId{}
             : (FORWARD ? edgelabels_forward_ : edgelabels_reverse_)[pred.predecessor()].edgeid();
     expansion_callback_(graphreader, FORWARD ? meta.edge_id : opp_edge_id, prev_pred,
-                        "bidirectional_astar", "r", newcost.secs,
-                        pred.path_distance() + meta.edge->length(), newcost.cost);
+                        "bidirectional_astar", Expansion_EdgeStatus_reached, newcost.secs,
+                        pred.path_distance() + meta.edge->length(), newcost.cost,
+                        static_cast<Expansion_ExpansionType>(expansion_direction));
   }
 
   // we've just added this edge to the queue, but we won't expand from it if it's a not-thru edge that
@@ -707,8 +708,10 @@ BidirectionalAStar::GetBestPath(valhalla::Location& origin,
         const auto prev_pred = fwd_pred.predecessor() == kInvalidLabel
                                    ? GraphId{}
                                    : edgelabels_forward_[fwd_pred.predecessor()].edgeid();
-        expansion_callback_(graphreader, fwd_pred.edgeid(), prev_pred, "bidirectional_astar", "s",
-                            fwd_pred.cost().secs, fwd_pred.path_distance(), fwd_pred.cost().cost);
+        expansion_callback_(graphreader, fwd_pred.edgeid(), prev_pred, "bidirectional_astar",
+                            Expansion_EdgeStatus_settled, fwd_pred.cost().secs,
+                            fwd_pred.path_distance(), fwd_pred.cost().cost,
+                            Expansion_ExpansionType_forward);
       }
 
       // Prune path if predecessor is not a through edge or if the maximum
@@ -754,8 +757,10 @@ BidirectionalAStar::GetBestPath(valhalla::Location& origin,
         const auto prev_pred = rev_pred.predecessor() == kInvalidLabel
                                    ? GraphId{}
                                    : edgelabels_reverse_[rev_pred.predecessor()].edgeid();
-        expansion_callback_(graphreader, rev_pred.opp_edgeid(), prev_pred, "bidirectional_astar", "s",
-                            rev_pred.cost().secs, rev_pred.path_distance(), rev_pred.cost().cost);
+        expansion_callback_(graphreader, rev_pred.opp_edgeid(), prev_pred, "bidirectional_astar",
+                            Expansion_EdgeStatus_settled, rev_pred.cost().secs,
+                            rev_pred.path_distance(), rev_pred.cost().cost,
+                            Expansion_ExpansionType_reverse);
       }
 
       // Prune path if predecessor is not a through edge
@@ -869,8 +874,9 @@ bool BidirectionalAStar::SetForwardConnection(GraphReader& graphreader, const BD
     const auto prev_pred = pred.predecessor() == kInvalidLabel
                                ? GraphId{}
                                : edgelabels_forward_[pred.predecessor()].edgeid();
-    expansion_callback_(graphreader, pred.edgeid(), prev_pred, "bidirectional_astar", "c",
-                        pred.cost().secs, pred.path_distance(), pred.cost().cost);
+    expansion_callback_(graphreader, pred.edgeid(), prev_pred, "bidirectional_astar",
+                        Expansion_EdgeStatus_connected, pred.cost().secs, pred.path_distance(),
+                        pred.cost().cost, Expansion_ExpansionType_forward);
   }
 
   return true;
@@ -941,8 +947,10 @@ bool BidirectionalAStar::SetReverseConnection(GraphReader& graphreader, const BD
     const auto prev_pred = fwd_pred.predecessor() == kInvalidLabel
                                ? GraphId{}
                                : edgelabels_forward_[fwd_pred.predecessor()].edgeid();
-    expansion_callback_(graphreader, fwd_edge_id, prev_pred, "bidirectional_astar", "c",
-                        fwd_pred.cost().secs, fwd_pred.path_distance(), fwd_pred.cost().cost);
+    expansion_callback_(graphreader, fwd_edge_id, prev_pred, "bidirectional_astar",
+                        Expansion_EdgeStatus_connected, fwd_pred.cost().secs,
+                        fwd_pred.path_distance(), fwd_pred.cost().cost,
+                        Expansion_ExpansionType_reverse);
   }
 
   return true;
@@ -1025,8 +1033,10 @@ void BidirectionalAStar::SetOrigin(GraphReader& graphreader,
 
     // setting this edge as reached
     if (expansion_callback_) {
-      expansion_callback_(graphreader, edgeid, GraphId{}, "bidirectional_astar", "r", cost.secs,
-                          static_cast<uint32_t>(edge.distance() + 0.5), cost.cost);
+      expansion_callback_(graphreader, edgeid, GraphId{}, "bidirectional_astar",
+                          Expansion_EdgeStatus_reached, cost.secs,
+                          static_cast<uint32_t>(edge.distance() + 0.5), cost.cost,
+                          Expansion_ExpansionType_forward);
     }
 
     // Set the initial not_thru flag to false. There is an issue with not_thru
@@ -1122,8 +1132,10 @@ void BidirectionalAStar::SetDestination(GraphReader& graphreader,
 
     // setting this edge as reached, sending the opposing because this is the reverse tree
     if (expansion_callback_) {
-      expansion_callback_(graphreader, edgeid, GraphId{}, "bidirectional_astar", "r", cost.secs,
-                          static_cast<uint32_t>(edge.distance() + 0.5), cost.cost);
+      expansion_callback_(graphreader, edgeid, GraphId{}, "bidirectional_astar",
+                          Expansion_EdgeStatus_reached, cost.secs,
+                          static_cast<uint32_t>(edge.distance() + 0.5), cost.cost,
+                          Expansion_ExpansionType_reverse);
     }
 
     // Set the initial not_thru flag to false. There is an issue with not_thru

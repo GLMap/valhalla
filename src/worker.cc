@@ -1,4 +1,3 @@
-#include <iostream>
 #include <sstream>
 #include <typeinfo>
 #include <unordered_map>
@@ -688,7 +687,8 @@ void from_json(rapidjson::Document& doc, Options::Action action, Api& api) {
                                                           Options::trace_attributes,
                                                           Options::status,
                                                           Options::sources_to_targets,
-                                                          Options::isochrone};
+                                                          Options::isochrone,
+                                                          Options::expansion};
     // if its not a pbf supported action we reset to json
     if (pbf_actions.count(options.action()) == 0) {
       options.set_format(Options::json);
@@ -1116,6 +1116,9 @@ void from_json(rapidjson::Document& doc, Options::Action action, Api& api) {
 
   // should the expansion track opposites?
   options.set_skip_opposites(rapidjson::get<bool>(doc, "/skip_opposites", options.skip_opposites()));
+
+  // should the expansion be less verbose, printing each edge only once, default false
+  options.set_dedupe(rapidjson::get<bool>(doc, "/dedupe", options.dedupe()));
 
   // get the contours in there
   parse_contours(doc, options.mutable_contours());
