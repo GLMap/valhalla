@@ -172,10 +172,10 @@ else
 endif
 
 SRC := $(GENERATED_SOURCES) $(SRC)
-OBJ = $(SRC:.cc=.o) $(THRID_PARTY_CPP_SOURCES:.cpp=.o) $(IOS_SOURCES:.mm=.o)
-LIB = libvalhalla.a
 MICRO_SRC = micro.cpp
-MICRO_OBJ = $(MICRO_SRC:.cpp=.o)
+OBJ = $(SRC:.cc=.o) $(THRID_PARTY_CPP_SOURCES:.cpp=.o) $(IOS_SOURCES:.mm=.o) $(MICRO_SRC:.cpp=.o)
+
+LIB = libvalhalla.a
 MICRO_LIB = libvalhalla_micro.a
 MICRO_DYNAMIC = libvalhalla_micro.dylib
 
@@ -205,12 +205,19 @@ all: $(MICRO_LIB) $(MICRO_DYNAMIC)
 
 $(OBJ): $(GENERATED_HEADERS)
 
-$(MICRO_LIB): $(OBJ) $(MICRO_OBJ)
-	$(AR) cr $(MICRO_LIB) $(MICRO_OBJ) $(OBJ)
+prepare_objs: $(OBJ)
+	@mkdir -p objs
+	@for obj in $(OBJ); do \
+		new_name=$$(echo $$obj | sed 's/\//_/g'); \
+		mv $$obj objs/$$new_name; \
+	done
+
+$(MICRO_LIB): prepare_objs
+	$(AR) cr $(MICRO_LIB) objs/*.o
 
 # build dynamic version to make sure, we have all symbols
-$(MICRO_DYNAMIC): $(OBJ) $(MICRO_OBJ)
-	$(CXX) -shared -o $(MICRO_DYNAMIC) $(MICRO_OBJ) $(OBJ) $(LDFLAGS)
+$(MICRO_DYNAMIC): prepare_objs
+	$(CXX) -shared -o $(MICRO_DYNAMIC) objs/*.o $(LDFLAGS)
 
 genfiles:
 	mkdir -p genfiles
@@ -259,3 +266,4 @@ install: $(MICRO_LIB) $(MICRO_DYNAMIC)
 
 clean:
 	@rm -f $(OBJ) $(GENERATED_SOURCES) $(GENERATED_HEADERS) $(LIB) $(MICRO_LIB) $(MICRO_DYNAMIC) $(MICRO_OBJ)
+	@rm -rf objs
