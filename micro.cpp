@@ -18,6 +18,7 @@
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <valhalla/loki/worker.h>
+#include <valhalla/baldr/rapidjson_utils.h>
 #include <valhalla/mjolnir/timeparsing.h>
 #include <valhalla/odin/markup_formatter.h>
 #include <valhalla/odin/narrative_builder_factory.h>

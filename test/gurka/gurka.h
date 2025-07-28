@@ -14,30 +14,18 @@
 #include "baldr/rapidjson_utils.h"
 #include "loki/worker.h"
 #include "midgard/constants.h"
-#include "midgard/encoded.h"
 #include "midgard/logging.h"
 #include "midgard/pointll.h"
-#include "midgard/util.h"
-#include "mjolnir/util.h"
 #include "odin/worker.h"
-#include "proto/trip.pb.h"
 #include "thor/worker.h"
 #include "tyr/actor.h"
 #include "tyr/serializers.h"
 
 #include <boost/property_tree/ptree.hpp>
-
-#include <osmium/builder/attr.hpp>
-#include <osmium/builder/osm_object_builder.hpp>
-#include <osmium/io/output_iterator.hpp>
-#include <osmium/io/pbf_output.hpp>
-#include <osmium/object_pointer_collection.hpp>
-#include <osmium/osm/object_comparisons.hpp>
+#include <gtest/gtest.h>
 
 #include <string>
 #include <tuple>
-
-#include <gtest/gtest.h>
 
 namespace valhalla {
 namespace gurka {
@@ -95,6 +83,22 @@ void build_pbf(const nodelayout& node_locations,
  * @return list of edge names
  */
 std::vector<std::vector<std::string>> get_paths(const valhalla::Api& result);
+
+/**
+ * build a valhalla json request body
+ *
+ * @param location_types vector of locations or shape, sources, targets
+ * @param waypoints      all pointll sequences for all location types
+ * @param costing        which costing name to use, defaults to auto
+ * @param options        overrides parts of the request, supports rapidjson pointer semantics
+ * @param stop_type      break, through, via, break_through
+ * @return json string
+ */
+std::string build_valhalla_request(const std::vector<std::string>& location_types,
+                                   const std::vector<std::vector<midgard::PointLL>>& waypoints,
+                                   const std::string& costing = "auto",
+                                   const std::unordered_map<std::string, std::string>& options = {},
+                                   const std::string& stop_type = "break");
 } // namespace detail
 
 /**

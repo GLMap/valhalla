@@ -184,7 +184,8 @@ CXXFLAGS += -std=c++17 -DMOBILE -DNDEBUG=1 -DUSE_STD_REGEX=1 -DRAPIDJSON_HAS_STD
  -Ithird_party/cpp-statsd-client/include \
  -Ithird_party/robin-hood-hashing/src/include \
  -Ithird_party/rapidjson/include \
- -Ithird_party/date/include
+ -Ithird_party/date/include \
+ -Ithird_party/unordered_dense/include
 PROTOC = ../build/macOS/arm64/bin/protoc
 
 .SUFFIXES: .cc .cpp .mm .proto

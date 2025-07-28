@@ -1,8 +1,5 @@
-#include "baldr/datetime.h"
-#include "baldr/rapidjson_utils.h"
 #include "loki/search.h"
 #include "loki/worker.h"
-#include "midgard/logging.h"
 
 using namespace valhalla;
 using namespace valhalla::baldr;
@@ -33,7 +30,7 @@ void loki_worker_t::init_isochrones(Api& request) {
   auto& options = *request.mutable_options();
 
   // strip off unused information
-  parse_locations(options.mutable_locations());
+  parse_locations(options.mutable_locations(), request);
   if (options.locations_size() < 1) {
     throw valhalla_exception_t{120};
   };

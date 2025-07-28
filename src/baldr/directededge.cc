@@ -181,11 +181,6 @@ void DirectedEdge::set_toll(const bool toll) {
   toll_ = toll;
 }
 
-// Sets the flag indicating this edge has seasonal access
-void DirectedEdge::set_seasonal(const bool seasonal) {
-  seasonal_ = seasonal;
-}
-
 // Sets the destination only (private) flag. This indicates the edge should
 // allow access only to locations that are destinations and not allow
 // "through" traffic
@@ -520,6 +515,11 @@ void DirectedEdge::set_opp_local_idx(const uint32_t idx) {
   }
 }
 
+void DirectedEdge::set_hierarchy_roadclass(const baldr::RoadClass rc, const bool reset) {
+  shortcut_ = static_cast<uint32_t>(rc);
+  is_shortcut_ = !reset;
+}
+
 // Set the flag for whether this edge represents a shortcut between 2 nodes.
 void DirectedEdge::set_shortcut(const uint32_t shortcut) {
   // 0 is not a valid shortcut
@@ -608,8 +608,8 @@ json::MapPtr DirectedEdge::json() const {
       {"part_of_complex_restriction", static_cast<bool>(complex_restriction_)},
       {"has_sign", static_cast<bool>(sign_)},
       {"toll", static_cast<bool>(toll_)},
-      {"seasonal", static_cast<bool>(seasonal_)},
       {"destination_only", static_cast<bool>(dest_only_)},
+      {"destination_only_hgv", static_cast<bool>(dest_only_hgv_)},
       {"tunnel", static_cast<bool>(tunnel_)},
       {"bridge", static_cast<bool>(bridge_)},
       {"round_about", static_cast<bool>(roundabout_)},

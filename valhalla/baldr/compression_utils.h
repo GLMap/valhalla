@@ -1,7 +1,8 @@
 #pragma once
 
-#include <functional>
 #include <zlib.h>
+
+#include <functional>
 
 namespace valhalla {
 namespace baldr {
@@ -28,4 +29,3 @@ bool inflate(const std::function<void(z_stream&)>& src_func,
 
 } // namespace baldr
 } // namespace valhalla
-

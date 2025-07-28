@@ -1,11 +1,11 @@
 #pragma once
 
-#include <cstdint>
 #include <valhalla/midgard/aabb2.h>
 #include <valhalla/midgard/linesegment2.h>
 #include <valhalla/midgard/point2.h>
 #include <valhalla/midgard/pointll.h>
 
+#include <cstdint>
 #include <tuple>
 #include <unordered_set>
 #include <vector>
@@ -184,4 +184,3 @@ protected:
 
 } // namespace midgard
 } // namespace valhalla
-

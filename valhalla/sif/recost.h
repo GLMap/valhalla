@@ -40,4 +40,3 @@ void recost_forward(baldr::GraphReader& reader,
                     const bool ignore_access = false);
 } // namespace sif
 } // namespace valhalla
-

@@ -1,9 +1,10 @@
 #include "baldr/graphreader.h"
-#include "filesystem.h"
+#include "gurka.h"
 #include "mjolnir/util.h"
 
-#include "gurka.h"
 #include <gtest/gtest.h>
+
+#include <filesystem>
 
 #if !defined(VALHALLA_SOURCE_DIR)
 #define VALHALLA_SOURCE_DIR
@@ -239,8 +240,8 @@ TEST(Standalone, PhonemesWithAltandDirection) {
 
   const std::string workdir = "test/data/gurka_phonemes_alt_dir";
 
-  if (!filesystem::exists(workdir)) {
-    bool created = filesystem::create_directories(workdir);
+  if (!std::filesystem::exists(workdir)) {
+    bool created = std::filesystem::create_directories(workdir);
     EXPECT_TRUE(created);
   }
 
@@ -255,8 +256,7 @@ TEST(Standalone, PhonemesWithAltandDirection) {
 
   std::vector<std::string> input_files = {workdir + "/map.pbf"};
 
-  build_tile_set(pt, input_files, mjolnir::BuildStage::kInitialize, mjolnir::BuildStage::kValidate,
-                 false);
+  build_tile_set(pt, input_files, mjolnir::BuildStage::kInitialize, mjolnir::BuildStage::kValidate);
 
   GraphReader graph_reader(pt.get_child("mjolnir"));
 
@@ -1488,8 +1488,8 @@ TEST(Standalone, PhonemesWithNoAltandDirection) {
 
   const std::string workdir = "test/data/gurka_phonemes";
 
-  if (!filesystem::exists(workdir)) {
-    bool created = filesystem::create_directories(workdir);
+  if (!std::filesystem::exists(workdir)) {
+    bool created = std::filesystem::create_directories(workdir);
     EXPECT_TRUE(created);
   }
 
@@ -1502,8 +1502,7 @@ TEST(Standalone, PhonemesWithNoAltandDirection) {
 
   std::vector<std::string> input_files = {workdir + "/map.pbf"};
 
-  build_tile_set(pt, input_files, mjolnir::BuildStage::kInitialize, mjolnir::BuildStage::kValidate,
-                 false);
+  build_tile_set(pt, input_files, mjolnir::BuildStage::kInitialize, mjolnir::BuildStage::kValidate);
 
   GraphReader graph_reader(pt.get_child("mjolnir"));
 

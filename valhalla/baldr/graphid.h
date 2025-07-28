@@ -1,12 +1,12 @@
 #ifndef VALHALLA_BALDR_GRAPHID_H_
 #define VALHALLA_BALDR_GRAPHID_H_
 
+#include <valhalla/baldr/graphconstants.h>
+#include <valhalla/baldr/json.h>
+
 #include <cstdint>
 #include <string>
 #include <vector>
-
-#include <valhalla/baldr/graphconstants.h>
-#include <valhalla/baldr/json.h>
 
 namespace valhalla {
 namespace baldr {
@@ -195,6 +195,14 @@ public:
    */
   GraphId operator+(uint64_t offset) const {
     return GraphId(tileid(), level(), id() + offset);
+  }
+
+  /**
+   * Advances the id
+   */
+  GraphId& operator+=(uint32_t offset) {
+    set_id(id() + offset);
+    return *this;
   }
 
   /**

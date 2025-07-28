@@ -3,7 +3,6 @@
 #include <valhalla/baldr/accessrestriction.h>
 #include <valhalla/baldr/admininfo.h>
 #include <valhalla/baldr/complexrestriction.h>
-#include <valhalla/baldr/datetime.h>
 #include <valhalla/baldr/directededge.h>
 #include <valhalla/baldr/edgeinfo.h>
 #include <valhalla/baldr/graphconstants.h>
@@ -24,16 +23,14 @@
 #include <valhalla/baldr/transitstop.h>
 #include <valhalla/baldr/transittransfer.h>
 #include <valhalla/baldr/turnlanes.h>
-
 #include <valhalla/midgard/aabb2.h>
 #include <valhalla/midgard/logging.h>
-#include <valhalla/midgard/util.h>
-
-#include <valhalla/filesystem.h>
 
 #include <cstdint>
+#include <filesystem>
 #include <iterator>
 #include <memory>
+#include <sys/mman.h>
 
 namespace valhalla {
 namespace baldr {
@@ -43,11 +40,64 @@ const std::string SUFFIX_COMPRESSED = ".gph.gz";
 
 class tile_getter_t;
 
+class MemoryMapHandle {
+private:
+  void *_mem, *_aligned;
+  uint32_t _size;
+
+public:
+  MemoryMapHandle() : _mem(nullptr), _aligned(MAP_FAILED), _size(0) {
+  }
+
+  MemoryMapHandle(int fd, uint32_t offset, uint32_t size): _size(size) {
+    auto pageSize = (uint32_t)sysconf(_SC_PAGE_SIZE);
+    uint32_t alignedOffset = offset & ~(pageSize - 1);
+    uint32_t startOffset = offset - alignedOffset;
+    _size += startOffset;
+    _aligned = ::mmap(nullptr, _size, PROT_READ, MAP_PRIVATE, fd, (off_t)alignedOffset);
+    if (_aligned != MAP_FAILED) {
+      ::madvise(_aligned, _size, MADV_RANDOM | MADV_DONTNEED);
+      _mem = (char*)_aligned + startOffset;
+    } else {
+      _mem = nullptr;
+    }
+  }
+  MemoryMapHandle(const MemoryMapHandle&) = delete;
+
+  MemoryMapHandle(MemoryMapHandle&& other) {
+    _size = 0;
+    _aligned = nullptr;
+    _mem = MAP_FAILED;
+    std::swap(_size, other._size);
+    std::swap(_aligned, other._aligned);
+    std::swap(_mem, other._mem);
+  }
+    
+  ~MemoryMapHandle() {
+    if (_aligned != MAP_FAILED)
+      ::munmap(_aligned, _size);
+  }
+
+  MemoryMapHandle& operator=(MemoryMapHandle&& other) {
+    std::swap(_size, other._size);
+    std::swap(_aligned, other._aligned);
+    std::swap(_mem, other._mem);
+    return *this;
+  }
+
+  template <class Type> inline const Type* get() const {
+    return (const Type*)_mem;
+  }
+  inline operator bool() const {
+    return _mem != nullptr;
+  }
+};
+
 class MMapGraphMemory final : public GraphMemory {
 private:
-    filesystem::MemoryMapHandle _mmap;
+    MemoryMapHandle _mmap;
 public:
-  MMapGraphMemory(filesystem::MemoryMapHandle &&mmap, size_t size_in): _mmap(std::move(mmap)) {
+  MMapGraphMemory(MemoryMapHandle &&mmap, size_t size_in): _mmap(std::move(mmap)) {
       data = _mmap.get<const char>();
       size = size_in;
   };
@@ -116,7 +166,8 @@ public:
    * @param  tile_data graph tile raw bytes
    * @param  disk_location tile filesystem path
    */
-  static void SaveTileToFile(const std::vector<char>& tile_data, const std::string& disk_location);
+  static void SaveTileToFile(const std::vector<char>& tile_data,
+                             const std::filesystem::path& disk_location);
 
   /**
    * Destructor
@@ -715,16 +766,9 @@ public:
       seconds %= midgard::kSecondsPerWeek;
       uint32_t idx = de - directededges_;
       float speed = predictedspeeds_.speed(idx, seconds);
-      if (valid_speed(speed)) {
-        *flow_sources |= kPredictedFlowMask;
-        return static_cast<uint32_t>(partial_live_speed * partial_live_pct +
-                                     (1 - partial_live_pct) * (speed + 0.5f));
-      }
-#ifdef LOGGING_LEVEL_TRACE
-      else
-        LOG_TRACE("Predicted speed = " + std::to_string(speed) + " for edge index: " +
-                  std::to_string(idx) + " of tile: " + std::to_string(header_->graphid()));
-#endif
+      *flow_sources |= kPredictedFlowMask;
+      return static_cast<uint32_t>(partial_live_speed * partial_live_pct +
+                                   (1 - partial_live_pct) * (std::max(speed, 0.5f) + 0.5f));
     }
 
     // fallback to constrained if time of week is within 7am to 7pm (or if no time was passed in) and

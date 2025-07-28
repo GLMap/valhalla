@@ -1,11 +1,11 @@
 #pragma once
 
-#include <memory>
-#include <unordered_set>
-
 #include "midgard/linesegment2.h"
 #include "midgard/pointll.h"
 #include "midgard/tiles.h"
+
+#include <memory>
+#include <unordered_set>
 
 namespace valhalla {
 
@@ -70,4 +70,3 @@ public:
 
 } // namespace midgard
 } // namespace valhalla
-

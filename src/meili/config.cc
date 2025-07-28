@@ -1,5 +1,4 @@
 #include "meili/config.h"
-
 #include "macro.h"
 #include "midgard/logging.h"
 
@@ -110,4 +109,3 @@ void Config::Routing::Read(const boost::property_tree::ptree& params) {
 
 } // namespace meili
 } // namespace valhalla
-

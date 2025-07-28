@@ -1,5 +1,17 @@
+#include "argparse_utils.h"
+#include "baldr/rapidjson_utils.h"
+#include "loki/search.h"
+#include "midgard/logging.h"
+#include "midgard/pointll.h"
+#include "sif/costfactory.h"
+#include "worker.h"
+
+#include <boost/property_tree/ptree.hpp>
+#include <cxxopts.hpp>
+
 #include <algorithm>
 #include <atomic>
+#include <filesystem>
 #include <fstream>
 #include <future>
 #include <list>
@@ -8,19 +20,6 @@
 #include <thread>
 #include <tuple>
 #include <vector>
-
-#include <boost/property_tree/ptree.hpp>
-#include <cxxopts.hpp>
-
-#include "baldr/rapidjson_utils.h"
-#include "filesystem.h"
-#include "loki/search.h"
-#include "midgard/logging.h"
-#include "midgard/pointll.h"
-#include "sif/costfactory.h"
-#include "worker.h"
-
-#include "argparse_utils.h"
 
 std::string costing_str;
 
@@ -122,7 +121,7 @@ void work(const boost::property_tree::ptree& config, std::promise<results_t>& pr
 }
 
 int main(int argc, char** argv) {
-  const auto program = filesystem::path(__FILE__).stem().string();
+  const auto program = std::filesystem::path(__FILE__).stem().string();
   // args
   size_t batch, isolated, radius;
   bool extrema = false;
@@ -133,7 +132,7 @@ int main(int argc, char** argv) {
     // clang-format off
     cxxopts::Options options(
       program,
-      program + " " + VALHALLA_VERSION + "\n\n"
+      program + " " + VALHALLA_PRINT_VERSION + "\n\n"
       "a program that does location searches on tiled route data.\n"
       "To run it use a valid config file to let it know where the tiled route data \n"
       "is. The input is simply a text file of one location per line\n\n");
@@ -146,7 +145,7 @@ int main(int argc, char** argv) {
       ("j,concurrency", "Number of threads to use. Defaults to all threads.", cxxopts::value<uint32_t>())
       ("b,batch", "Number of locations to group together per search", cxxopts::value<size_t>(batch)->default_value("1"))
       ("e,extrema", "Show the input locations of the extrema for a given statistic", cxxopts::value<bool>(extrema)->default_value("false"))
-      ("i,reach", "How many edges need to be reachable before considering it as connected to the larger network", cxxopts::value<size_t>(isolated))
+      ("i,reach", "How many edges need to be reachable before considering it as connected to the larger network", cxxopts::value<size_t>(isolated)->default_value("50"))
       ("r,radius", "How many meters to search away from the input location", cxxopts::value<size_t>(radius)->default_value("0"))
       ("costing", "Which costing model to use.", cxxopts::value<std::string>(costing_str)->default_value("auto"))
       ("input_files", "positional arguments", cxxopts::value<std::vector<std::string>>(input_files));
@@ -155,7 +154,7 @@ int main(int argc, char** argv) {
     options.parse_positional({"input_files"});
     options.positional_help("LOCATIONS.TXT");
     auto result = options.parse(argc, argv);
-    if (!parse_common_args(program, options, result, config, "loki.logging"))
+    if (!parse_common_args(program, options, result, &config, "loki.logging"))
       return EXIT_SUCCESS;
 
     if (!result.count("input_files")) {
@@ -188,7 +187,7 @@ int main(int argc, char** argv) {
         throw std::runtime_error("Latitude must be in the range [-90, 90] degrees");
       }
       float lon = valhalla::midgard::circular_range_clamp<float>(std::stof(parts[1]), -180, 180);
-      valhalla::midgard::PointLL ll(lat, lon);
+      valhalla::midgard::PointLL ll(lon, lat);
       valhalla::baldr::Location loc(ll);
       loc.min_inbound_reach_ = loc.min_outbound_reach_ = isolated;
       loc.radius_ = radius;

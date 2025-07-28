@@ -1,7 +1,6 @@
 #include "baldr/graphreader.h"
-#include "mjolnir/util.h"
-
 #include "gurka.h"
+#include "mjolnir/util.h"
 #include "test/test.h"
 
 #if !defined(VALHALLA_SOURCE_DIR)
@@ -106,8 +105,8 @@ protected:
 
     const gurka::nodes nodes = {{"M", {{"highway", "traffic_signals"}, {"name", "M Junction"}}}};
 
-    if (!filesystem::exists(workdir)) {
-      bool created = filesystem::create_directories(workdir);
+    if (!std::filesystem::exists(workdir)) {
+      bool created = std::filesystem::create_directories(workdir);
       EXPECT_TRUE(created);
     }
 
@@ -128,8 +127,8 @@ TEST_F(RouteWithStreetnameAndSign_en_UnitedStates, CheckStreetNamesAndSigns1) {
 
   const std::string workdir = "test/data/gurka_language_with_streetname_and_sign_en_UnitedStates";
 
-  if (!filesystem::exists(workdir)) {
-    bool created = filesystem::create_directories(workdir);
+  if (!std::filesystem::exists(workdir)) {
+    bool created = std::filesystem::create_directories(workdir);
     EXPECT_TRUE(created);
   }
 
@@ -144,7 +143,7 @@ TEST_F(RouteWithStreetnameAndSign_en_UnitedStates, CheckStreetNamesAndSigns1) {
   std::vector<std::string> input_files = {workdir + "/map.pbf"};
 
   build_tile_set(the_map.config, input_files, mjolnir::BuildStage::kInitialize,
-                 mjolnir::BuildStage::kValidate, false);
+                 mjolnir::BuildStage::kValidate);
 
   auto result = gurka::do_action(valhalla::Options::route, the_map, {"A", "D"}, "auto");
   gurka::assert::raw::expect_path(result, {"I 70", "", "6th Avenue/SR 37"});
@@ -669,8 +668,8 @@ protected:
 
     const gurka::nodes nodes = {{"M", {{"highway", "traffic_signals"}, {"name", "Zaventem"}}}};
 
-    if (!filesystem::exists(workdir)) {
-      bool created = filesystem::create_directories(workdir);
+    if (!std::filesystem::exists(workdir)) {
+      bool created = std::filesystem::create_directories(workdir);
       EXPECT_TRUE(created);
     }
 
@@ -692,8 +691,8 @@ TEST_F(RouteWithStreetnameAndSign_fr_nl_BrusselsBelgium, CheckStreetNamesAndSign
   const std::string workdir =
       "test/data/gurka_language_with_streetname_and_sign_fr_nl_BrusselsBelgium";
 
-  if (!filesystem::exists(workdir)) {
-    bool created = filesystem::create_directories(workdir);
+  if (!std::filesystem::exists(workdir)) {
+    bool created = std::filesystem::create_directories(workdir);
     EXPECT_TRUE(created);
   }
 
@@ -708,7 +707,7 @@ TEST_F(RouteWithStreetnameAndSign_fr_nl_BrusselsBelgium, CheckStreetNamesAndSign
   std::vector<std::string> input_files = {workdir + "/map.pbf"};
 
   build_tile_set(the_map.config, input_files, mjolnir::BuildStage::kInitialize,
-                 mjolnir::BuildStage::kValidate, false);
+                 mjolnir::BuildStage::kValidate);
 
   auto result = gurka::do_action(valhalla::Options::route, the_map, {"A", "D"}, "auto");
   gurka::assert::raw::expect_path(result, {"E40", "", "Rue Bodenbroek/Bodenbroekstraat/N6"});
@@ -1274,8 +1273,8 @@ protected:
 
     const gurka::nodes nodes = {{"M", {{"highway", "traffic_signals"}, {"name", "Zaventem"}}}};
 
-    if (!filesystem::exists(workdir)) {
-      bool created = filesystem::create_directories(workdir);
+    if (!std::filesystem::exists(workdir)) {
+      bool created = std::filesystem::create_directories(workdir);
       EXPECT_TRUE(created);
     }
 
@@ -1296,8 +1295,8 @@ TEST_F(RouteWithStreetnameAndSign_ru_be_MinskBelarus, CheckStreetNamesAndSigns1)
 
   const std::string workdir = "test/data/gurka_language_with_streetname_and_sign_ru_be_MinskBelarus";
 
-  if (!filesystem::exists(workdir)) {
-    bool created = filesystem::create_directories(workdir);
+  if (!std::filesystem::exists(workdir)) {
+    bool created = std::filesystem::create_directories(workdir);
     EXPECT_TRUE(created);
   }
 
@@ -1312,7 +1311,7 @@ TEST_F(RouteWithStreetnameAndSign_ru_be_MinskBelarus, CheckStreetNamesAndSigns1)
   std::vector<std::string> input_files = {workdir + "/map.pbf"};
 
   build_tile_set(the_map.config, input_files, mjolnir::BuildStage::kInitialize,
-                 mjolnir::BuildStage::kValidate, false);
+                 mjolnir::BuildStage::kValidate);
 
   auto result = gurka::do_action(valhalla::Options::route, the_map, {"A", "D"}, "auto");
   gurka::assert::raw::expect_path(result, {"М2", "", "МКАД, 1-й километр/1-ы кіламетр МКАД/M9"});
@@ -1879,8 +1878,8 @@ protected:
 
     const gurka::nodes nodes = {{"M", {{"highway", "traffic_signals"}, {"name", "M Junction"}}}};
 
-    if (!filesystem::exists(workdir)) {
-      bool created = filesystem::create_directories(workdir);
+    if (!std::filesystem::exists(workdir)) {
+      bool created = std::filesystem::create_directories(workdir);
       EXPECT_TRUE(created);
     }
 
@@ -1901,8 +1900,8 @@ TEST_F(RouteWithStreetnameAndSign_cy_en_Wales, CheckStreetNamesAndSigns1) {
 
   const std::string workdir = "test/data/gurka_language_with_streetname_and_sign_cy_en_Wales";
 
-  if (!filesystem::exists(workdir)) {
-    bool created = filesystem::create_directories(workdir);
+  if (!std::filesystem::exists(workdir)) {
+    bool created = std::filesystem::create_directories(workdir);
     EXPECT_TRUE(created);
   }
 
@@ -1917,7 +1916,7 @@ TEST_F(RouteWithStreetnameAndSign_cy_en_Wales, CheckStreetNamesAndSigns1) {
   std::vector<std::string> input_files = {workdir + "/map.pbf"};
 
   build_tile_set(the_map.config, input_files, mjolnir::BuildStage::kInitialize,
-                 mjolnir::BuildStage::kValidate, false);
+                 mjolnir::BuildStage::kValidate);
 
   auto result = gurka::do_action(valhalla::Options::route, the_map, {"A", "D"}, "auto");
   gurka::assert::raw::expect_path(result, {"A55/Gwibffordd Gogledd Cymru/North Wales Expressway", "",
@@ -2423,8 +2422,8 @@ protected:
           {"name:right:nl", "Steenweg op Gent"}}},
     };
 
-    if (!filesystem::exists(workdir)) {
-      bool created = filesystem::create_directories(workdir);
+    if (!std::filesystem::exists(workdir)) {
+      bool created = std::filesystem::create_directories(workdir);
       EXPECT_TRUE(created);
     }
 
@@ -2446,8 +2445,8 @@ TEST_F(RouteWithStreetnameAndSign_fr_nl_BrusselsBelgiumRightLeft, CheckRightName
   const std::string workdir =
       "test/data/gurka_language_with_streetname_and_sign_fr_nl_BrusselsBelgiumRightLeft";
 
-  if (!filesystem::exists(workdir)) {
-    bool created = filesystem::create_directories(workdir);
+  if (!std::filesystem::exists(workdir)) {
+    bool created = std::filesystem::create_directories(workdir);
     EXPECT_TRUE(created);
   }
 
@@ -2462,7 +2461,7 @@ TEST_F(RouteWithStreetnameAndSign_fr_nl_BrusselsBelgiumRightLeft, CheckRightName
   std::vector<std::string> input_files = {workdir + "/map.pbf"};
 
   build_tile_set(the_map.config, input_files, mjolnir::BuildStage::kInitialize,
-                 mjolnir::BuildStage::kValidate, false);
+                 mjolnir::BuildStage::kValidate);
 
   auto result = gurka::do_action(valhalla::Options::route, the_map, {"O", "Q"}, "auto");
   gurka::assert::raw::expect_path(result, {"Chaussée de Gand/Steenweg op Gent"});
@@ -2596,8 +2595,8 @@ protected:
          }},
     };
 
-    if (!filesystem::exists(workdir)) {
-      bool created = filesystem::create_directories(workdir);
+    if (!std::filesystem::exists(workdir)) {
+      bool created = std::filesystem::create_directories(workdir);
       EXPECT_TRUE(created);
     }
 
@@ -2619,8 +2618,8 @@ TEST_F(RouteWithStreetnameAndSign_en_USForwardBackwardWithName, CheckForwardName
   const std::string workdir =
       "test/data/gurka_language_with_streetname_and_sign_en_USForwardBackwardwithName";
 
-  if (!filesystem::exists(workdir)) {
-    bool created = filesystem::create_directories(workdir);
+  if (!std::filesystem::exists(workdir)) {
+    bool created = std::filesystem::create_directories(workdir);
     EXPECT_TRUE(created);
   }
 
@@ -2635,7 +2634,7 @@ TEST_F(RouteWithStreetnameAndSign_en_USForwardBackwardWithName, CheckForwardName
   std::vector<std::string> input_files = {workdir + "/map.pbf"};
 
   build_tile_set(the_map.config, input_files, mjolnir::BuildStage::kInitialize,
-                 mjolnir::BuildStage::kValidate, false);
+                 mjolnir::BuildStage::kValidate);
 
   auto result = gurka::do_action(valhalla::Options::route, the_map, {"O", "Q"}, "auto");
   gurka::assert::raw::expect_path(result, {"Waltonville Road/C-1"});
@@ -2748,8 +2747,8 @@ protected:
           {"name:backward", "Quarry Road"}}},
     };
 
-    if (!filesystem::exists(workdir)) {
-      bool created = filesystem::create_directories(workdir);
+    if (!std::filesystem::exists(workdir)) {
+      bool created = std::filesystem::create_directories(workdir);
       EXPECT_TRUE(created);
     }
 
@@ -2771,8 +2770,8 @@ TEST_F(RouteWithStreetnameAndSign_en_USForwardBackwardNoName, CheckForwardNames)
   const std::string workdir =
       "test/data/gurka_language_with_streetname_and_sign_en_USForwardBackwardwithName";
 
-  if (!filesystem::exists(workdir)) {
-    bool created = filesystem::create_directories(workdir);
+  if (!std::filesystem::exists(workdir)) {
+    bool created = std::filesystem::create_directories(workdir);
     EXPECT_TRUE(created);
   }
 
@@ -2787,7 +2786,7 @@ TEST_F(RouteWithStreetnameAndSign_en_USForwardBackwardNoName, CheckForwardNames)
   std::vector<std::string> input_files = {workdir + "/map.pbf"};
 
   build_tile_set(the_map.config, input_files, mjolnir::BuildStage::kInitialize,
-                 mjolnir::BuildStage::kValidate, false);
+                 mjolnir::BuildStage::kValidate);
 
   auto result = gurka::do_action(valhalla::Options::route, the_map, {"O", "Q"}, "auto");
   gurka::assert::raw::expect_path(result, {"Waltonville Road"});
@@ -2883,8 +2882,8 @@ protected:
           {"name:right", "Komenstraat"}}},
     };
 
-    if (!filesystem::exists(workdir)) {
-      bool created = filesystem::create_directories(workdir);
+    if (!std::filesystem::exists(workdir)) {
+      bool created = std::filesystem::create_directories(workdir);
       EXPECT_TRUE(created);
     }
 
@@ -2914,8 +2913,8 @@ TEST_F(RouteWithStreetnameAndSign_fr_nl_MesenBelgiumRightLeft, CheckRightNames) 
   const std::string workdir =
       "test/data/gurka_language_with_streetname_and_sign_fr_nl_MesenBelgiumRightLeft";
 
-  if (!filesystem::exists(workdir)) {
-    bool created = filesystem::create_directories(workdir);
+  if (!std::filesystem::exists(workdir)) {
+    bool created = std::filesystem::create_directories(workdir);
     EXPECT_TRUE(created);
   }
 
@@ -2930,7 +2929,7 @@ TEST_F(RouteWithStreetnameAndSign_fr_nl_MesenBelgiumRightLeft, CheckRightNames) 
   std::vector<std::string> input_files = {workdir + "/map.pbf"};
 
   build_tile_set(the_map.config, input_files, mjolnir::BuildStage::kInitialize,
-                 mjolnir::BuildStage::kValidate, false);
+                 mjolnir::BuildStage::kValidate);
 
   auto result = gurka::do_action(valhalla::Options::route, the_map, {"Q", "O"}, "auto");
   gurka::assert::raw::expect_path(result, {"Komenstraat"});
@@ -3019,8 +3018,8 @@ protected:
           {"name:de", "Alpenstrasse"}}},
     };
 
-    if (!filesystem::exists(workdir)) {
-      bool created = filesystem::create_directories(workdir);
+    if (!std::filesystem::exists(workdir)) {
+      bool created = std::filesystem::create_directories(workdir);
       EXPECT_TRUE(created);
     }
 
@@ -3042,8 +3041,8 @@ TEST_F(RouteWithStreetnameAndSign_fr_de_FribourgSwitzerlandMulti, CheckForwardNa
   const std::string workdir =
       "test/data/gurka_language_with_streetname_and_sign_fr_de_FribourgSwitzerlandMulti";
 
-  if (!filesystem::exists(workdir)) {
-    bool created = filesystem::create_directories(workdir);
+  if (!std::filesystem::exists(workdir)) {
+    bool created = std::filesystem::create_directories(workdir);
     EXPECT_TRUE(created);
   }
 
@@ -3058,7 +3057,7 @@ TEST_F(RouteWithStreetnameAndSign_fr_de_FribourgSwitzerlandMulti, CheckForwardNa
   std::vector<std::string> input_files = {workdir + "/map.pbf"};
 
   build_tile_set(the_map.config, input_files, mjolnir::BuildStage::kInitialize,
-                 mjolnir::BuildStage::kValidate, false);
+                 mjolnir::BuildStage::kValidate);
 
   auto result = gurka::do_action(valhalla::Options::route, the_map, {"Q", "O"}, "auto");
   gurka::assert::raw::expect_path(result, {"Route des Alpes/Alpenstrasse"});
@@ -3166,8 +3165,8 @@ protected:
           {"name:rm", "Via digl Gelgia"}}},
     };
 
-    if (!filesystem::exists(workdir)) {
-      bool created = filesystem::create_directories(workdir);
+    if (!std::filesystem::exists(workdir)) {
+      bool created = std::filesystem::create_directories(workdir);
       EXPECT_TRUE(created);
     }
 
@@ -3193,8 +3192,8 @@ TEST_F(RouteWithStreetnameAndSign_rm_de_BivioSwitzerland, CheckForwardNames) {
   const std::string workdir =
       "test/data/gurka_language_with_streetname_and_sign_rm_de_BivioSwitzerland";
 
-  if (!filesystem::exists(workdir)) {
-    bool created = filesystem::create_directories(workdir);
+  if (!std::filesystem::exists(workdir)) {
+    bool created = std::filesystem::create_directories(workdir);
     EXPECT_TRUE(created);
   }
 
@@ -3209,7 +3208,7 @@ TEST_F(RouteWithStreetnameAndSign_rm_de_BivioSwitzerland, CheckForwardNames) {
   std::vector<std::string> input_files = {workdir + "/map.pbf"};
 
   build_tile_set(the_map.config, input_files, mjolnir::BuildStage::kInitialize,
-                 mjolnir::BuildStage::kValidate, false);
+                 mjolnir::BuildStage::kValidate);
 
   auto result = gurka::do_action(valhalla::Options::route, the_map, {"O", "Q"}, "auto");
   gurka::assert::raw::expect_path(result, {"Vea del Giulia/Via digl Gelgia/Julierstrasse"});
@@ -3319,8 +3318,8 @@ protected:
         {"OPMQ", {{"highway", "secondary"}, {"osm_id", "103"}, {"name", "Werdstrasse"}}},
     };
 
-    if (!filesystem::exists(workdir)) {
-      bool created = filesystem::create_directories(workdir);
+    if (!std::filesystem::exists(workdir)) {
+      bool created = std::filesystem::create_directories(workdir);
       EXPECT_TRUE(created);
     }
 
@@ -3342,8 +3341,8 @@ TEST_F(RouteWithStreetnameAndSign_de_ZurichSwitzerland, CheckForwardNames) {
   const std::string workdir =
       "test/data/gurka_language_with_streetname_and_sign_de_ZurichSwitzerland";
 
-  if (!filesystem::exists(workdir)) {
-    bool created = filesystem::create_directories(workdir);
+  if (!std::filesystem::exists(workdir)) {
+    bool created = std::filesystem::create_directories(workdir);
     EXPECT_TRUE(created);
   }
 
@@ -3358,7 +3357,7 @@ TEST_F(RouteWithStreetnameAndSign_de_ZurichSwitzerland, CheckForwardNames) {
   std::vector<std::string> input_files = {workdir + "/map.pbf"};
 
   build_tile_set(the_map.config, input_files, mjolnir::BuildStage::kInitialize,
-                 mjolnir::BuildStage::kValidate, false);
+                 mjolnir::BuildStage::kValidate);
 
   auto result = gurka::do_action(valhalla::Options::route, the_map, {"O", "Q"}, "auto");
   gurka::assert::raw::expect_path(result, {"Werdstrasse"});
@@ -3458,8 +3457,8 @@ protected:
           {"destination:street:lang:nl", "Lebeaustraat"}}},
     };
 
-    if (!filesystem::exists(workdir)) {
-      bool created = filesystem::create_directories(workdir);
+    if (!std::filesystem::exists(workdir)) {
+      bool created = std::filesystem::create_directories(workdir);
       EXPECT_TRUE(created);
     }
 
@@ -3484,8 +3483,8 @@ TEST_F(RouteWithStreetnameAndSign_fr_nl_EupenBelgium, CheckLingusticPoly) {
   // See https://www.openstreetmap.org/relation/2425209#map=10/50.4440/6.1805 and
   // https://www.openstreetmap.org/relation/90348
 
-  if (!filesystem::exists(workdir)) {
-    bool created = filesystem::create_directories(workdir);
+  if (!std::filesystem::exists(workdir)) {
+    bool created = std::filesystem::create_directories(workdir);
     EXPECT_TRUE(created);
   }
 
@@ -3500,7 +3499,7 @@ TEST_F(RouteWithStreetnameAndSign_fr_nl_EupenBelgium, CheckLingusticPoly) {
   std::vector<std::string> input_files = {workdir + "/map.pbf"};
 
   build_tile_set(the_map.config, input_files, mjolnir::BuildStage::kInitialize,
-                 mjolnir::BuildStage::kValidate, false);
+                 mjolnir::BuildStage::kValidate);
 
   auto result = gurka::do_action(valhalla::Options::route, the_map, {"O", "Q"}, "auto");
   gurka::assert::raw::expect_path(result,
@@ -3719,8 +3718,8 @@ protected:
         {"M",
          {{"highway", "traffic_signals"}, {"name", "両国二丁目"}, {"name:en", "Ryogoku 2-chome"}}}};
 
-    if (!filesystem::exists(workdir)) {
-      bool created = filesystem::create_directories(workdir);
+    if (!std::filesystem::exists(workdir)) {
+      bool created = std::filesystem::create_directories(workdir);
       EXPECT_TRUE(created);
     }
 
@@ -3741,8 +3740,8 @@ TEST_F(RouteWithStreetnameAndSign_ja_en_Japan, CheckStreetNamesAndSigns1) {
 
   const std::string workdir = "test/data/gurka_language_with_streetname_and_sign_ja_en_Japan";
 
-  if (!filesystem::exists(workdir)) {
-    bool created = filesystem::create_directories(workdir);
+  if (!std::filesystem::exists(workdir)) {
+    bool created = std::filesystem::create_directories(workdir);
     EXPECT_TRUE(created);
   }
 
@@ -3757,7 +3756,7 @@ TEST_F(RouteWithStreetnameAndSign_ja_en_Japan, CheckStreetNamesAndSigns1) {
   std::vector<std::string> input_files = {workdir + "/map.pbf"};
 
   build_tile_set(the_map.config, input_files, mjolnir::BuildStage::kInitialize,
-                 mjolnir::BuildStage::kValidate, false);
+                 mjolnir::BuildStage::kValidate);
 
   auto result = gurka::do_action(valhalla::Options::route, the_map, {"A", "D"}, "auto");
   gurka::assert::raw::expect_path(result,
@@ -4526,8 +4525,8 @@ protected:
 
     const gurka::nodes nodes = {{"M", {{"highway", "traffic_signals"}, {"name", "M Junction"}}}};
 
-    if (!filesystem::exists(workdir)) {
-      bool created = filesystem::create_directories(workdir);
+    if (!std::filesystem::exists(workdir)) {
+      bool created = std::filesystem::create_directories(workdir);
       EXPECT_TRUE(created);
     }
 
@@ -4548,8 +4547,8 @@ TEST_F(RouteWithStreetnameAndSign_en_fr_OttawaCanada, CheckStreetNamesAndSigns1)
 
   const std::string workdir = "test/data/gurka_language_with_streetname_and_sign_en_fr_OttawaCanada";
 
-  if (!filesystem::exists(workdir)) {
-    bool created = filesystem::create_directories(workdir);
+  if (!std::filesystem::exists(workdir)) {
+    bool created = std::filesystem::create_directories(workdir);
     EXPECT_TRUE(created);
   }
 
@@ -4564,7 +4563,7 @@ TEST_F(RouteWithStreetnameAndSign_en_fr_OttawaCanada, CheckStreetNamesAndSigns1)
   std::vector<std::string> input_files = {workdir + "/map.pbf"};
 
   build_tile_set(the_map.config, input_files, mjolnir::BuildStage::kInitialize,
-                 mjolnir::BuildStage::kValidate, false);
+                 mjolnir::BuildStage::kValidate);
 
   auto result = gurka::do_action(valhalla::Options::route, the_map, {"A", "D"}, "auto");
   gurka::assert::raw::expect_path(result, {"417/Highway 417/Route 417", "",
@@ -5212,8 +5211,8 @@ protected:
 
     const gurka::nodes nodes = {{"M", {{"highway", "traffic_signals"}, {"name", "M Junction"}}}};
 
-    if (!filesystem::exists(workdir)) {
-      bool created = filesystem::create_directories(workdir);
+    if (!std::filesystem::exists(workdir)) {
+      bool created = std::filesystem::create_directories(workdir);
       EXPECT_TRUE(created);
     }
 
@@ -5234,8 +5233,8 @@ TEST_F(RouteWithStreetnameAndSign_en_fr_QuebecCanada, CheckStreetNamesAndSigns1)
 
   const std::string workdir = "test/data/gurka_language_with_streetname_and_sign_en_fr_QuebecCanada";
 
-  if (!filesystem::exists(workdir)) {
-    bool created = filesystem::create_directories(workdir);
+  if (!std::filesystem::exists(workdir)) {
+    bool created = std::filesystem::create_directories(workdir);
     EXPECT_TRUE(created);
   }
 
@@ -5250,7 +5249,7 @@ TEST_F(RouteWithStreetnameAndSign_en_fr_QuebecCanada, CheckStreetNamesAndSigns1)
   std::vector<std::string> input_files = {workdir + "/map.pbf"};
 
   build_tile_set(the_map.config, input_files, mjolnir::BuildStage::kInitialize,
-                 mjolnir::BuildStage::kValidate, false);
+                 mjolnir::BuildStage::kValidate);
 
   auto result = gurka::do_action(valhalla::Options::route, the_map, {"A", "D"}, "auto");
   gurka::assert::raw::expect_path(result, {"417/Highway 417/Route 417", "",
@@ -5806,8 +5805,8 @@ protected:
           {"name:pronunciation:jeita", "Native Language pronunciation"}}},
     };
 
-    if (!filesystem::exists(workdir)) {
-      bool created = filesystem::create_directories(workdir);
+    if (!std::filesystem::exists(workdir)) {
+      bool created = std::filesystem::create_directories(workdir);
       EXPECT_TRUE(created);
     }
 
@@ -5829,8 +5828,8 @@ TEST_F(RouteWithStreetnameAndSign_en_ms_ta_zh_Singapore, CheckForwardNames) {
   const std::string workdir =
       "test/data/gurka_language_with_streetname_and_sign_en_ms_ta_zh_Singapore";
 
-  if (!filesystem::exists(workdir)) {
-    bool created = filesystem::create_directories(workdir);
+  if (!std::filesystem::exists(workdir)) {
+    bool created = std::filesystem::create_directories(workdir);
     EXPECT_TRUE(created);
   }
 
@@ -5845,7 +5844,7 @@ TEST_F(RouteWithStreetnameAndSign_en_ms_ta_zh_Singapore, CheckForwardNames) {
   std::vector<std::string> input_files = {workdir + "/map.pbf"};
 
   build_tile_set(the_map.config, input_files, mjolnir::BuildStage::kInitialize,
-                 mjolnir::BuildStage::kValidate, false);
+                 mjolnir::BuildStage::kValidate);
 
   auto result = gurka::do_action(valhalla::Options::route, the_map, {"O", "Q"}, "auto");
   gurka::assert::raw::expect_path(result, {"Rochor/梧槽/Rochor/ரோச்சோர்"});
@@ -6106,8 +6105,8 @@ protected:
         {"M",
          {{"highway", "traffic_signals"}, {"name", "両国二丁目"}, {"name:en", "Ryogoku 2-chome"}}}};
 
-    if (!filesystem::exists(workdir)) {
-      bool created = filesystem::create_directories(workdir);
+    if (!std::filesystem::exists(workdir)) {
+      bool created = std::filesystem::create_directories(workdir);
       EXPECT_TRUE(created);
     }
 
@@ -6129,8 +6128,8 @@ TEST_F(RouteWithStreetnameAndSign_ja_en_JapanPronunciations, CheckStreetNamesAnd
   const std::string workdir =
       "test/data/gurka_language_with_streetname_and_sign_ja_en_JapanPronunciations";
 
-  if (!filesystem::exists(workdir)) {
-    bool created = filesystem::create_directories(workdir);
+  if (!std::filesystem::exists(workdir)) {
+    bool created = std::filesystem::create_directories(workdir);
     EXPECT_TRUE(created);
   }
 
@@ -6145,7 +6144,7 @@ TEST_F(RouteWithStreetnameAndSign_ja_en_JapanPronunciations, CheckStreetNamesAnd
   std::vector<std::string> input_files = {workdir + "/map.pbf"};
 
   build_tile_set(the_map.config, input_files, mjolnir::BuildStage::kInitialize,
-                 mjolnir::BuildStage::kValidate, false);
+                 mjolnir::BuildStage::kValidate);
 
   auto result = gurka::do_action(valhalla::Options::route, the_map, {"A", "D"}, "auto");
   gurka::assert::raw::expect_path(result,
@@ -6596,8 +6595,8 @@ protected:
           {"name:en", "Pamplona South - Airport"}}},
     };
 
-    if (!filesystem::exists(workdir)) {
-      bool created = filesystem::create_directories(workdir);
+    if (!std::filesystem::exists(workdir)) {
+      bool created = std::filesystem::create_directories(workdir);
       EXPECT_TRUE(created);
     }
 
@@ -6619,8 +6618,8 @@ TEST_F(RouteWithStreetnameAndSign_en_USMultiWithNameDash, CheckForwardNames) {
   const std::string workdir =
       "test/data/gurka_language_with_streetname_and_sign_en_USMultiWithNameDash";
 
-  if (!filesystem::exists(workdir)) {
-    bool created = filesystem::create_directories(workdir);
+  if (!std::filesystem::exists(workdir)) {
+    bool created = std::filesystem::create_directories(workdir);
     EXPECT_TRUE(created);
   }
 
@@ -6635,7 +6634,7 @@ TEST_F(RouteWithStreetnameAndSign_en_USMultiWithNameDash, CheckForwardNames) {
   std::vector<std::string> input_files = {workdir + "/map.pbf"};
 
   build_tile_set(the_map.config, input_files, mjolnir::BuildStage::kInitialize,
-                 mjolnir::BuildStage::kValidate, false);
+                 mjolnir::BuildStage::kValidate);
 
   auto result = gurka::do_action(valhalla::Options::route, the_map, {"O", "Q"}, "auto");
   gurka::assert::raw::expect_path(result, {"Pamplona South/Airport"});
@@ -6747,8 +6746,8 @@ protected:
           {"name:en", "Pamplona South / Airport"}}},
     };
 
-    if (!filesystem::exists(workdir)) {
-      bool created = filesystem::create_directories(workdir);
+    if (!std::filesystem::exists(workdir)) {
+      bool created = std::filesystem::create_directories(workdir);
       EXPECT_TRUE(created);
     }
 
@@ -6770,8 +6769,8 @@ TEST_F(RouteWithStreetnameAndSign_en_USMultiWithNameSlash, CheckForwardNames) {
   const std::string workdir =
       "test/data/gurka_language_with_streetname_and_sign_en_USMultiWithNameSlash";
 
-  if (!filesystem::exists(workdir)) {
-    bool created = filesystem::create_directories(workdir);
+  if (!std::filesystem::exists(workdir)) {
+    bool created = std::filesystem::create_directories(workdir);
     EXPECT_TRUE(created);
   }
 
@@ -6786,7 +6785,7 @@ TEST_F(RouteWithStreetnameAndSign_en_USMultiWithNameSlash, CheckForwardNames) {
   std::vector<std::string> input_files = {workdir + "/map.pbf"};
 
   build_tile_set(the_map.config, input_files, mjolnir::BuildStage::kInitialize,
-                 mjolnir::BuildStage::kValidate, false);
+                 mjolnir::BuildStage::kValidate);
 
   auto result = gurka::do_action(valhalla::Options::route, the_map, {"O", "Q"}, "auto");
   gurka::assert::raw::expect_path(result, {"Pamplona South/Airport"});

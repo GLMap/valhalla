@@ -1,12 +1,6 @@
-#include <boost/property_tree/ptree.hpp>
-#include <cstdint>
-#include <functional>
-#include <stdexcept>
-#include <string>
-#include <unordered_set>
-
-#include "baldr/json.h"
-#include "baldr/rapidjson_utils.h"
+#include "loki/worker.h"
+#include "loki/polygon_search.h"
+#include "loki/search.h"
 #include "midgard/logging.h"
 #include "sif/autocost.h"
 #include "sif/bicyclecost.h"
@@ -15,9 +9,13 @@
 #include "sif/pedestriancost.h"
 #include "tyr/actor.h"
 
-#include "loki/polygon_search.h"
-#include "loki/search.h"
-#include "loki/worker.h"
+#include <boost/property_tree/ptree.hpp>
+
+#include <cstdint>
+#include <functional>
+#include <stdexcept>
+#include <string>
+#include <unordered_set>
 
 using namespace valhalla;
 using namespace valhalla::tyr;
@@ -29,7 +27,10 @@ using namespace valhalla::loki;
 namespace valhalla {
 namespace loki {
 void loki_worker_t::parse_locations(google::protobuf::RepeatedPtrField<valhalla::Location>* locations,
+                                    Api& request,
                                     std::optional<valhalla_exception_t> required_exception) {
+  bool has_302 = false, has_303 = false;
+
   if (locations->size()) {
     for (auto& location : *locations) {
       if (!location.has_minimum_reachability_case())
@@ -48,15 +49,35 @@ void loki_worker_t::parse_locations(google::protobuf::RepeatedPtrField<valhalla:
       if (!location.has_node_snap_tolerance_case())
         location.set_node_snap_tolerance(default_node_snap_tolerance);
 
-      if (!location.has_search_cutoff_case())
-        location.set_search_cutoff(default_search_cutoff);
+      const bool has_level =
+          location.has_search_filter() && location.search_filter().level() != baldr::kMaxLevel;
 
+      if (!location.has_search_cutoff_case() && !has_level) {
+        // no level and no cutoff, provide regular default
+        location.set_search_cutoff(default_search_cutoff);
+      } else if (location.has_search_cutoff_case() && has_level) {
+        // level and cutoff, clamp value to limit candidate search in case of bogus level input
+        if (location.search_cutoff() > kMaxIndoorSearchCutoff) {
+          has_303 = true;
+          location.set_search_cutoff(kMaxIndoorSearchCutoff);
+        }
+      } else if (!location.has_search_cutoff_case() && has_level) {
+        // level and no cutoff, set special default
+        location.set_search_cutoff(kDefaultIndoorSearchCutoff);
+        has_302 = true;
+      }
+      // if there is a level search filter and
       if (!location.has_street_side_tolerance_case())
         location.set_street_side_tolerance(default_street_side_tolerance);
 
       if (!location.has_street_side_max_distance_case())
         location.set_street_side_max_distance(default_street_side_max_distance);
     }
+    if (has_302)
+      add_warning(request, 302, std::to_string(kDefaultIndoorSearchCutoff));
+    if (has_303)
+      add_warning(request, 303, std::to_string(kMaxIndoorSearchCutoff));
+
   } else if (required_exception) {
     throw *required_exception;
   }
@@ -67,6 +88,24 @@ void loki_worker_t::parse_costing(Api& api, bool allow_none) {
   // using the costing we can determine what type of edge filtering to use
   if (!allow_none && options.costing_type() == Costing::none_) {
     throw valhalla_exception_t{124};
+  }
+
+  if (!allow_hard_exclusions) {
+    bool exclusion_detected = false;
+    for (auto& pair : options.costings()) {
+      auto opts = pair.second.options();
+      exclusion_detected = exclusion_detected || opts.exclude_bridges() || opts.exclude_tolls() ||
+                           opts.exclude_tunnels() || opts.exclude_highways() ||
+                           opts.exclude_ferries();
+      opts.set_exclude_bridges(false);
+      opts.set_exclude_tolls(false);
+      opts.set_exclude_tunnels(false);
+      opts.set_exclude_highways(false);
+      opts.set_exclude_ferries(false);
+    }
+    if (exclusion_detected) {
+      add_warning(api, 208);
+    }
   }
 
   const auto& costing_str = Costing_Enum_Name(options.costing_type());
@@ -161,7 +200,8 @@ loki_worker_t::loki_worker_t(const boost::property_tree::ptree& config,
       max_trace_shape(config.get<size_t>("service_limits.trace.max_shape")),
       sample(config.get<std::string>("additional_data.elevation", "")),
       max_elevation_shape(config.get<size_t>("service_limits.skadi.max_shape")),
-      min_resample(config.get<float>("service_limits.skadi.min_resample")) {
+      min_resample(config.get<float>("service_limits.skadi.min_resample")),
+      allow_hard_exclusions(config.get<bool>("service_limits.allow_hard_exclusions", false)) {
 
   // Keep a string noting which actions we support, throw if one isnt supported
   Options::Action action;
@@ -185,7 +225,8 @@ loki_worker_t::loki_worker_t(const boost::property_tree::ptree& config,
         kv.first == "max_timedep_distance_matrix" || kv.first == "max_alternates" ||
         kv.first == "max_exclude_polygons_length" ||
         kv.first == "max_distance_disable_hierarchy_culling" || kv.first == "skadi" ||
-        kv.first == "status") {
+        kv.first == "status" || kv.first == "allow_hard_exclusions" ||
+        kv.first == "hierarchy_limits") {
       continue;
     }
     if (kv.first != "trace") {
@@ -248,6 +289,7 @@ loki_worker_t::loki_worker_t(const boost::property_tree::ptree& config,
   // assign max_distance_disable_hierarchy_culling
   max_distance_disable_hierarchy_culling =
       config.get<float>("service_limits.max_distance_disable_hierarchy_culling", 0.f);
+  allow_hard_exclusions = config.get<bool>("service_limits.allow_hard_exclusions", false);
 
   // signal that the worker started successfully
   started();
@@ -391,7 +433,7 @@ loki_worker_t::work(const std::list<zmq::message_t>& job,
     LOG_WARN("400::" + std::string(e.what()) + " request_id=" + std::to_string(info.id));
     result = serialize_error(e, info, request);
   } catch (const std::exception& e) {
-    LOG_ERROR("400::" + std::string(e.what()) + " request_id=" + std::to_string(info.id));
+    LOG_ERROR("500::" + std::string(e.what()) + " request_id=" + std::to_string(info.id));
     result = serialize_error({199, std::string(e.what())}, info, request);
   }
 

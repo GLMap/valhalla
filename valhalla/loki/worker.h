@@ -1,21 +1,19 @@
 #ifndef __VALHALLA_LOKI_SERVICE_H__
 #define __VALHALLA_LOKI_SERVICE_H__
 
-#include <vector>
-
-#include <boost/property_tree/ptree.hpp>
-
 #include <valhalla/baldr/connectivity_map.h>
 #include <valhalla/baldr/graphreader.h>
 #include <valhalla/baldr/location.h>
-#include <valhalla/baldr/pathlocation.h>
-#include <valhalla/baldr/rapidjson_utils.h>
 #include <valhalla/midgard/pointll.h>
 #include <valhalla/proto/options.pb.h>
 #include <valhalla/sif/costfactory.h>
 #include <valhalla/skadi/sample.h>
 #include <valhalla/tyr/actor.h>
 #include <valhalla/worker.h>
+
+#include <boost/property_tree/ptree.hpp>
+
+#include <vector>
 
 namespace valhalla {
 namespace loki {
@@ -48,6 +46,7 @@ public:
 
 protected:
   void parse_locations(google::protobuf::RepeatedPtrField<valhalla::Location>* locations,
+                       Api& request,
                        std::optional<valhalla_exception_t> required_exception = valhalla_exception_t{
                            110});
   void parse_trace(Api& request);
@@ -103,6 +102,7 @@ protected:
   float min_resample;
   unsigned int max_alternates;
   bool allow_verbose;
+  bool allow_hard_exclusions;
 
   // add max_distance_disable_hierarchy_culling
   float max_distance_disable_hierarchy_culling;

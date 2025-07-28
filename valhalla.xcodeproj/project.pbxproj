@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -112,7 +112,6 @@
 		C1B3019625ECE68E00B02D4A /* autocost.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B8B825DBC210001B4BFB /* autocost.cc */; };
 		C1B3019725ECE68E00B02D4A /* recost.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B300EE25ECE0DD00B02D4A /* recost.cc */; };
 		C1B3019825ECE68E00B02D4A /* motorcyclecost.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B8BF25DBC210001B4BFB /* motorcyclecost.cc */; };
-		C1B3019925ECE68E00B02D4A /* hierarchylimits.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B300EF25ECE0DD00B02D4A /* hierarchylimits.cc */; };
 		C1B3019A25ECE68E00B02D4A /* motorscootercost.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B8B425DBC210001B4BFB /* motorscootercost.cc */; };
 		C1B3019B25ECE68E00B02D4A /* nocost.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B300ED25ECE0DD00B02D4A /* nocost.cc */; };
 		C1B3019C25ECE68E00B02D4A /* transitcost.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B8BC25DBC210001B4BFB /* transitcost.cc */; };
@@ -344,6 +343,10 @@
 		C1EE536D25DBC80100F4C8D3 /* ios.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = ios.mm; path = third_party/date/src/ios.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		6CC1C06B2E38121100833504 /* valhalla */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = valhalla; sourceTree = SOURCE_ROOT; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
 		6C5BC38125F63605001FC3DD /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
@@ -370,6 +373,14 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		6CC1BF922E3811F600833504 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				6CC1C06B2E38121100833504 /* valhalla */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
 		C1B9B82625DBC0F4001B4BFB = {
 			isa = PBXGroup;
 			children = (
@@ -382,6 +393,7 @@
 				C1EE536D25DBC80100F4C8D3 /* ios.mm */,
 				C1B9BB2625DBC49F001B4BFB /* tz.cpp */,
 				C1B9BAE925DBC46C001B4BFB /* proto */,
+				6CC1BF922E3811F600833504 /* include */,
 				C1B9B83125DBC0F4001B4BFB /* valhalla */,
 				C1B9B83025DBC0F4001B4BFB /* Products */,
 				6C5BC3AB25F63A90001FC3DD /* Frameworks */,
@@ -825,7 +837,6 @@
 				C1B3015725ECE67500B02D4A /* directededge.cc in Sources */,
 				C1B3016725ECE67B00B02D4A /* height_action.cc in Sources */,
 				C1B301A225ECE69200B02D4A /* sample.cc in Sources */,
-				C1B3019925ECE68E00B02D4A /* hierarchylimits.cc in Sources */,
 				C1B3014325ECE67500B02D4A /* verbal_text_formatter_factory.cc in Sources */,
 				C1B3019B25ECE68E00B02D4A /* nocost.cc in Sources */,
 				6C5C28552A8177B400CA0B04 /* attributes_controller.cc in Sources */,

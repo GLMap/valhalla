@@ -1,11 +1,7 @@
 #include "mjolnir/util.h"
-
+#include "baldr/rapidjson_utils.h"
 #include "baldr/tilehierarchy.h"
-#include "filesystem.h"
-#include "midgard/aabb2.h"
 #include "midgard/logging.h"
-#include "midgard/point2.h"
-#include "midgard/polyline2.h"
 #include "mjolnir/bssbuilder.h"
 #include "mjolnir/elevationbuilder.h"
 #include "mjolnir/graphbuilder.h"
@@ -13,35 +9,22 @@
 #include "mjolnir/graphfilter.h"
 #include "mjolnir/graphvalidator.h"
 #include "mjolnir/hierarchybuilder.h"
-#include "mjolnir/osmpbfparser.h"
 #include "mjolnir/pbfgraphparser.h"
 #include "mjolnir/restrictionbuilder.h"
 #include "mjolnir/shortcutbuilder.h"
 #include "mjolnir/transitbuilder.h"
+#include "scoped_timer.h"
 
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/property_tree/ptree.hpp>
+
+#include <filesystem>
 #include <regex>
 
 using namespace valhalla::midgard;
 
 namespace {
-
-struct spatialite_singleton_t {
-  static const spatialite_singleton_t& get_instance() {
-    static spatialite_singleton_t s;
-    return s;
-  }
-
-private:
-  spatialite_singleton_t() {
-    spatialite_initialize();
-  }
-  ~spatialite_singleton_t() {
-    spatialite_shutdown();
-  }
-};
 
 // Temporary files used during tile building
 const std::string ways_file = "ways.bin";
@@ -208,25 +191,14 @@ uint32_t GetOpposingEdgeIndex(const graph_tile_ptr& endnodetile,
   return baldr::kMaxEdgesPerNode;
 }
 
-std::shared_ptr<void> make_spatialite_cache(sqlite3* handle) {
-  if (!handle) {
-    return nullptr;
-  }
-
-  spatialite_singleton_t::get_instance();
-  void* conn = spatialite_alloc_connection();
-  spatialite_init_ex(handle, conn, 0);
-  return {conn, [](void* c) { spatialite_cleanup_ex(c); }};
-}
-
 bool build_tile_set(const boost::property_tree::ptree& original_config,
                     const std::vector<std::string>& input_files,
                     const BuildStage start_stage,
-                    const BuildStage end_stage,
-                    const bool release_osmpbf_memory) {
+                    const BuildStage end_stage) {
+  SCOPED_TIMER();
   auto remove_temp_file = [](const std::string& fname) {
-    if (filesystem::exists(fname)) {
-      filesystem::remove(fname);
+    if (std::filesystem::exists(fname)) {
+      std::filesystem::remove(fname);
     }
   };
 
@@ -243,8 +215,8 @@ bool build_tile_set(const boost::property_tree::ptree& original_config,
 
   // Get the tile directory (make sure it ends with the preferred separator
   std::string tile_dir = config.get<std::string>("mjolnir.tile_dir");
-  if (tile_dir.back() != filesystem::path::preferred_separator) {
-    tile_dir.push_back(filesystem::path::preferred_separator);
+  if (tile_dir.back() != std::filesystem::path::preferred_separator) {
+    tile_dir.push_back(std::filesystem::path::preferred_separator);
   }
 
   // During the initialize stage the tile directory will be purged (if it already exists)
@@ -253,22 +225,22 @@ bool build_tile_set(const boost::property_tree::ptree& original_config,
     // set up the directories and purge old tiles if starting at the parsing stage
     for (const auto& level : valhalla::baldr::TileHierarchy::levels()) {
       auto level_dir = tile_dir + std::to_string(level.level);
-      if (filesystem::exists(level_dir) && !filesystem::is_empty(level_dir)) {
+      if (std::filesystem::exists(level_dir) && !std::filesystem::is_empty(level_dir)) {
         LOG_WARN("Non-empty " + level_dir + " will be purged of tiles");
-        filesystem::remove_all(level_dir);
+        std::filesystem::remove_all(level_dir);
       }
     }
 
     // check for transit level.
     auto level_dir =
         tile_dir + std::to_string(valhalla::baldr::TileHierarchy::GetTransitLevel().level);
-    if (filesystem::exists(level_dir) && !filesystem::is_empty(level_dir)) {
+    if (std::filesystem::exists(level_dir) && !std::filesystem::is_empty(level_dir)) {
       LOG_WARN("Non-empty " + level_dir + " will be purged of tiles");
-      filesystem::remove_all(level_dir);
+      std::filesystem::remove_all(level_dir);
     }
 
     // Create the directory if it does not exist
-    filesystem::create_directories(tile_dir);
+    std::filesystem::create_directories(tile_dir);
   }
 
   // Set up the temporary (*.bin) files used during processing
@@ -294,11 +266,6 @@ bool build_tile_set(const boost::property_tree::ptree& original_config,
     osm_data = PBFGraphParser::ParseWays(config.get_child("mjolnir"), input_files, ways_bin,
                                          way_nodes_bin, access_bin);
 
-    // Free all protobuf memory - cannot use the protobuffer lib after this!
-    if (release_osmpbf_memory && BuildStage::kParseWays == end_stage) {
-      OSMPBF::Parser::free();
-    }
-
     // Write the OSMData to files if the end stage is less than enhancing
     if (end_stage <= BuildStage::kEnhance) {
       osm_data.write_to_temp_files(tile_dir);
@@ -313,11 +280,6 @@ bool build_tile_set(const boost::property_tree::ptree& original_config,
     PBFGraphParser::ParseRelations(config.get_child("mjolnir"), input_files, cr_from_bin, cr_to_bin,
                                    osm_data);
 
-    // Free all protobuf memory - cannot use the protobuffer lib after this!
-    if (release_osmpbf_memory && BuildStage::kParseRelations == end_stage) {
-      OSMPBF::Parser::free();
-    }
-
     // Write the OSMData to files if the end stage is less than enhancing
     if (end_stage <= BuildStage::kEnhance) {
       osm_data.write_to_temp_files(tile_dir);
@@ -330,11 +292,6 @@ bool build_tile_set(const boost::property_tree::ptree& original_config,
     // are defined within the PBFParser class
     PBFGraphParser::ParseNodes(config.get_child("mjolnir"), input_files, way_nodes_bin, bss_nodes_bin,
                                linguistic_node_bin, osm_data);
-
-    // Free all protobuf memory - cannot use the protobuffer lib after this!
-    if (release_osmpbf_memory) {
-      OSMPBF::Parser::free();
-    }
 
     // Write the OSMData to files if the end stage is less than enhancing
     if (end_stage <= BuildStage::kEnhance) {
@@ -361,7 +318,7 @@ bool build_tile_set(const boost::property_tree::ptree& original_config,
     if (start_stage == BuildStage::kBuild) {
       // Read OSMData from files if building tiles is the first stage
       osm_data.read_from_temp_files(tile_dir);
-      if (filesystem::exists(tile_manifest)) {
+      if (std::filesystem::exists(tile_manifest)) {
         tiles = TileManifest::ReadFromFile(tile_manifest).tileset;
       } else {
         // TODO: Remove this backfill in the future, and make calling constructedges stage
@@ -463,6 +420,43 @@ bool build_tile_set(const boost::property_tree::ptree& original_config,
     OSMData::cleanup_temp_files(tile_dir);
   }
   return true;
+}
+
+std::string TileManifest::ToString() const {
+  baldr::json::ArrayPtr array = baldr::json::array({});
+  for (const auto& tile : tileset) {
+    const baldr::json::Value& graphid = tile.first.json();
+    const baldr::json::MapPtr& item =
+        baldr::json::map({{"graphid", graphid}, {"node_index", static_cast<uint64_t>(tile.second)}});
+    array->emplace_back(item);
+  }
+  std::stringstream manifest;
+  manifest << *baldr::json::map({{"tiles", array}});
+  return manifest.str();
+}
+
+void TileManifest::LogToFile(const std::string& filename) const {
+  std::ofstream handle;
+  handle.open(filename);
+  handle << ToString();
+  handle.close();
+  LOG_INFO("Writing tile manifest to " + filename);
+}
+
+TileManifest TileManifest::ReadFromFile(const std::string& filename) {
+  ptree manifest;
+  rapidjson::read_json(filename, manifest);
+  LOG_INFO("Reading tile manifest from " + filename);
+  std::map<baldr::GraphId, size_t> tileset;
+  for (const auto& tile_info : manifest.get_child("tiles")) {
+    const ptree& graph_id = tile_info.second.get_child("graphid");
+    const baldr::GraphId id(graph_id.get<uint64_t>("value"));
+    const size_t node_index = tile_info.second.get<size_t>("node_index");
+    tileset.insert({id, node_index});
+  }
+  LOG_INFO("Reading " + std::to_string(tileset.size()) + " tiles from tile manifest file " +
+           filename);
+  return TileManifest{tileset};
 }
 
 } // namespace mjolnir

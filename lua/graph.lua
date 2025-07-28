@@ -422,6 +422,14 @@ lit = {
   ["sunset-sunrise"] = "true"
 }
 
+-- used the most common combinations according to taginfo
+conditional_access_restriction = {
+  ["none @ destination"]  = 1,
+  ["none @ delivery"]  = 1,
+  ["no @ destination"]  = 1,
+  ["none @ (destination)"]  = 1,
+}
+
 --node proc needs the same info as above but in the form of a mask so duplicate..
 motor_vehicle_node = {
 ["yes"] = 1,
@@ -926,7 +934,7 @@ function filter_tags_generic(kv)
       kv["motorcycle_backward"] = "false"
       kv["pedestrian_backward"] = "false"
       kv["bike_backward"] = "false"
-    elseif kv["vehicle"] == "no" then --don't change ped access.
+    elseif kv["smoothness"] == "impassable" or kv["vehicle"] == "no" then --don't change ped access.
       kv["auto_forward"] = "false"
       kv["truck_forward"] = "false"
       kv["bus_forward"] = "false"
@@ -1018,7 +1026,7 @@ function filter_tags_generic(kv)
 
     else
       local ped_val = default_val
-      if kv["vehicle"] == "no" then --don't change ped access.
+      if kv["smoothness"] == "impassable" or kv["vehicle"] == "no" then --don't change ped access.
         default_val = "false"
       end
       --check for auto_forward overrides
@@ -1718,11 +1726,6 @@ function filter_tags_generic(kv)
 
   kv["bridge"] = bridge[kv["bridge"]] or "false"
 
-  -- TODO access:conditional
-  if kv["seasonal"] and kv["seasonal"] ~= "no" then
-    kv["seasonal"] = "true"
-  end
-
   kv["hov_tag"] = "true"
   if (kv["hov"] and kv["hov"] == "no") then
     kv["hov_forward"] = "false"
@@ -1844,6 +1847,40 @@ function filter_tags_generic(kv)
   kv["maxspeed:hgv:forward"] = normalize_speed(kv["maxspeed:hgv:forward"])
   kv["maxspeed:hgv:backward"] = normalize_speed(kv["maxspeed:hgv:backward"])
 
+  local access_restriction_tags = {
+    ["maxweight"]   = true,
+    ["maxheight"]   = true,
+    ["maxlength"]   = true,
+    ["maxwidth"]    = true,
+    ["hazmat"]      = true,
+    ["maxaxles"]    = false,
+    ["maxaxleload"] = false
+  }
+
+  local directions = {
+    "forward", "backward"
+  }
+
+  for restr_key, directed in pairs(access_restriction_tags) do 
+    -- find out if there are exemptions
+    local conditional_tag = string.format("%s:conditional", restr_key)
+    local except_destination = conditional_access_restriction[kv[conditional_tag]] or 0
+    if except_destination == 1 then 
+      kv[restr_key] = tostring(kv[restr_key]) .. "~" -- parse this later in graphparser
+    end
+    if directed then 
+      for _, direction in pairs(directions) do
+        local key = restr_key .. "_" .. direction
+        local tag = restr_key .. ":" .. direction
+        local conditional_tag = string.format("%s:conditional", tag)
+        local except_destination = conditional_access_restriction[kv[conditional_tag]] or 0
+        if except_destination == 1 then 
+          kv[key] = tostring(kv[key]) .. "~"
+        end
+      end
+    end
+  end
+
   if (kv["hgv:national_network"] or kv["hgv:state_network"] or kv["hgv"] == "local" or kv["hgv"] == "designated") then
     kv["truck_route"] = "true"
   end
@@ -1869,11 +1906,6 @@ function filter_tags_generic(kv)
   kv["bike_regional_ref"] = rref
   kv["bike_local_ref"] = lref
   kv["bike_network_mask"] = bike_mask
-
-  -- turn semicolon into colon due to challenges to store ";" in string
-  if kv["level"] ~= nil then
-    kv["level"] = kv["level"]:gsub(";", ":")
-  end
 
   -- Explicitly turn off access for construction type. It's done for backward compatibility
   -- of valhalla tiles and valhalla routing. In case we allow non-zero access then older
@@ -2034,7 +2066,7 @@ function nodes_proc (kv, nokeys)
   local motorcycle = motorcycle_tag or 1024
 
   --if access = false use tag if exists, otherwise no access for that mode.
-  if (access == "false" or kv["vehicle"] == "no" or kv["hov"] == "designated") then
+  if (access == "false" or kv["vehicle"] == "no" or kv["smoothness"] == "impassable" or kv["hov"] == "designated") then
     auto = auto_tag or 0
     truck = truck_tag or 0
     bus = bus_tag or 0
@@ -2053,19 +2085,28 @@ function nodes_proc (kv, nokeys)
     hov = hov_tag or 0
   end
 
-  --check for gates, bollards, and sump_busters
+  --check for gates, bollards, walls and sump_busters
   local gate = kv["barrier"] == "gate" or kv["barrier"] == "yes" or
-    kv["barrier"] == "lift_gate" or kv["barrier"] == "swing_gate"
+    kv["barrier"] == "lift_gate" or kv["barrier"] == "swing_gate" or
+    kv["barrier"] == "sliding_beam"
   local bollard = false
   local sump_buster = false
+  local wall = false
 
   if gate == false then
     --if there was a bollard cars can't get through it
     bollard = kv["barrier"] == "bollard" or kv["barrier"] == "block" or
-      kv["barrier"] == "jersey_barrier" or kv["bollard"] == "removable" or false
+      kv["bollard"] == "removable" or kv["barrier"] == "kissing_gate" or 
+      kv["barrier"] == "motorcycle_barrier" or kv["barrier"] == "cycle_barrier" or 
+      kv["barrier"] == "chain" or kv["barrier"] == "bar" or false
 
     --if sump_buster then no access for auto, hov, and taxi unless a tag exists.
     sump_buster = kv["barrier"] == "sump_buster" or false
+
+    --if there is a kind of wall, there is no access for all profiles unless a tag exists
+    wall = kv["barrier"] == "fence" or kv["barrier"] == "barrier_board" or 
+        kv["barrier"] == "wall" or kv["barrier"] == "jersey_barrier" or 
+        kv["barrier"] == "debris" or false
 
     --save the following as gates.
     if (bollard and (kv["bollard"] == "rising")) then
@@ -2099,11 +2140,24 @@ function nodes_proc (kv, nokeys)
       motorcycle = motorcycle_tag or 1024
       emergency = emergency_tag or 16
       hov = hov_tag or 0
+    --wall = true shuts off access unless a tag exists.
+    elseif wall == true then
+      auto = auto_tag or 0
+      truck = truck_tag or 0
+      bus = bus_tag or 0
+      taxi = taxi_tag or 0
+      foot = foot_tag or 0
+      wheelchair = wheelchair_tag or 0
+      bike = bike_tag or 0
+      moped = moped_tag or 0
+      motorcycle = motorcycle_tag or 0
+      emergency = emergency_tag or 0
+      hov = hov_tag or 0
     end
   end
 
   --if nothing blocks access at this node assume access is allowed.
-  if gate == false and bollard == false and sump_buster == false and access == "true" then
+  if gate == false and bollard == false and sump_buster == false and wall == false and access == "true" then
     if kv["highway"] == "crossing" or kv["railway"] == "crossing" or
        kv["footway"] == "crossing" or kv["cycleway"] == "crossing" or
        kv["foot"] == "crossing" or kv["bicycle"] == "crossing" or
