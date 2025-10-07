@@ -31,7 +31,7 @@ constexpr int16_t NO_DATA_VALUE = -32768;
 constexpr int16_t NO_DATA_HIGH = 16384;
 constexpr int16_t NO_DATA_LOW = -16384;
 constexpr size_t TILE_COUNT = 180 * 360;
-constexpr int8_t UNPACKED_TILES_COUNT = 50;
+constexpr size_t UNPACKED_TILES_COUNT = 500;
 
 // macro is faster than inline function for this...
 #define out_of_range(v) v > NO_DATA_HIGH || v < NO_DATA_LOW
@@ -324,6 +324,8 @@ tile_data cache_t::source(uint16_t index) {
     return {};
   }
 
+  std::unique_lock<std::recursive_mutex> lock(mutex);
+
   // if we don't have anything maybe it's lazy loaded
   auto& item = cache[index];
   if (item.get_data() == nullptr) {
@@ -338,15 +340,16 @@ tile_data cache_t::source(uint16_t index) {
 
   // we have it raw or we don't
   if (item.get_format() == format_t::RAW) {
-    return {this, index, false, (const int16_t*)item.get_data()};
+    auto rv = tile_data(this, index, false, (const int16_t*)item.get_data());
+    lock.unlock();
+    return rv;
   }
 
   // we were able to load it but the format wasn't RAW, which only leaves compressed formats
-  mutex.lock();
-  auto it = pending_tiles.find(index);
-  if (it != pending_tiles.end()) {
-    auto future = it->second;
-    mutex.unlock();
+  auto pending = pending_tiles.find(index);
+  if (pending != pending_tiles.end()) {
+    auto future = pending->second;
+    lock.unlock();
     return future.get();
   }
 
@@ -354,13 +357,14 @@ tile_data cache_t::source(uint16_t index) {
   const char* unpacked = item.get_unpacked();
   if (unpacked) {
     auto rv = tile_data(this, index, true, (const int16_t*)unpacked);
-    mutex.unlock();
+    lock.unlock();
     return rv;
   }
 
   std::promise<tile_data> promise;
-  it = pending_tiles.emplace(index, promise.get_future()).first;
+  auto inserted = pending_tiles.emplace(index, promise.get_future()).first;
 
+  // we reuse an existing unpack buffer whenever possible to avoid constantly allocating 25MB chunks
   if (reusable.size() >= UNPACKED_TILES_COUNT) {
     for (auto i : reusable) {
       if (cache[i].get_usages() <= 0) {
@@ -371,20 +375,21 @@ tile_data cache_t::source(uint16_t index) {
     }
   }
   if (!unpacked) {
-    unpacked = (char*)malloc(HGT_BYTES);
+    unpacked = static_cast<char*>(malloc(HGT_BYTES));
   }
   reusable.insert(index);
   auto rv = tile_data(this, index, true, (const int16_t*)unpacked);
-  mutex.unlock();
 
+  lock.unlock();
+  // decompress outside the cache lock so other threads can sample different tiles in parallel
   if (!item.unpack(unpacked)) {
     rv = tile_data();
   }
+  lock.lock();
 
-  mutex.lock();
   promise.set_value(rv);
-  pending_tiles.erase(it);
-  mutex.unlock();
+  pending_tiles.erase(inserted);
+  lock.unlock();
   return rv;
 }
 
@@ -444,10 +449,7 @@ template <class coord_t> double sample::get(const coord_t& coord, tile_data& til
 
   // the caller can pass a cached tile, so we only fetch one if its not the one they already have
   if (index != tile.get_index()) {
-    {
-      std::lock_guard<std::mutex> _(cache_lck);
-      tile = cache_->source(index);
-    }
+    tile = cache_->source(index);
     if (!tile) {
       if (!fetch(index))
         return get_no_data_value();
