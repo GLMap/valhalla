@@ -454,14 +454,26 @@ void GraphTileBuilder::StoreTileData() {
         failure = "Failed to write tile header to " + tile_path;
       } else {
         file.write(payload.data(), payload.size());
-        if (!file.good()) {
-          failure = "Failed to write tile payload to " + tile_path;
-        } else {
-          file.flush();
-          if (!file.good()) {
-            failure = "Failed to flush tile to disk for " + tile_path;
-          }
+      if (!file.good()) {
+        failure = "Failed to write tile payload to " + tile_path;
+      } else {
+#ifndef NDEBUG
+        file.flush();
+        file.seekp(0, std::ios::end);
+        auto bytes_written = static_cast<std::streamoff>(file.tellp());
+        auto expected_bytes = static_cast<std::streamoff>(sizeof(GraphTileHeader) + payload.size());
+        if (bytes_written != expected_bytes) {
+          LOG_ERROR("Tile " + tile_path + " bytes written " + std::to_string(bytes_written) +
+                    " expected " + std::to_string(expected_bytes));
+          failure = "Tile size mismatch after write";
         }
+        file.seekp(0, std::ios::end);
+#endif
+        file.flush();
+        if (!file.good()) {
+          failure = "Failed to flush tile to disk for " + tile_path;
+        }
+      }
       }
     }
 
