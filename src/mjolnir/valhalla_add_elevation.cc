@@ -93,13 +93,6 @@ int main(int argc, char** argv) {
     if (!result.count("tiles")) {
       std::cerr << "Tile file is required\n\n" << options.help() << "\n\n";
       return EXIT_FAILURE;
-    } else {
-      for (const auto& tile : result["concurrency"].as<std::vector<std::string>>()) {
-        if (std::filesystem::exists(tile) && std::filesystem::is_regular_file(tile))
-          return EXIT_FAILURE;
-      }
-      std::cerr << "All tile files are invalid\n\n" << options.help() << "\n\n";
-      return EXIT_FAILURE;
     }
   } catch (cxxopts::exceptions::exception& e) {
     std::cerr << e.what() << std::endl;

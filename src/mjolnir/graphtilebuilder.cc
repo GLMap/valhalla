@@ -366,7 +366,16 @@ void GraphTileBuilder::StoreTileData() {
   header_builder_.set_edgeinfo_offset(header_builder_.complex_restriction_reverse_offset() +
                                       reverse_restriction_size);
   for (const auto& edgeinfo : edgeinfo_list_) {
+    auto before = static_cast<int64_t>(in_mem.tellp());
     in_mem << edgeinfo;
+    auto after = static_cast<int64_t>(in_mem.tellp());
+    auto written = after - before;
+    auto expected = static_cast<int64_t>(edgeinfo.SizeOf());
+    if (written != expected) {
+      LOG_ERROR("EdgeInfo written size mismatch for tile " +
+                std::to_string(header_builder_.graphid().tileid()) + " expected " +
+                std::to_string(expected) + " wrote " + std::to_string(written));
+    }
   }
   int64_t edge_info_size = in_mem.tellp() - current_size;
 
