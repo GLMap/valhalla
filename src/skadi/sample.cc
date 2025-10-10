@@ -340,25 +340,19 @@ tile_data cache_t::source(uint16_t index) {
 
   // we have it raw or we don't
   if (item.get_format() == format_t::RAW) {
-    auto rv = tile_data(this, index, false, (const int16_t*)item.get_data());
-    lock.unlock();
-    return rv;
+    return {this, index, false, (const int16_t*)item.get_data()};
   }
 
   // we were able to load it but the format wasn't RAW, which only leaves compressed formats
   auto pending = pending_tiles.find(index);
   if (pending != pending_tiles.end()) {
-    auto future = pending->second;
-    lock.unlock();
-    return future.get();
+    return pending->second.get();
   }
 
   // item in cache is already unpacked
   const char* unpacked = item.get_unpacked();
   if (unpacked) {
-    auto rv = tile_data(this, index, true, (const int16_t*)unpacked);
-    lock.unlock();
-    return rv;
+    return {this, index, true, (const int16_t*)unpacked};
   }
 
   std::promise<tile_data> promise;

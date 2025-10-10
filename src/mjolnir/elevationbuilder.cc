@@ -213,6 +213,11 @@ void add_elevations_to_single_tile(GraphReader& graphreader,
 
       // Store the new edge info offset
       new_offsets[edge_info_offset] = ei_offset;
+      if (tilebuilder.header()->graphid().tileid() == 780902 && edge_info_offset == 225212) {
+        LOG_WARN("Tile " + std::to_string(tilebuilder.header()->graphid().tileid()) +
+                 " remapping edgeinfo offset " + std::to_string(edge_info_offset) + " -> " +
+                 std::to_string(ei_offset));
+      }
 
       // Encode elevation along the edge and add to EdgeInfo along with the mean elevation.
       // Bridges, tunnels, ferries are special cases. Increment the new edge info offset.
@@ -223,7 +228,15 @@ void add_elevations_to_single_tile(GraphReader& graphreader,
       } else {
         encoded = encode_edge_elevation(sample, shape, length, wayid);
       }
-      ei_offset += tilebuilder.set_elevation(edge_info_offset, mean_elevation, encoded);
+      auto size = tilebuilder.set_elevation(edge_info_offset, mean_elevation, encoded);
+      auto new_running_offset = ei_offset + size;
+      if (tilebuilder.header()->graphid().tileid() == 780902 &&
+          (edge_info_offset == 225212 || edge_info_offset == 238984)) {
+        LOG_WARN("Tile " + std::to_string(tilebuilder.header()->graphid().tileid()) +
+                 " encoded size " + std::to_string(size) + " new running offset " +
+                 std::to_string(new_running_offset));
+      }
+      ei_offset = new_running_offset;
     }
 
     // Edge elevation information. If the edge is forward (with respect to the shape)
@@ -243,8 +256,14 @@ void add_elevations_to_single_tile(GraphReader& graphreader,
     uint32_t edge_info_offset = directededge.edgeinfo_offset();
     auto ei_offset = new_offsets.find(edge_info_offset);
     if (ei_offset == new_offsets.end()) {
-      LOG_ERROR("Could not find edge info offset in the map");
+      LOG_ERROR("Could not find edge info offset in the map for " +
+                std::to_string(edge_info_offset));
     } else {
+      if (tilebuilder.header()->graphid().tileid() == 780902 &&
+          (edge_info_offset == 225212 || edge_info_offset == 238984)) {
+        LOG_WARN("Updating directed edge offset from " + std::to_string(edge_info_offset) +
+                 " to " + std::to_string(ei_offset->second));
+      }
       directededge.set_edgeinfo_offset(ei_offset->second);
     }
   }
