@@ -88,7 +88,6 @@ SRC = \
 	src/sif/autocost.cc \
 	src/sif/bicyclecost.cc \
 	src/sif/dynamiccost.cc \
-	src/sif/hierarchylimits.cc \
 	src/sif/motorcyclecost.cc \
 	src/sif/motorscootercost.cc \
 	src/sif/nocost.cc \
