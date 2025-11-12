@@ -5,6 +5,7 @@
 
 #include <boost/property_tree/ptree.hpp>
 
+#include <memory>
 #include <mutex>
 #include <shared_mutex>
 #include <string>
@@ -91,7 +92,7 @@ protected:
   bool store(const std::string& path, const std::vector<char>& raw_data);
 
   friend cache_t;
-  std::unique_ptr<cache_t> cache_;
+  std::shared_ptr<cache_t> cache_;
 
 private:
   /**
