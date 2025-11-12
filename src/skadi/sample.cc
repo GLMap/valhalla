@@ -35,6 +35,23 @@ constexpr int16_t NO_DATA_LOW = -16384;
 constexpr size_t TILE_COUNT = 180 * 360;
 constexpr int8_t UNPACKED_TILES_COUNT = 50;
 
+std::string normalize_data_source(const std::string& data_source) {
+  if (data_source.empty())
+    return "";
+
+  std::filesystem::path normalized{data_source};
+  normalized = normalized.lexically_normal();
+  auto normalized_str = normalized.string();
+  if (normalized_str == ".") {
+    normalized_str.clear();
+  }
+  while (!normalized_str.empty() &&
+         normalized_str.back() == std::filesystem::path::preferred_separator) {
+    normalized_str.pop_back();
+  }
+  return normalized_str;
+}
+
 // macro is faster than inline function for this...
 #define out_of_range(v) v > NO_DATA_HIGH || v < NO_DATA_LOW
 
@@ -311,6 +328,62 @@ struct cache_t {
 
   tile_data source(uint16_t index);
 };
+
+std::shared_ptr<cache_t> build_cache(const std::string& sanitized_source) {
+  auto cache = std::make_shared<cache_t>();
+  cache->data_source = sanitized_source;
+  cache->cache.resize(TILE_COUNT);
+
+  if (cache->data_source.empty() ||
+      !std::filesystem::is_directory(std::filesystem::path{cache->data_source})) {
+    LOG_DEBUG("No elevation data_source was provided");
+    return cache;
+  }
+
+  for (const auto& f : std::filesystem::recursive_directory_iterator(cache->data_source)) {
+    if (!f.is_regular_file())
+      continue;
+
+    const auto fp_str = f.path().string();
+    auto data = cache_item_t::parse_hgt_name(fp_str);
+    if (data && data->second != format_t::UNKNOWN) {
+      if (!cache->insert(data->first, fp_str, data->second)) {
+        LOG_WARN("Corrupt elevation data: " + fp_str);
+      }
+    }
+  }
+  return cache;
+}
+
+std::shared_ptr<cache_t> get_or_create_cache(const std::string& data_source) {
+  static std::mutex cache_mutex;
+  static std::shared_ptr<cache_t> cached;
+  static std::string cached_source;
+
+  const auto sanitized = normalize_data_source(data_source);
+  const auto describe_source = [&sanitized]() {
+    return sanitized.empty() ? std::string("[none]") : sanitized;
+  };
+
+  std::lock_guard<std::mutex> lock(cache_mutex);
+  if (cached && sanitized == cached_source) {
+    LOG_INFO("Elevation cache hit for " + describe_source() +
+             " (use_count=" + std::to_string(cached.use_count()) + ")");
+    return cached;
+  }
+
+  if (cached && sanitized != cached_source) {
+    LOG_WARN("Elevation data source changed from " +
+             (cached_source.empty() ? std::string("[none]") : cached_source) + " to " +
+             describe_source() + ", rebuilding cache");
+  }
+
+  cached = build_cache(sanitized);
+  cached_source = sanitized;
+  LOG_INFO("Elevation cache miss for " + describe_source() +
+           " (use_count=" + std::to_string(cached.use_count()) + ")");
+  return cached;
+}
 
 bool cache_t::insert(size_t pos, const std::string& path, format_t format) {
   if (pos >= cache.size())
@@ -602,38 +675,7 @@ std::string get_hgt_file_name(uint16_t index) {
 
 // we don't need lock as this method is called in constructor only
 void sample::cache_initialisation(const std::string& data_source) {
-  cache_ = std::make_unique<cache_t>();
-  cache_->data_source = data_source;
-
-  // messy but needed
-  while (cache_->data_source.size() &&
-         cache_->data_source.back() == std::filesystem::path::preferred_separator) {
-    cache_->data_source.pop_back();
-  }
-  cache_->cache.resize(TILE_COUNT);
-
-  const auto data_path = std::filesystem::path{cache_->data_source};
-
-  // If data_source is empty, do not allocate/resize mapped cache.
-  if (cache_->data_source.empty() || !std::filesystem::is_directory(data_path)) {
-    LOG_DEBUG("No elevation data_source was provided");
-    return;
-  }
-
-  // check the directory for files that look like what we need
-  for (const auto& f : std::filesystem::recursive_directory_iterator(cache_->data_source)) {
-    if (!f.is_regular_file())
-      continue;
-    // make sure its a valid index
-    // TODO(nils): make this all based on filesystem::path instead of string
-    const auto fp_str = f.path().string();
-    auto data = cache_item_t::parse_hgt_name(fp_str);
-    if (data && data->second != format_t::UNKNOWN) {
-      if (!cache_->insert(data->first, fp_str, data->second)) {
-        LOG_WARN("Corrupt elevation data: " + fp_str);
-      }
-    }
-  }
+  cache_ = get_or_create_cache(data_source);
 }
 
 double get_no_data_value() {
