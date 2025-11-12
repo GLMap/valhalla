@@ -980,7 +980,7 @@ protected:
   };
   std::shared_ptr<const tile_extract_t> tile_extract_;
   static std::shared_ptr<const GraphReader::tile_extract_t>
-  get_extract_instance(const boost::property_tree::ptree& pt);
+  get_extract_instance(const boost::property_tree::ptree& pt, bool traffic_readonly);
 
   class tile_source_rt_t;
   static std::shared_ptr<tile_source_rt_t> getSourceForRT(const std::string &path, std::function<int(void)> fileOpenFunction);
