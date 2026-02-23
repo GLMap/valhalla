@@ -21,7 +21,7 @@
 namespace valhalla {
 namespace thor {
 
-enum class MatrixExpansionType { reverse = 0, forward = 1 };
+enum class MatrixExpansionType : uint8_t { reverse = 0, forward = 1 };
 constexpr bool MATRIX_FORW = static_cast<bool>(MatrixExpansionType::forward);
 constexpr bool MATRIX_REV = static_cast<bool>(MatrixExpansionType::reverse);
 
@@ -135,7 +135,7 @@ protected:
   sif::TravelMode mode_;
 
   // Current costing mode
-  std::shared_ptr<sif::DynamicCost> costing_;
+  sif::cost_ptr_t costing_;
 
   // TODO(nils): instead of these array based structures, rather do this:
   // https://github.com/valhalla/valhalla/pull/4372#discussion_r1402163444
@@ -177,20 +177,6 @@ protected:
                   const valhalla::Matrix& matrix);
 
   /**
-   * Iterate the forward search from the source/origin location.
-   * @param  index        Index of the source location.
-   * @param  n            Iteration counter.
-   * @param  graphreader  Graph reader for accessing routing graph.
-   * @param  time_info    The origin's timeinfo object
-   * @param  invariant    Whether time should be treated as invariant
-   */
-  void ForwardSearch(const uint32_t index,
-                     const uint32_t n,
-                     baldr::GraphReader& graphreader,
-                     const baldr::TimeInfo& time_info,
-                     const bool invariant);
-
-  /**
    * Check if the edge on the forward search connects to a reached edge
    * on the reverse search tree.
    * @param  source  Source index.
@@ -200,11 +186,14 @@ protected:
    * @param  options     the request options to check for the position along origin and destination
    *                     edges
    */
-  void CheckForwardConnections(const uint32_t source,
-                               const sif::BDEdgeLabel& pred,
-                               const uint32_t n,
-                               baldr::GraphReader& graphreader,
-                               const valhalla::Options& options);
+
+  template <const MatrixExpansionType expansion_direction,
+            const bool FORWARD = expansion_direction == MatrixExpansionType::forward>
+  void CheckConnections(const uint32_t source,
+                        const sif::BDEdgeLabel& pred,
+                        const uint32_t n,
+                        baldr::GraphReader& graphreader,
+                        const valhalla::Options& options);
 
   template <const MatrixExpansionType expansion_direction,
             const bool FORWARD = expansion_direction == MatrixExpansionType::forward>
@@ -229,35 +218,13 @@ protected:
                    const baldr::TimeInfo& time_info);
 
   /**
-   * Check if the edge on the backward search connects to a reached edge
-   * on the reverse search tree.
-   * @param  target      target index.
-   * @param  pred        Edge label of the predecessor.
-   * @param  n           Iteration counter.
-   * @param  graphreader the graph reader instance
-   * @param  options     the request options to check for the position along origin and destination
-   *                     edges
-   */
-  void CheckReverseConnections(const uint32_t target,
-                               const sif::BDEdgeLabel& pred,
-                               const uint32_t n,
-                               baldr::GraphReader& graphreader,
-                               const valhalla::Options& options);
-
-  /**
    * Update status when a connection is found.
    * @param  source  Source index
    * @param  target  Target index
    */
+  template <const MatrixExpansionType expansion_direction,
+            const bool FORWARD = expansion_direction == MatrixExpansionType::forward>
   void UpdateStatus(const uint32_t source, const uint32_t target);
-
-  /**
-   * Iterate the backward search from the target/destination location.
-   * @param  index        Index of the target location.
-   * @param  graphreader  Graph reader for accessing routing graph.
-   * @param  n            Iteration counter.
-   */
-  void BackwardSearch(const uint32_t index, baldr::GraphReader& graphreader, const uint32_t n);
 
   /**
    * Sets the source/origin locations. Search expands forward from these
@@ -282,24 +249,6 @@ protected:
   void SetTargets(baldr::GraphReader& graphreader,
                   const google::protobuf::RepeatedPtrField<valhalla::Location>& targets,
                   const google::protobuf::RepeatedPtrField<valhalla::Location>& sources);
-
-  /**
-   * Update destinations along an edge that has been settled (lowest cost path
-   * found to the end of edge).
-   * @param   origin_index  Index of the origin location.
-   * @param   locations     List of locations.
-   * @param   destinations  Vector of destination indexes along this edge.
-   * @param   edge          Directed edge
-   * @param   pred          Predecessor information in shortest path.
-   * @param   predindex     Predecessor index in EdgeLabels vector.
-   * @return  Returns true if all destinations have been settled.
-   */
-  bool UpdateDestinations(const uint32_t origin_index,
-                          const google::protobuf::RepeatedPtrField<valhalla::Location>& locations,
-                          std::vector<uint32_t>& destinations,
-                          const baldr::DirectedEdge* edge,
-                          const sif::BDEdgeLabel& pred,
-                          const uint32_t predindex);
 
   /**
    * If time awareness was requested for the CostMatrix algorithm, we need

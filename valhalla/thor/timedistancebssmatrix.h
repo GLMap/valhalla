@@ -14,7 +14,6 @@
 #include <valhalla/thor/pathalgorithm.h>
 
 #include <cstdint>
-#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -104,8 +103,8 @@ protected:
   AStarHeuristic bicycle_astarheuristic_;
 
   // Current costing mode
-  std::shared_ptr<sif::DynamicCost> pedestrian_costing_;
-  std::shared_ptr<sif::DynamicCost> bicycle_costing_;
+  sif::cost_ptr_t pedestrian_costing_;
+  sif::cost_ptr_t bicycle_costing_;
 
   // Vector of edge labels (requires access by index).
   std::vector<sif::EdgeLabel> edgelabels_;
@@ -233,6 +232,9 @@ protected:
    *                           so that all supplied locations must be settled.
    * @return  Returns true if all destinations have been settled.
    */
+
+  template <const ExpansionType expansion_direction,
+            const bool FORWARD = expansion_direction == ExpansionType::forward>
   bool UpdateDestinations(const valhalla::Location& origin,
                           const google::protobuf::RepeatedPtrField<valhalla::Location>& locations,
                           std::vector<uint32_t>& destinations,

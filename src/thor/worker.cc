@@ -69,7 +69,9 @@ thor_worker_t::thor_worker_t(const boost::property_tree::ptree& config,
                           : std::make_shared<baldr::GraphReader>(config.get_child("mjolnir"))),
       matcher_factory(config, reader), controller{},
       allow_hierarchy_limits_modifications(
-          config.get<bool>("service_limits.hierarchy_limits.allow_modification", false)) {
+          config.get<bool>("service_limits.hierarchy_limits.allow_modification", false)),
+      min_linear_cost_factor(config.get<double>("service_limits.min_linear_cost_factor", 1.0)),
+      max_linear_cost_edges(config.get<uint64_t>("service_limits.max_linear_cost_edges", 50000)) {
 
   // Select the matrix algorithm based on the conf file (defaults to
   // select_optimal if not present)
@@ -81,7 +83,8 @@ thor_worker_t::thor_worker_t(const boost::property_tree::ptree& config,
         kv.first == "max_exclude_polygons_length" || kv.first == "skadi" || kv.first == "trace" ||
         kv.first == "isochrone" || kv.first == "centroid" || kv.first == "status" ||
         kv.first == "max_distance_disable_hierarchy_culling" || kv.first == "allow_hard_exclusions" ||
-        kv.first == "hierarchy_limits") {
+        kv.first == "hierarchy_limits" || kv.first == "min_linear_cost_factor" ||
+        kv.first == "max_linear_cost_edges") {
       continue;
     }
 
@@ -102,8 +105,7 @@ thor_worker_t::thor_worker_t(const boost::property_tree::ptree& config,
   max_timedep_distance =
       config.get<float>("service_limits.max_timedep_distance", kDefaultMaxTimeDependentDistance);
 
-  hierarchy_limits_config_costmatrix =
-      parse_hierarchy_limits_from_config(config, "costmatrix", false);
+  hierarchy_limits_config_costmatrix = parse_hierarchy_limits_from_config(config, "costmatrix", true);
   hierarchy_limits_config_astar =
       parse_hierarchy_limits_from_config(config, "unidirectional_astar", true);
   hierarchy_limits_config_bidirectional_astar =
@@ -200,7 +202,7 @@ thor_worker_t::work(const std::list<zmq::message_t>& job,
 void run_service(const boost::property_tree::ptree& config) {
   // gracefully shutdown when asked via SIGTERM
   prime_server::quiesce(config.get<unsigned int>("httpd.service.drain_seconds", 28),
-                        config.get<unsigned int>("httpd.service.shutting_seconds", 1));
+                        config.get<unsigned int>("httpd.service.shutdown_seconds", 1));
 
   // gets requests from thor proxy
   auto upstream_endpoint = config.get<std::string>("thor.service.proxy") + "_out";
