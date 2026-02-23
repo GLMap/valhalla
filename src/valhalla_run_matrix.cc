@@ -1,11 +1,7 @@
 #include "argparse_utils.h"
 #include "baldr/graphreader.h"
-#include "baldr/pathlocation.h"
-#include "baldr/rapidjson_utils.h"
 #include "loki/worker.h"
 #include "midgard/logging.h"
-#include "odin/directionsbuilder.h"
-#include "odin/util.h"
 #include "sif/costfactory.h"
 #include "thor/costmatrix.h"
 #include "thor/optimizer.h"
@@ -49,9 +45,9 @@ void LogResults(const bool optimize,
 
   if (log_details) {
     LOG_INFO("Results:");
-    uint32_t idx1 = 0;
-    uint32_t idx2 = 0;
-    for (uint32_t i = 0; i < matrix.times().size(); i++) {
+    int idx1 = 0;
+    int idx2 = 0;
+    for (int i = 0; i < matrix.times().size(); i++) {
       auto distance = matrix.distances().Get(i);
       LOG_INFO(std::to_string(idx1) + "," + std::to_string(idx2) + ": Distance= " +
                std::to_string(distance) + " Time= " + GetFormattedTime(matrix.times().Get(i)) +
@@ -199,7 +195,7 @@ int main(int argc, char* argv[]) {
 
   // If the sources and targets are equal we can run optimize
   if (optimize && options.sources_size() == options.targets_size()) {
-    for (uint32_t i = 0; i < options.sources_size(); ++i) {
+    for (int i = 0; i < options.sources_size(); ++i) {
       if (options.sources(i).ll().lat() != options.targets(i).ll().lat() ||
           options.sources(i).ll().lng() != options.targets(i).ll().lng()) {
         LOG_WARN("Targets differ from sources, skipping optimization...");

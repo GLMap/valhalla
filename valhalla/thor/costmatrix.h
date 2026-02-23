@@ -11,7 +11,7 @@
 #include <valhalla/thor/astarheuristic.h>
 #include <valhalla/thor/edgestatus.h>
 #include <valhalla/thor/matrixalgorithm.h>
-#include <valhalla/thor/pathinfo.h>
+#include <valhalla/thor/pathalgorithm.h>
 
 #include <cstdint>
 #include <memory>
@@ -123,8 +123,9 @@ protected:
   uint32_t max_reserved_locations_count_;
   bool check_reverse_connection_;
 
-  // upper bound for the number of additional iterations per expansion once a connection has been
-  // found
+  // lower and upper bounds for the number of additional iterations per expansion once a connection
+  // has been found
+  uint32_t min_iterations_;
   uint32_t max_iterations_;
 
   // Access mode used by the costing method
@@ -224,7 +225,7 @@ protected:
                    const uint32_t pred_idx,
                    const EdgeMetadata& meta,
                    uint32_t& shortcuts,
-                   const graph_tile_ptr& tile,
+                   const baldr::graph_tile_ptr& tile,
                    const baldr::TimeInfo& time_info);
 
   /**
@@ -262,20 +263,25 @@ protected:
    * Sets the source/origin locations. Search expands forward from these
    * locations.
    * @param  graphreader   Graph reader for accessing routing graph.
-   * @param  sources       List of source/origin locations.
+   * @param  sources       List of source locations.
+   * @param  time_infos    Time info objects for sources
+   * @param  targets       List of target locations.
    */
   void SetSources(baldr::GraphReader& graphreader,
                   const google::protobuf::RepeatedPtrField<valhalla::Location>& sources,
-                  const std::vector<baldr::TimeInfo>& time_infos);
+                  const std::vector<baldr::TimeInfo>& time_infos,
+                  const google::protobuf::RepeatedPtrField<valhalla::Location>& targets);
 
   /**
    * Set the target/destination locations. Search expands backwards from
    * these locations.
-   * @param  graphreader   Graph reader for accessing routing graph.
-   * @param  targets       List of target locations.
+   * @param  graphreader  Graph reader for accessing routing graph.
+   * @param  target       List of target locations.
+   * @param  source       List of source locations.
    */
   void SetTargets(baldr::GraphReader& graphreader,
-                  const google::protobuf::RepeatedPtrField<valhalla::Location>& targets);
+                  const google::protobuf::RepeatedPtrField<valhalla::Location>& targets,
+                  const google::protobuf::RepeatedPtrField<valhalla::Location>& sources);
 
   /**
    * Update destinations along an edge that has been settled (lowest cost path
@@ -346,7 +352,7 @@ protected:
    */
   template <const MatrixExpansionType expansion_direction,
             const bool FORWARD = expansion_direction == MatrixExpansionType::forward>
-  float GetAstarHeuristic(const uint32_t loc_idx, const PointLL& node_ll) const;
+  float GetAstarHeuristic(const uint32_t loc_idx, const midgard::PointLL& node_ll) const;
 
 private:
   class ReachedMap;

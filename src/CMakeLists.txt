@@ -32,7 +32,7 @@ function(valhalla_module)
             ${MODULE_SOURCES}
             PROPERTIES
             COMPILE_FLAGS
-            "-Werror -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers")
+            "-Werror -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cpp")
   endif()
   list(APPEND MODULE_SOURCES ${MODULE_SOURCES_WITH_WARNINGS})
 
@@ -141,13 +141,14 @@ set(valhalla_hdrs
     ${VALHALLA_SOURCE_DIR}/valhalla/config.h
     ${VALHALLA_SOURCE_DIR}/valhalla/filesystem_utils.h
     ${VALHALLA_SOURCE_DIR}/valhalla/proto_conversions.h
-    ${VALHALLA_SOURCE_DIR}/valhalla/config.h
+    ${VALHALLA_SOURCE_DIR}/valhalla/exceptions.h
     )
 
 set(valhalla_src
     config.cc
     worker.cc
     proto_conversions.cc
+    exceptions.cc
     ${valhalla_hdrs}
     ${libvalhalla_link_objects})
 

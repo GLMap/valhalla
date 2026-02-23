@@ -4,11 +4,13 @@
 #include <valhalla/baldr/double_bucket_queue.h>
 #include <valhalla/baldr/graphid.h>
 #include <valhalla/baldr/graphreader.h>
+#include <valhalla/exceptions.h>
 #include <valhalla/proto_conversions.h>
 #include <valhalla/sif/dynamiccost.h>
 #include <valhalla/sif/edgelabel.h>
 #include <valhalla/thor/edgestatus.h>
 #include <valhalla/thor/matrixalgorithm.h>
+#include <valhalla/thor/pathalgorithm.h>
 
 #include <cstdint>
 #include <memory>
@@ -228,7 +230,7 @@ protected:
                           const google::protobuf::RepeatedPtrField<valhalla::Location>& locations,
                           std::vector<uint32_t>& destinations,
                           const baldr::DirectedEdge* edge,
-                          const graph_tile_ptr& tile,
+                          const baldr::graph_tile_ptr& tile,
                           const sif::EdgeLabel& pred,
                           const baldr::TimeInfo& time_info,
                           const uint32_t matrix_locations);

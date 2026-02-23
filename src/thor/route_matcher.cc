@@ -3,12 +3,9 @@
 #include "baldr/graphconstants.h"
 #include "baldr/tilehierarchy.h"
 #include "baldr/time_info.h"
-#include "midgard/logging.h"
-#include "midgard/util.h"
 #include "proto_conversions.h"
 
 #include <algorithm>
-#include <exception>
 #include <vector>
 
 using namespace valhalla::baldr;
@@ -190,7 +187,7 @@ bool expand_from_node(const mode_costing_t& mode_costing,
     // the current edge. Increment to the next shape point after the correlated index.
     size_t index = correlated_index + 1;
     float length = 0.0f;
-    while (index < shape.size()) {
+    while (index < static_cast<size_t>(shape.size())) {
       // Exclude edge if length along shape is longer than the edge length
       length += distances.at(index).first;
       if (length > de_length) {
@@ -287,7 +284,6 @@ valhalla::baldr::TimeInfo init_time_info(valhalla::baldr::GraphReader& reader,
 
   // We support either the epoch timestamp that came with the trace point or
   // a local date time which we convert to epoch by finding the first timezone
-  auto time_info = TimeInfo::invalid();
   for (const auto& e : options.locations(0).correlation().edges()) {
     GraphId graphid(e.graph_id());
     if (!graphid.Is_Valid() || !reader.GetGraphTile(graphid, tile))
@@ -334,7 +330,7 @@ bool RouteMatcher::FormPath(const sif::mode_costing_t& mode_costing,
   float total_distance = 0.0f;
   std::vector<std::pair<float, float>> distances;
   distances.push_back(std::make_pair(0.0f, 0.0f));
-  for (size_t i = 1; i < options.shape_size(); i++) {
+  for (size_t i = 1; i < static_cast<size_t>(options.shape_size()); i++) {
     float d = to_ll(options.shape(i).ll()).Distance(to_ll(options.shape(i - 1).ll()));
     total_distance += d;
     distances.push_back(std::make_pair(d, total_distance));
@@ -396,7 +392,7 @@ bool RouteMatcher::FormPath(const sif::mode_costing_t& mode_costing,
     const NodeInfo* nodeinfo = nullptr;
 
     // Loop over shape to form path from matching edges
-    while (index < options.shape_size()) {
+    while (index < static_cast<size_t>(options.shape_size())) {
 
       // bail on this edge if the length of input we checked is already longer than the edge
       length += distances.at(index).first;

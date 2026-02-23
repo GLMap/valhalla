@@ -1,13 +1,12 @@
 #ifndef __VALHALLA_SAMPLE_H__
 #define __VALHALLA_SAMPLE_H__
 
-#include "valhalla/baldr/tilegetter.h"
+#include <valhalla/baldr/tilegetter.h>
 
-#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ptree_fwd.hpp>
 
 #include <memory>
 #include <mutex>
-#include <shared_mutex>
 #include <string>
 #include <vector>
 

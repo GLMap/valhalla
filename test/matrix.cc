@@ -1,5 +1,4 @@
 #include "baldr/rapidjson_utils.h"
-#include "gurka/gurka.h"
 #include "loki/worker.h"
 #include "midgard/logging.h"
 #include "sif/dynamiccost.h"
@@ -7,6 +6,7 @@
 #include "thor/costmatrix.h"
 #include "thor/timedistancematrix.h"
 #include "thor/worker.h"
+#include "tyr/actor.h"
 #include "tyr/serializers.h"
 
 #include <string>
@@ -44,7 +44,8 @@ public:
                const GraphId& edgeid,
                const uint64_t /*current_time*/,
                const uint32_t /*tz_index*/,
-               uint8_t& /*restriction_idx*/) const override {
+               uint8_t& /*restriction_idx*/,
+               uint8_t& /*destonly_access_restr_mask*/) const override {
     if (!IsAccessible(edge) || (!pred.deadend() && pred.opp_local_idx() == edge->localedgeidx()) ||
         (pred.restrictions() & (1 << edge->localedgeidx())) ||
         edge->surface() == Surface::kImpassable || IsUserAvoidEdge(edgeid) ||
@@ -61,7 +62,8 @@ public:
                       const GraphId& opp_edgeid,
                       const uint64_t /*current_time*/,
                       const uint32_t /*tz_index*/,
-                      uint8_t& /*restriction_idx*/) const override {
+                      uint8_t& /*restriction_idx*/,
+                      uint8_t& /*destonly_access_restr_mask*/) const override {
     if (!IsAccessible(opp_edge) ||
         (!pred.deadend() && pred.opp_local_idx() == edge->localedgeidx()) ||
         (opp_edge->restrictions() & (1 << pred.opp_local_idx())) ||
@@ -276,11 +278,10 @@ TEST(Matrix, test_matrix) {
   matrix = request.matrix();
   for (int i = 0; i < matrix.times().size(); ++i) {
     EXPECT_NEAR(matrix.distances()[i], matrix_answers[i][1], kThreshold)
-        << "result " + std::to_string(i) + "'s distance is not equal" +
-               " to expected value for TDMatrix";
+        << "result " + std::to_string(i) + "'s distance is not equal to expected value for TDMatrix";
 
     EXPECT_NEAR(matrix.times()[i], matrix_answers[i][0], kThreshold)
-        << "result " + std::to_string(i) + "'s time is not equal" + " to expected value for TDMatrix";
+        << "result " + std::to_string(i) + "'s time is not equal to expected value for TDMatrix";
   }
 }
 
@@ -328,11 +329,10 @@ TEST(Matrix, test_timedistancematrix_forward) {
 
   for (int i = 0; i < matrix.times().size(); ++i) {
     EXPECT_NEAR(matrix.distances()[i], expected_results[i][1], kThreshold)
-        << "result " + std::to_string(i) + "'s distance is not equal" +
-               " to expected value for TDMatrix";
+        << "result " + std::to_string(i) + "'s distance is not equal to expected value for TDMatrix";
 
     EXPECT_NEAR(matrix.times()[i], expected_results[i][0], kThreshold)
-        << "result " + std::to_string(i) + "'s time is not equal" + " to expected value for TDMatrix";
+        << "result " + std::to_string(i) + "'s time is not equal to expected value for TDMatrix";
   }
 }
 
@@ -381,11 +381,10 @@ TEST(Matrix, test_timedistancematrix_reverse) {
 
   for (int i = 0; i < matrix.times().size(); ++i) {
     EXPECT_NEAR(matrix.distances()[i], expected_results[i][1], kThreshold)
-        << "result " + std::to_string(i) + "'s distance is not equal" +
-               " to expected value for TDMatrix";
+        << "result " + std::to_string(i) + "'s distance is not equal to expected value for TDMatrix";
 
     EXPECT_NEAR(matrix.times()[i], expected_results[i][0], kThreshold)
-        << "result " + std::to_string(i) + "'s time is not equal" + " to expected value for TDMatrix";
+        << "result " + std::to_string(i) + "'s time is not equal to expected value for TDMatrix";
   }
 }
 

@@ -3,28 +3,26 @@
 #include "baldr/datetime.h"
 #include "baldr/graphconstants.h"
 #include "baldr/graphid.h"
-#include "baldr/graphreader.h"
 #include "baldr/signinfo.h"
 #include "baldr/tilehierarchy.h"
-#include "midgard/aabb2.h"
 #include "midgard/logging.h"
 #include "midgard/pointll.h"
-#include "midgard/polyline2.h"
 #include "midgard/sequence.h"
 #include "midgard/tiles.h"
 #include "midgard/util.h"
 #include "mjolnir/admin.h"
-#include "mjolnir/edgeinfobuilder.h"
+#include "mjolnir/dataquality.h"
+#include "mjolnir/directededgebuilder.h"
 #include "mjolnir/ferry_connections.h"
 #include "mjolnir/graphtilebuilder.h"
 #include "mjolnir/linkclassification.h"
 #include "mjolnir/node_expander.h"
-#include "mjolnir/sqlite3.h"
 #include "mjolnir/util.h"
 #include "scoped_timer.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
+#include <boost/property_tree/ptree.hpp>
 
 #include <filesystem>
 #include <future>
@@ -494,6 +492,7 @@ void BuildTileSet(const std::string& ways_file,
       // Information about tile creation
       graphtile.AddTileCreationDate(tile_creation_date);
       graphtile.header_builder().set_dataset_id(osmdata.max_changeset_id_);
+      graphtile.header_builder().set_checksum(osmdata.pbf_checksum_);
 
       // Set the base lat,lon of the tile
       uint32_t id = tile_id.tileid();

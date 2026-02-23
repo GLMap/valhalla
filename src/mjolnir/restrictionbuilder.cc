@@ -1,5 +1,4 @@
 #include "mjolnir/restrictionbuilder.h"
-#include "baldr/datetime.h"
 #include "baldr/graphconstants.h"
 #include "baldr/graphid.h"
 #include "baldr/graphreader.h"
@@ -9,10 +8,11 @@
 #include "midgard/logging.h"
 #include "midgard/sequence.h"
 #include "mjolnir/complexrestrictionbuilder.h"
-#include "mjolnir/dataquality.h"
 #include "mjolnir/graphtilebuilder.h"
 #include "mjolnir/osmrestriction.h"
 #include "scoped_timer.h"
+
+#include <boost/property_tree/ptree.hpp>
 
 #include <future>
 #include <queue>
@@ -62,9 +62,11 @@ GraphId GetOpposingEdge(GraphReader& reader,
       return opp_id;
     }
   }
+#ifdef LOGGING_LEVEL_ERROR
   PointLL ll = nodeinfo->latlng(end_node_tile->header()->base_ll());
   LOG_ERROR("Opposing directed edge not found at LL= " + std::to_string(ll.lat()) + "," +
             std::to_string(ll.lng()));
+#endif
   return {};
 }
 
