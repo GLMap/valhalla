@@ -839,7 +839,7 @@ public:
    * @param  idx  GraphId of the directed edge.
    * @return  Returns a list of lane connections ending on this edge.
    */
-  std::span<LaneConnectivity> GetLaneConnectivity(const uint32_t idx) const;
+  std::span<const LaneConnectivity> GetLaneConnectivity(const uint32_t idx) const;
 
   /**
    * Convenience method for use with costing to get the speed for an edge given the directed

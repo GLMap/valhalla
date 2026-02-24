@@ -159,7 +159,7 @@ graph_tile_ptr GraphTile::Create(const GraphId& graphid,
 
 graph_tile_ptr GraphTile::Create(const GraphId& graphid, const std::string& file, uint32_t offset, uint32_t size) {
   // Don't bother with invalid ids
-  if (!graphid.Is_Valid() || graphid.level() > TileHierarchy::get_max_level())
+  if (!graphid.is_valid() || graphid.level() > TileHierarchy::get_max_level())
     return nullptr;
   
   auto fd = ::open(file.c_str(), O_RDONLY);
@@ -992,7 +992,7 @@ std::vector<SignInfo> GraphTile::GetSigns(
 }
 
 // Get lane connections ending on this edge.
-std::span<LaneConnectivity> GraphTile::GetLaneConnectivity(const uint32_t idx) const {
+std::span<const LaneConnectivity> GraphTile::GetLaneConnectivity(const uint32_t idx) const {
   uint32_t count = lane_connectivity_size_ / sizeof(LaneConnectivity);
   if (count == 0) {
     LOG_ERROR("No lane connections found for idx = " + std::to_string(idx));
@@ -1025,7 +1025,7 @@ std::span<LaneConnectivity> GraphTile::GetLaneConnectivity(const uint32_t idx) c
   while (found < count && lane_connectivity_[found].to() == idx) {
     ++found;
   }
-  return std::span<LaneConnectivity>(lane_connectivity_ + start, lane_connectivity_ + found);
+  return std::span<const LaneConnectivity>(lane_connectivity_ + start, found - start);
 }
 
 // Get the next departure given the directed line Id and the current
@@ -1270,17 +1270,17 @@ std::span<const AccessRestriction> GraphTile::GetAccessRestrictions(const uint32
   while (found < count && access_restrictions_[found].edgeindex() == idx) {
     ++found;
   }
-  return std::span<AccessRestriction>(access_restrictions_ + start, access_restrictions_ + found);
+  return std::span<const AccessRestriction>(access_restrictions_ + start, found - start);
 }
 // Get the array of graphids for this bin
 std::span<const GraphId> GraphTile::GetBin(size_t column, size_t row) const {
   auto offsets = header_->bin_offset(column, row);
-  return std::span<const GraphId>{edge_bins_ + offsets.first, edge_bins_ + offsets.second};
+  return std::span<const GraphId>{edge_bins_ + offsets.first, offsets.second - offsets.first};
 }
 
 std::span<const GraphId> GraphTile::GetBin(size_t index) const {
   auto offsets = header_->bin_offset(index);
-  return std::span<const GraphId>{edge_bins_ + offsets.first, edge_bins_ + offsets.second};
+  return std::span<const GraphId>{edge_bins_ + offsets.first, offsets.second - offsets.first};
 }
 
 // Get turn lanes for this edge.

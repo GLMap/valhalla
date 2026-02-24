@@ -65,7 +65,7 @@ private:
 
   graph_tile_ptr createTile(const GraphId& graphid, uint32_t offset, uint32_t size) {
     // Don't bother with invalid ids
-    if (!graphid.Is_Valid() || graphid.level() > TileHierarchy::get_max_level())
+    if (!graphid.is_valid() || graphid.level() > TileHierarchy::get_max_level())
       return nullptr;
     
     auto fd = _fileOpenFunction();

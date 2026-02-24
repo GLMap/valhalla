@@ -111,7 +111,6 @@ std::pair<std::vector<std::pair<float, float>>, uint32_t> decode_levels(const st
   return {decoded, static_cast<uint32_t>(precision)};
 }
 
-EdgeInfo::EdgeInfo(const char* ptr, const char* names_list, const size_t names_list_length)
 size_t EdgeInfo::TaggedValueSize(const char* ptr) {
   switch (static_cast<TaggedValue>(ptr[0])) {
     case TaggedValue::kLayer:

@@ -46,6 +46,7 @@ SRC = \
 	src/loki/route_action.cc \
 	src/loki/search.cc \
 	src/loki/status_action.cc \
+	src/loki/tile_action.cc \
 	src/loki/trace_route_action.cc \
 	src/loki/transit_available_action.cc \
 	src/loki/worker.cc \
@@ -71,6 +72,7 @@ SRC = \
 	src/midgard/tiles.cc \
 	src/midgard/util.cc \
 	src/mjolnir/timeparsing.cc \
+	src/exceptions.cc \
 	src/odin/directionsbuilder.cc \
 	src/odin/enhancedtrippath.cc \
 	src/odin/maneuver.cc \
@@ -178,12 +180,14 @@ LIB = libvalhalla.a
 MICRO_LIB = libvalhalla_micro.a
 MICRO_DYNAMIC = libvalhalla_micro.dylib
 
-CXXFLAGS += -std=c++17 -DMOBILE -DNDEBUG=1 -DUSE_STD_REGEX=1 -DRAPIDJSON_HAS_STDSTRING=1 \
+CXXFLAGS += -std=c++20 -D_LIBCPP_DISABLE_AVAILABILITY -DMOBILE -DNDEBUG=1 -DUSE_STD_REGEX=1 -DRAPIDJSON_HAS_STDSTRING=1 \
  -I. -Ivalhalla -Igenfiles -Igenfiles/valhalla \
  -Ithird_party/cpp-statsd-client/include \
  -Ithird_party/robin-hood-hashing/src/include \
  -Ithird_party/rapidjson/include \
  -Ithird_party/date/include \
+ -Ithird_party/protozero/include \
+ -Ithird_party/vtzero/include \
  -Ithird_party/unordered_dense/include
 PROTOC = ../build/macOS/arm64/bin/protoc
 

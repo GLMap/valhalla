@@ -24,6 +24,7 @@
 #include <valhalla/odin/narrative_builder_factory.h>
 #include <valhalla/odin/worker.h>
 #include <valhalla/thor/worker.h>
+#include <valhalla/tyr/actor.h>
 #include <valhalla/tyr/serializers.h>
 
 #pragma clang diagnostic pop
