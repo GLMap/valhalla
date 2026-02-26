@@ -208,7 +208,7 @@ PROTOC = ../build/macOS/arm64/bin/protoc
 .mm.o:
 	$(CXX) $(FLAGS) $(CPPFLAGS) ${CXXFLAGS} -x objective-c++ -c $< -o $@
 
-all: $(MICRO_LIB) $(MICRO_DYNAMIC) $(MICRO_TRACER)
+all: $(MICRO_LIB) $(MICRO_TRACER) $(MICRO_DYNAMIC)
 
 $(OBJ): $(GENERATED_HEADERS)
 
@@ -222,12 +222,12 @@ prepare_objs: $(OBJ)
 $(MICRO_LIB): prepare_objs
 	$(AR) cr $(MICRO_LIB) objs/*.o
 
+$(MICRO_TRACER): $(MICRO_LIB) $(TRACER_OBJ) 
+	$(CXX) -o $(MICRO_TRACER) $(TRACER_OBJ) $(LDFLAGS) objs/*.o
+
 # build dynamic version to make sure, we have all symbols
 $(MICRO_DYNAMIC): prepare_objs
 	$(CXX) -shared -o $(MICRO_DYNAMIC) objs/*.o $(LDFLAGS)
-
-$(MICRO_TRACER): $(MICRO_LIB) $(TRACER_OBJ) 
-	$(CXX) -o $(MICRO_TRACER) $(TRACER_OBJ) $(LDFLAGS) -lvalhalla_micro
 
 genfiles:
 	mkdir -p genfiles
@@ -262,7 +262,7 @@ ifndef PREFIX
 PREFIX = /usr/local
 endif
 
-install: $(MICRO_LIB) $(MICRO_DYNAMIC) $(MICRO_TRACER)
+install: $(MICRO_LIB) $(MICRO_TRACER) $(MICRO_DYNAMIC)
 	mkdir -p $(PREFIX)/lib $(PREFIX)/include/valhalla $(PREFIX)/bin
 	cp $(MICRO_LIB) $(PREFIX)/lib
 	cp micro.h $(PREFIX)/include/valhalla
@@ -276,5 +276,5 @@ install: $(MICRO_LIB) $(MICRO_DYNAMIC) $(MICRO_TRACER)
 	head -n 3 third_party/tz/NEWS > ../../glmap/Resources/framework/tzdata/NEWS
 
 clean:
-	@rm -f $(OBJ) $(GENERATED_SOURCES) $(GENERATED_HEADERS) $(LIB) $(MICRO_LIB) $(MICRO_DYNAMIC) $(MICRO_TRACER) $(MICRO_OBJ)
+	@rm -f $(OBJ) $(GENERATED_SOURCES) $(GENERATED_HEADERS) $(LIB) $(MICRO_LIB) $(MICRO_DYNAMIC) $(MICRO_TRACER) $(MICRO_OBJ) $(TRACER_OBJ)
 	@rm -rf objs
