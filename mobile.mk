@@ -174,11 +174,14 @@ endif
 
 SRC := $(GENERATED_SOURCES) $(SRC)
 MICRO_SRC = micro.cpp
+TRACER_SRC = tracer.cpp
+TRACER_OBJ = $(TRACER_SRC:.cpp=.o)
 OBJ = $(SRC:.cc=.o) $(THRID_PARTY_CPP_SOURCES:.cpp=.o) $(IOS_SOURCES:.mm=.o) $(MICRO_SRC:.cpp=.o)
 
 LIB = libvalhalla.a
 MICRO_LIB = libvalhalla_micro.a
 MICRO_DYNAMIC = libvalhalla_micro.dylib
+MICRO_TRACER = valhalla_tracer
 
 CXXFLAGS += -std=c++20 -D_LIBCPP_DISABLE_AVAILABILITY -DMOBILE -DNDEBUG=1 -DUSE_STD_REGEX=1 -DRAPIDJSON_HAS_STDSTRING=1 \
  -I. -Ivalhalla -Igenfiles -Igenfiles/valhalla \
@@ -205,7 +208,7 @@ PROTOC = ../build/macOS/arm64/bin/protoc
 .mm.o:
 	$(CXX) $(FLAGS) $(CPPFLAGS) ${CXXFLAGS} -x objective-c++ -c $< -o $@
 
-all: $(MICRO_LIB) $(MICRO_DYNAMIC)
+all: $(MICRO_LIB) $(MICRO_DYNAMIC) $(MICRO_TRACER)
 
 $(OBJ): $(GENERATED_HEADERS)
 
@@ -222,6 +225,9 @@ $(MICRO_LIB): prepare_objs
 # build dynamic version to make sure, we have all symbols
 $(MICRO_DYNAMIC): prepare_objs
 	$(CXX) -shared -o $(MICRO_DYNAMIC) objs/*.o $(LDFLAGS)
+
+$(MICRO_TRACER): $(MICRO_LIB) $(TRACER_OBJ) 
+	$(CXX) -o $(MICRO_TRACER) $(TRACER_OBJ) $(LDFLAGS) -lvalhalla_micro
 
 genfiles:
 	mkdir -p genfiles
@@ -256,10 +262,11 @@ ifndef PREFIX
 PREFIX = /usr/local
 endif
 
-install: $(MICRO_LIB) $(MICRO_DYNAMIC)
-	mkdir -p $(PREFIX)/lib $(PREFIX)/include/valhalla
+install: $(MICRO_LIB) $(MICRO_DYNAMIC) $(MICRO_TRACER)
+	mkdir -p $(PREFIX)/lib $(PREFIX)/include/valhalla $(PREFIX)/bin
 	cp $(MICRO_LIB) $(PREFIX)/lib
 	cp micro.h $(PREFIX)/include/valhalla
+	cp $(MICRO_TRACER) $(PREFIX)/bin
 	rm -rf ../../glmap/Resources/framework/tzdata/*
 	files=$$(find third_party/tz -type f -regex "[0-9a-z_/]*\.tab" -o -regex ".*/tz/[0-9a-z_/]*"); \
 	for file in $$files; do \
@@ -269,5 +276,5 @@ install: $(MICRO_LIB) $(MICRO_DYNAMIC)
 	head -n 3 third_party/tz/NEWS > ../../glmap/Resources/framework/tzdata/NEWS
 
 clean:
-	@rm -f $(OBJ) $(GENERATED_SOURCES) $(GENERATED_HEADERS) $(LIB) $(MICRO_LIB) $(MICRO_DYNAMIC) $(MICRO_OBJ)
+	@rm -f $(OBJ) $(GENERATED_SOURCES) $(GENERATED_HEADERS) $(LIB) $(MICRO_LIB) $(MICRO_DYNAMIC) $(MICRO_TRACER) $(MICRO_OBJ)
 	@rm -rf objs
