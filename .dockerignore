@@ -1,3 +1,11 @@
+.git
+*.a
+*.so
+*.dylib
+valhalla_tracer
+libvalhalla_micro.*
+objs/
+
 # same as .gitignore
 # editor temporary / backup files
 *~
