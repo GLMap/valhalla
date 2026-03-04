@@ -298,6 +298,13 @@ if(ENABLE_TOOLS)
   endforeach()
 endif()
 
+# Tracer tool
+if(EXISTS ${VALHALLA_SOURCE_DIR}/tracer.cpp)
+  add_executable(valhalla_tracer tracer.cpp)
+  target_link_libraries(valhalla_tracer valhalla)
+  install(TARGETS valhalla_tracer DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT runtime)
+endif()
+
 if(ENABLE_DATA_TOOLS)
   foreach(program ${valhalla_data_tools})
     get_source_path(path ${program})

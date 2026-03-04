@@ -1,10 +1,28 @@
-FROM ubuntu:24.04 as builder
+FROM alpine:latest AS builder
 
 WORKDIR /usr/src
 
-RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC && \
-  apt-get update -y && \
-  apt-get -y install git make cmake clang pkg-config autoconf automake libtool
+RUN apk add --no-cache \
+    build-base \
+    cmake \
+    clang \
+    git \
+    autoconf \
+    automake \
+    libtool \
+    pkgconf \
+    boost-dev \
+    protobuf \
+    protobuf-dev \
+    sqlite-dev \
+    libspatialite-dev \
+    luajit-dev \
+    geos-dev \
+    lz4-dev \
+    zlib-dev \
+    zeromq-dev \
+    czmq-dev \
+    curl-dev
 
 # prime_server
 RUN git clone \
@@ -14,53 +32,56 @@ RUN git clone \
   --branch=master \
   https://github.com/kevinkreiser/prime_server.git prime_server
 
-RUN apt-get install -y libzmq3-dev libczmq-dev libcurl4-openssl-dev
-
 RUN cd prime_server && \
   mkdir build && \
   cd build && \
-  cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo && \
-  make -j && \
-  make install && \
-  ldconfig
+  cmake .. -DCMAKE_BUILD_TYPE=Release && \
+  make -j$(nproc) && \
+  make install
 
-# valhalla dependencies
-RUN apt-get install -y libz-dev liblz4-dev libboost-all-dev \
-  libprotobuf-dev protobuf-compiler \
-  libsqlite3-dev libspatialite-dev \
-  libluajit-5.1-dev libgeos++-dev
-
-# valhalla from local source
+# valhalla from local source (includes tracer target in CMakeLists.txt)
 COPY . /usr/src/valhalla
 
 ARG version
 RUN cd valhalla && \
   mkdir build && \
   cd build && \
-  cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  cmake .. -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
+    -DENABLE_WERROR=OFF -DENABLE_SINGLE_FILES_WERROR=OFF \
+    -DProtobuf_PROTOC_EXECUTABLE=/usr/bin/protoc \
     -DENABLE_BENCHMARKS=OFF \
     -DENABLE_TESTS=OFF \
     -DENABLE_PYTHON_BINDINGS=OFF \
     -DENABLE_DATA_TOOLS=ON && \
   make -j$(nproc) && \
-  make install && \
-  ldconfig
+  make install
 
-# Build tracer against installed valhalla
-RUN cd valhalla && \
-  clang++ -std=c++17 -O2 -DNDEBUG tracer.cpp \
-    -I/usr/local/include \
-    -Ithird_party/date/include \
-    -L/usr/local/lib \
-    -lvalhalla -lprotobuf -lz -llz4 -lpthread \
-    -o /usr/local/bin/valhalla_tracer
+# Strip all binaries and libs
+RUN strip /usr/local/bin/valhalla_* /usr/local/lib/libvalhalla.so /usr/local/lib/libprime_server.so* 2>/dev/null; true
 
-FROM ubuntu:24.04
-COPY --from=builder /usr/local /usr/local
+FROM alpine:latest
+COPY --from=builder /usr/local/bin/valhalla_service /usr/local/bin/
+COPY --from=builder /usr/local/bin/valhalla_tracer /usr/local/bin/
+COPY --from=builder /usr/local/bin/valhalla_build_tiles /usr/local/bin/
+COPY --from=builder /usr/local/bin/valhalla_build_config /usr/local/bin/
+COPY --from=builder /usr/local/bin/valhalla_build_extract /usr/local/bin/
+COPY --from=builder /usr/local/bin/valhalla_build_admins /usr/local/bin/
+COPY --from=builder /usr/local/lib/libprime_server.so* /usr/local/lib/
 
-RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get update -y && \
-  apt-get install -y libprotobuf-dev libcurl4-openssl-dev libspatialite-dev \
-  libluajit-5.1-dev libzmq3-dev libczmq-dev && \
-  ldconfig
+ENV LD_LIBRARY_PATH=/usr/local/lib
 
-CMD valhalla_service /config/valhalla.json 1
+RUN apk add --no-cache \
+    libprotobuf-lite \
+    libcurl \
+    libspatialite \
+    luajit \
+    zeromq \
+    czmq \
+    libstdc++ \
+    lz4-libs \
+    boost1.84-filesystem \
+    boost1.84-program_options \
+    boost1.84-system
+
+CMD ["valhalla_service", "/config/valhalla.json", "1"]
