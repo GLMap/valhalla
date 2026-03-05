@@ -112,10 +112,19 @@ RUN apk add --no-cache \
     boost1.84-filesystem \
     boost1.84-program_options \
     boost1.84-system \
-    jemalloc
+    build-base \
+    graphviz \
+    perl && \
+    wget -qO- https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5.3.0.tar.bz2 | tar xj && \
+    cd jemalloc-5.3.0 && \
+    ./configure --enable-prof && \
+    make -j$(nproc) && \
+    make install && \
+    cd .. && rm -rf jemalloc-5.3.0 && \
+    apk del build-base
 
 # Usage: run with these env vars to get heap profiles:
-#   LD_PRELOAD=/usr/lib/libjemalloc.so.2
+#   LD_PRELOAD=/usr/local/lib/libjemalloc.so.2
 #   MALLOC_CONF=prof:true,prof_prefix:/tmp/jeprof,lg_prof_interval:30,lg_prof_sample:17
 # Analyze: jeprof --svg /usr/local/bin/valhalla_build_tiles /tmp/jeprof.*.heap > profile.svg
 
