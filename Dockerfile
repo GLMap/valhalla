@@ -46,7 +46,7 @@ ARG version
 RUN cd valhalla && \
   mkdir build && \
   cd build && \
-  cmake .. -DCMAKE_BUILD_TYPE=Release \
+  cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
     -DENABLE_WERROR=OFF -DENABLE_SINGLE_FILES_WERROR=OFF \
     -DProtobuf_PROTOC_EXECUTABLE=/usr/bin/protoc \
