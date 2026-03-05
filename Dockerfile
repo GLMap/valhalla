@@ -57,10 +57,39 @@ RUN cd valhalla && \
   make -j$(nproc) && \
   make install
 
-# Strip all binaries and libs
+# Intermediate stage: strip binaries for production
+FROM builder AS stripped
 RUN strip /usr/local/bin/valhalla_* /usr/local/lib/libvalhalla.so /usr/local/lib/libprime_server.so* 2>/dev/null; true
 
-FROM alpine:latest
+# --- Production image (stripped) ---
+FROM alpine:latest AS production
+COPY --from=stripped /usr/local/bin/valhalla_service /usr/local/bin/
+COPY --from=stripped /usr/local/bin/valhalla_tracer /usr/local/bin/
+COPY --from=stripped /usr/local/bin/valhalla_build_tiles /usr/local/bin/
+COPY --from=stripped /usr/local/bin/valhalla_build_config /usr/local/bin/
+COPY --from=stripped /usr/local/bin/valhalla_build_extract /usr/local/bin/
+COPY --from=stripped /usr/local/bin/valhalla_build_admins /usr/local/bin/
+COPY --from=stripped /usr/local/lib/libprime_server.so* /usr/local/lib/
+
+ENV LD_LIBRARY_PATH=/usr/local/lib
+
+RUN apk add --no-cache \
+    libprotobuf-lite \
+    libcurl \
+    libspatialite \
+    luajit \
+    zeromq \
+    czmq \
+    libstdc++ \
+    lz4-libs \
+    boost1.84-filesystem \
+    boost1.84-program_options \
+    boost1.84-system
+
+CMD ["valhalla_service", "/config/valhalla.json", "1"]
+
+# --- Debug image (unstripped + jemalloc profiling) ---
+FROM alpine:latest AS debug
 COPY --from=builder /usr/local/bin/valhalla_service /usr/local/bin/
 COPY --from=builder /usr/local/bin/valhalla_tracer /usr/local/bin/
 COPY --from=builder /usr/local/bin/valhalla_build_tiles /usr/local/bin/
@@ -82,6 +111,12 @@ RUN apk add --no-cache \
     lz4-libs \
     boost1.84-filesystem \
     boost1.84-program_options \
-    boost1.84-system
+    boost1.84-system \
+    jemalloc
+
+# Usage: run with these env vars to get heap profiles:
+#   LD_PRELOAD=/usr/lib/libjemalloc.so.2
+#   MALLOC_CONF=prof:true,prof_prefix:/tmp/jeprof,lg_prof_interval:30,lg_prof_sample:17
+# Analyze: jeprof --svg /usr/local/bin/valhalla_build_tiles /tmp/jeprof.*.heap > profile.svg
 
 CMD ["valhalla_service", "/config/valhalla.json", "1"]
