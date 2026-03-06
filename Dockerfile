@@ -69,6 +69,7 @@ COPY --from=stripped /usr/local/bin/valhalla_build_tiles /usr/local/bin/
 COPY --from=stripped /usr/local/bin/valhalla_build_config /usr/local/bin/
 COPY --from=stripped /usr/local/bin/valhalla_build_extract /usr/local/bin/
 COPY --from=stripped /usr/local/bin/valhalla_build_admins /usr/local/bin/
+COPY --from=stripped /usr/local/bin/valhalla_assign_speeds /usr/local/bin/
 COPY --from=stripped /usr/local/lib/libprime_server.so* /usr/local/lib/
 
 ENV LD_LIBRARY_PATH=/usr/local/lib
@@ -96,6 +97,7 @@ COPY --from=builder /usr/local/bin/valhalla_build_tiles /usr/local/bin/
 COPY --from=builder /usr/local/bin/valhalla_build_config /usr/local/bin/
 COPY --from=builder /usr/local/bin/valhalla_build_extract /usr/local/bin/
 COPY --from=builder /usr/local/bin/valhalla_build_admins /usr/local/bin/
+COPY --from=builder /usr/local/bin/valhalla_assign_speeds /usr/local/bin/
 COPY --from=builder /usr/local/lib/libprime_server.so* /usr/local/lib/
 
 ENV LD_LIBRARY_PATH=/usr/local/lib
