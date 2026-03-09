@@ -979,7 +979,7 @@ protected:
   };
   std::shared_ptr<const tile_extract_t> tile_extract_;
   static std::shared_ptr<const GraphReader::tile_extract_t>
-  get_extract_instance(const boost::property_tree::ptree& pt);
+  get_extract_instance(const boost::property_tree::ptree& pt, bool traffic_readonly);
 
   // Information about where the tiles are kept
   const std::string tile_dir_;

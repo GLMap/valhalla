@@ -27,6 +27,21 @@ struct tile_index_entry {
   uint32_t size;    // size of the tile in bytes
 };
 
+std::string build_extract_cache_key(const std::string& tile_extract,
+                                    const std::string& traffic_extract,
+                                    bool scan_tar,
+                                    bool traffic_readonly) {
+  std::string key;
+  key.reserve(tile_extract.size() + traffic_extract.size() + 4);
+  key.append(tile_extract);
+  key.push_back('\0');
+  key.append(traffic_extract);
+  key.push_back('\0');
+  key.push_back(traffic_readonly ? '1' : '0');
+  key.push_back(scan_tar ? '1' : '0');
+  return key;
+}
+
 } // namespace
 
 namespace valhalla {
@@ -508,7 +523,7 @@ TileCache* TileCacheFactory::createTileCache(const boost::property_tree::ptree& 
 GraphReader::GraphReader(const boost::property_tree::ptree& pt,
                          std::unique_ptr<tile_getter_t>&& tile_getter,
                          bool traffic_readonly)
-    : tile_extract_(new tile_extract_t(pt, traffic_readonly)),
+    : tile_extract_(get_extract_instance(pt, traffic_readonly)),
       tile_dir_(tile_extract_->tiles.empty() ? pt.get<std::string>("tile_dir", "") : ""),
       tile_getter_(std::move(tile_getter)),
       max_concurrent_users_(pt.get<size_t>("max_concurrent_reader_users", 1)),
@@ -567,6 +582,46 @@ GraphReader::GraphReader(const boost::property_tree::ptree& pt,
   if (pt.get<bool>("shortcut_caching", false)) {
     shortcut_recovery_t::get_instance(this);
   }
+}
+
+std::shared_ptr<const GraphReader::tile_extract_t>
+GraphReader::get_extract_instance(const boost::property_tree::ptree& pt, bool traffic_readonly) {
+  static std::mutex cache_mutex;
+  static std::unordered_map<std::string, std::weak_ptr<const tile_extract_t>> cache;
+
+  const auto tile_extract = pt.get<std::string>("tile_extract", "");
+  const auto traffic_extract = pt.get<std::string>("traffic_extract", "");
+  const auto scan_tar = pt.get<bool>("data_processing.scan_tar", false);
+  const auto key = build_extract_cache_key(tile_extract, traffic_extract, scan_tar, traffic_readonly);
+
+  const auto describe_paths = [&]() {
+    std::string description = tile_extract.empty() ? "[tile_dir]" : tile_extract;
+    if (!traffic_extract.empty()) {
+      description.append(" + traffic:");
+      description.append(traffic_extract);
+    }
+    return description;
+  };
+
+  std::lock_guard<std::mutex> lock(cache_mutex);
+
+  if (const auto found = cache.find(key); found != cache.end()) {
+    if (auto shared = found->second.lock()) {
+      LOG_INFO("Tile extract cache hit for " + describe_paths() + " (scan_tar=" +
+               std::string(scan_tar ? "true" : "false") + ", traffic_readonly=" +
+               std::string(traffic_readonly ? "true" : "false") + ", use_count=" +
+               std::to_string(shared.use_count()) + ")");
+      return shared;
+    }
+    cache.erase(found);
+  }
+
+  auto shared = std::shared_ptr<const tile_extract_t>(new tile_extract_t(pt, traffic_readonly));
+  LOG_INFO("Tile extract cache miss for " + describe_paths() + " (scan_tar=" +
+           std::string(scan_tar ? "true" : "false") + ", traffic_readonly=" +
+           std::string(traffic_readonly ? "true" : "false") + ")");
+  cache.emplace(key, shared);
+  return shared;
 }
 
 // Method to test if tile exists
