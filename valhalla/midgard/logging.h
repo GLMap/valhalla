@@ -4,6 +4,7 @@
 #include <mutex>
 #include <string>
 #include <type_traits>
+#include <map>
 #include <unordered_map>
 #include <utility>
 
@@ -60,7 +61,7 @@ inline std::string format_or_pass(const char* fmt_str, Args&&...) {
 class Logger;
 using LoggingConfig = std::unordered_map<std::string, std::string>;
 using LoggerCreator = Logger* (*)(const LoggingConfig&);
-class LoggerFactory : public std::unordered_map<std::string, LoggerCreator> {
+class LoggerFactory : public std::map<std::string, LoggerCreator> {
 public:
   Logger* Produce(const LoggingConfig& config) const;
 };

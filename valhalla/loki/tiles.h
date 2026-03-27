@@ -1,6 +1,7 @@
 #ifndef __VALHALLA_LOKI_TILES_H__
 #define __VALHALLA_LOKI_TILES_H__
 
+#include "midgard/const_map.h"
 #include "baldr/admininfo.h"
 #include "baldr/attributes_controller.h"
 #include "baldr/datetime.h"
@@ -1319,7 +1320,7 @@ static constexpr NodeAttributeTile kNodeAttributes[] = {
 };
 
 // map from MVT prop name to controller attribute flag for edge properties
-static const std::unordered_map<std::string_view, std::string_view> kEdgePropToAttributeFlag = {
+constexpr std::pair<std::string_view, std::string_view> kEdgePropToAttributeFlagData[] = {
     // Forward edge attributes
     {"speed:fwd", baldr::kEdgeSpeedFwd},
     {"deadend:fwd", baldr::kEdgeDeadendFwd},
@@ -1402,9 +1403,10 @@ static const std::unordered_map<std::string_view, std::string_view> kEdgePropToA
     {"edge_id:fwd", baldr::kEdgeId},
     {"edge_id:bwd", baldr::kEdgeId},
 };
+inline constexpr auto kEdgePropToAttributeFlag = midgard::ConstFlatMap(kEdgePropToAttributeFlagData);
 
 // map from MVT prop name to controller attribute flag for node properties
-static const std::unordered_map<std::string_view, std::string_view> kNodePropToAttributeFlag = {
+constexpr std::pair<std::string_view, std::string_view> kNodePropToAttributeFlagData[] = {
     {"drive_on_right", baldr::kNodeDriveOnRight},
     {"elevation", baldr::kNodeElevation},
     {"tagged_access", baldr::kNodeTaggedAccess},
@@ -1418,6 +1420,7 @@ static const std::unordered_map<std::string_view, std::string_view> kNodePropToA
     {"iso_3166_1", baldr::kAdminCountryCode},
     {"iso_3166_2", baldr::kAdminStateCode},
 };
+inline constexpr auto kNodePropToAttributeFlag = midgard::ConstFlatMap(kNodePropToAttributeFlagData);
 } // namespace detail
 
 } // namespace valhalla::loki
