@@ -1,33 +1,28 @@
-FROM ubuntu:24.04 AS builder
-
-ENV DEBIAN_FRONTEND=noninteractive
+FROM alpine:latest AS builder
 
 WORKDIR /usr/src
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    build-essential \
+RUN apk add --no-cache \
+    build-base \
     cmake \
     clang \
     git \
     autoconf \
     automake \
     libtool \
-    pkg-config \
-    libboost-all-dev \
-    protobuf-compiler \
-    libprotobuf-dev \
-    libsqlite3-dev \
+    pkgconf \
+    boost-dev \
+    protobuf \
+    protobuf-dev \
+    sqlite-dev \
     libspatialite-dev \
-    libluajit-5.1-dev \
-    libgeos-dev \
-    liblz4-dev \
-    zlib1g-dev \
-    libzmq3-dev \
-    libczmq-dev \
-    libcurl4-openssl-dev \
-    libssl-dev \
-  && rm -rf /var/lib/apt/lists/*
+    luajit-dev \
+    geos-dev \
+    lz4-dev \
+    zlib-dev \
+    zeromq-dev \
+    czmq-dev \
+    curl-dev
 
 # prime_server
 RUN git clone \
@@ -54,6 +49,7 @@ RUN cd valhalla && \
   cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
     -DENABLE_WERROR=OFF -DENABLE_SINGLE_FILES_WERROR=OFF \
+    -DProtobuf_PROTOC_EXECUTABLE=/usr/bin/protoc \
     -DENABLE_BENCHMARKS=OFF \
     -DENABLE_TESTS=OFF \
     -DENABLE_PYTHON_BINDINGS=OFF \
@@ -66,10 +62,7 @@ FROM builder AS stripped
 RUN strip /usr/local/bin/valhalla_* /usr/local/lib/libvalhalla.so /usr/local/lib/libprime_server.so* 2>/dev/null; true
 
 # --- Production image (stripped) ---
-FROM ubuntu:24.04 AS production
-
-ENV DEBIAN_FRONTEND=noninteractive
-
+FROM alpine:latest AS production
 COPY --from=stripped /usr/local/bin/valhalla_service /usr/local/bin/
 COPY --from=stripped /usr/local/bin/valhalla_tracer /usr/local/bin/
 COPY --from=stripped /usr/local/bin/valhalla_build_tiles /usr/local/bin/
@@ -79,29 +72,25 @@ COPY --from=stripped /usr/local/bin/valhalla_build_admins /usr/local/bin/
 COPY --from=stripped /usr/local/bin/valhalla_assign_speeds /usr/local/bin/
 COPY --from=stripped /usr/local/lib/libprime_server.so* /usr/local/lib/
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libprotobuf-lite32t64 \
-    libcurl4t64 \
-    libspatialite8 \
-    libluajit-5.1-2 \
-    libzmq5 \
-    libczmq4t64 \
-    libstdc++6 \
-    liblz4-1 \
-    libboost-filesystem1.83.0 \
-    libboost-program-options1.83.0 \
-    libboost-system1.83.0 \
-  && rm -rf /var/lib/apt/lists/*
+ENV LD_LIBRARY_PATH=/usr/local/lib
 
-RUN ldconfig
+RUN apk add --no-cache \
+    libprotobuf-lite \
+    libcurl \
+    libspatialite \
+    luajit \
+    zeromq \
+    czmq \
+    libstdc++ \
+    lz4-libs \
+    boost1.84-filesystem \
+    boost1.84-program_options \
+    boost1.84-system
 
 CMD ["valhalla_service", "/config/valhalla.json", "1"]
 
 # --- Debug image (unstripped + jemalloc profiling) ---
-FROM ubuntu:24.04 AS debug
-
-ENV DEBIAN_FRONTEND=noninteractive
-
+FROM alpine:latest AS debug
 COPY --from=builder /usr/local/bin/valhalla_service /usr/local/bin/
 COPY --from=builder /usr/local/bin/valhalla_tracer /usr/local/bin/
 COPY --from=builder /usr/local/bin/valhalla_build_tiles /usr/local/bin/
@@ -111,35 +100,30 @@ COPY --from=builder /usr/local/bin/valhalla_build_admins /usr/local/bin/
 COPY --from=builder /usr/local/bin/valhalla_assign_speeds /usr/local/bin/
 COPY --from=builder /usr/local/lib/libprime_server.so* /usr/local/lib/
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libprotobuf-lite32t64 \
-    libcurl4t64 \
-    libspatialite8 \
-    libluajit-5.1-2 \
-    libzmq5 \
-    libczmq4t64 \
-    libstdc++6 \
-    liblz4-1 \
-    libboost-filesystem1.83.0 \
-    libboost-program-options1.83.0 \
-    libboost-system1.83.0 \
-    ca-certificates \
-    build-essential \
-    bzip2 \
-    graphviz \
-    perl \
-    wget \
-  && wget -qO- https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5.3.0.tar.bz2 | tar xj \
-  && cd jemalloc-5.3.0 \
-  && ./configure --enable-prof \
-  && make -j$(nproc) \
-  && make install \
-  && cd .. && rm -rf jemalloc-5.3.0 \
-  && apt-get purge -y build-essential bzip2 wget \
-  && apt-get autoremove -y \
-  && rm -rf /var/lib/apt/lists/*
+ENV LD_LIBRARY_PATH=/usr/local/lib
 
-RUN ldconfig
+RUN apk add --no-cache \
+    libprotobuf-lite \
+    libcurl \
+    libspatialite \
+    luajit \
+    zeromq \
+    czmq \
+    libstdc++ \
+    lz4-libs \
+    boost1.84-filesystem \
+    boost1.84-program_options \
+    boost1.84-system \
+    build-base \
+    graphviz \
+    perl && \
+    wget -qO- https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5.3.0.tar.bz2 | tar xj && \
+    cd jemalloc-5.3.0 && \
+    ./configure --enable-prof && \
+    make -j$(nproc) && \
+    make install && \
+    cd .. && rm -rf jemalloc-5.3.0 && \
+    apk del build-base
 
 # Usage: run with these env vars to get heap profiles:
 #   LD_PRELOAD=/usr/local/lib/libjemalloc.so.2
