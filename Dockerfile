@@ -77,6 +77,7 @@ COPY --from=stripped /usr/local/bin/valhalla_build_config /usr/local/bin/
 COPY --from=stripped /usr/local/bin/valhalla_build_extract /usr/local/bin/
 COPY --from=stripped /usr/local/bin/valhalla_build_admins /usr/local/bin/
 COPY --from=stripped /usr/local/bin/valhalla_assign_speeds /usr/local/bin/
+COPY --from=stripped /usr/local/bin/valhalla_add_predicted_traffic /usr/local/bin/
 COPY --from=stripped /usr/local/lib/libprime_server.so* /usr/local/lib/
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -109,6 +110,7 @@ COPY --from=builder /usr/local/bin/valhalla_build_config /usr/local/bin/
 COPY --from=builder /usr/local/bin/valhalla_build_extract /usr/local/bin/
 COPY --from=builder /usr/local/bin/valhalla_build_admins /usr/local/bin/
 COPY --from=builder /usr/local/bin/valhalla_assign_speeds /usr/local/bin/
+COPY --from=builder /usr/local/bin/valhalla_add_predicted_traffic /usr/local/bin/
 COPY --from=builder /usr/local/lib/libprime_server.so* /usr/local/lib/
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
