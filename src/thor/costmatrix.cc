@@ -73,7 +73,7 @@ namespace thor {
 
 class CostMatrix::ReachedMap {
 public:
-#if defined(ANKERL_UNORDERED_DENSE_PMR)
+#if !defined(VALHALLA_MOBILE) && defined(ANKERL_UNORDERED_DENSE_PMR)
   using Vector = std::vector<uint32_t, std::pmr::polymorphic_allocator<uint32_t>>;
 
   ReachedMap()
@@ -87,7 +87,7 @@ public:
   void add(uint64_t key, uint32_t value) {
     auto it = storage_.find(key);
     if (it == storage_.end()) {
-#if defined(ANKERL_UNORDERED_DENSE_PMR)
+#if !defined(VALHALLA_MOBILE) && defined(ANKERL_UNORDERED_DENSE_PMR)
       it = storage_.emplace(key, Vector(vec_alloc_)).first;
 #else
       it = storage_.emplace(key, Vector()).first;
@@ -109,7 +109,7 @@ public:
   }
 
 private:
-#if defined(ANKERL_UNORDERED_DENSE_PMR)
+#if !defined(VALHALLA_MOBILE) && defined(ANKERL_UNORDERED_DENSE_PMR)
   std::pmr::unsynchronized_pool_resource pool_;
   std::pmr::polymorphic_allocator<uint32_t> vec_alloc_;
   ankerl::unordered_dense::pmr::map<uint64_t, Vector> storage_;

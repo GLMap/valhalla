@@ -14,7 +14,9 @@
 #include <cmath>
 #include <cstddef>
 #include <filesystem>
+#if !defined(VALHALLA_MOBILE)
 #include <future>
+#endif
 #include <list>
 #include <optional>
 #include <regex>
@@ -300,10 +302,12 @@ struct cache_t {
   std::vector<cache_item_t> cache;
   // Set of reusable tile indexes
   std::unordered_set<uint16_t> reusable;
+#if !defined(VALHALLA_MOBILE)
   // Map of pending tiles. No matter how many requests received, only one inflate job per tile
   // started.
   std::unordered_map<uint16_t, std::shared_future<tile_data>> pending_tiles;
-  // Guards access to the pending_tiles
+#endif
+  // Guards access to cache state and, on non-mobile builds, pending_tiles.
   std::recursive_mutex mutex;
   // Elevation tile path
   std::string data_source;
@@ -422,12 +426,14 @@ tile_data cache_t::source(uint16_t index) {
 
   // we were able to load it but the format wasn't RAW, which only leaves compressed formats
   mutex.lock();
+#if !defined(VALHALLA_MOBILE)
   auto it = pending_tiles.find(index);
   if (it != pending_tiles.end()) {
     auto future = it->second;
     mutex.unlock();
     return future.get();
   }
+#endif
 
   // item in cache is already unpacked
   const char* unpacked = item.get_unpacked();
@@ -437,8 +443,10 @@ tile_data cache_t::source(uint16_t index) {
     return rv;
   }
 
+#if !defined(VALHALLA_MOBILE)
   std::promise<tile_data> promise;
   it = pending_tiles.emplace(index, promise.get_future()).first;
+#endif
 
   if (reusable.size() >= UNPACKED_TILES_COUNT) {
     for (auto i : reusable) {
@@ -454,6 +462,12 @@ tile_data cache_t::source(uint16_t index) {
   }
   reusable.insert(index);
   auto rv = tile_data(this, index, true, (const int16_t*)unpacked);
+#if defined(VALHALLA_MOBILE)
+  if (!item.unpack(unpacked)) {
+    rv = tile_data();
+  }
+  mutex.unlock();
+#else
   mutex.unlock();
 
   if (!item.unpack(unpacked)) {
@@ -464,6 +478,7 @@ tile_data cache_t::source(uint16_t index) {
   promise.set_value(rv);
   pending_tiles.erase(it);
   mutex.unlock();
+#endif
   return rv;
 }
 
