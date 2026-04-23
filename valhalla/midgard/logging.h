@@ -7,10 +7,7 @@
 #include <map>
 #include <unordered_map>
 #include <utility>
-
-#if __has_include(<format>)
-#include <format>
-#endif
+#include <fmt/format.h>
 
 namespace valhalla {
 namespace midgard {
@@ -20,39 +17,20 @@ namespace logging {
 // Helper to handle both old string concatenation and new format strings
 namespace detail {
 
-#if defined(__cpp_lib_format) &&                                                           \
-    (!defined(__APPLE__) ||                                                                \
-     !defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__) ||                            \
-     __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 130300)
-#define VALHALLA_USE_STD_FORMAT 1
-#else
-#define VALHALLA_USE_STD_FORMAT 0
-#endif
-
 // If no additional arguments, just pass the string through (backward compatibility)
 // TODO: remove this once we have fully migrated all calls of logging macros
 inline std::string format_or_pass(const std::string& msg) {
   return msg;
 }
 
-#if VALHALLA_USE_STD_FORMAT
-// If additional arguments exist, use std::format on supported toolchains/targets.
-template <typename... Args>
-inline std::string format_or_pass(std::format_string<Args...> fmt_str, Args&&... args) {
-  return std::format(fmt_str, std::forward<Args>(args)...);
-}
-#else
-// Fallback for older Apple deployment targets where std::format is unavailable.
-template <typename... Args>
-inline std::string format_or_pass(const std::string& fmt_str, Args&&...) {
-  return fmt_str;
+inline std::string format_or_pass(const char* msg) {
+  return msg ? std::string(msg) : std::string();
 }
 
 template <typename... Args>
-inline std::string format_or_pass(const char* fmt_str, Args&&...) {
-  return fmt_str ? std::string(fmt_str) : std::string();
+inline std::string format_or_pass(fmt::format_string<Args...> fmt_str, Args&&... args) {
+  return fmt::format(fmt_str, std::forward<Args>(args)...);
 }
-#endif
 
 } // namespace detail
 

@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libtool \
     pkg-config \
     libboost-all-dev \
+    libfmt-dev \
     protobuf-compiler \
     libprotobuf-dev \
     libsqlite3-dev \

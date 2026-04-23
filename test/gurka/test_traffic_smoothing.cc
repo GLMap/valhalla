@@ -2,7 +2,7 @@
 #include "gurka.h"
 #include "test.h"
 
-#include <boost/format.hpp>
+#include <fmt/printf.h>
 
 using namespace valhalla;
 namespace dt = valhalla::baldr::DateTime;
@@ -224,11 +224,11 @@ std::string make_route_request(const gurka::map& map,
       "prioritize_bidirectional":%s,
       "date_time": { "type": "%d", "value": "%s" }
     })";
-  return (boost::format(query_pattern_with_speeds) % std::to_string(map.nodes.at(from).lat()) %
-          std::to_string(map.nodes.at(from).lng()) % std::to_string(map.nodes.at(to).lat()) %
-          std::to_string(map.nodes.at(to).lng()) % speed_types %
-          std::to_string(prioritize_bidirectional) % date_time_type % date_time_value)
-      .str();
+  return fmt::sprintf(query_pattern_with_speeds, std::to_string(map.nodes.at(from).lat()),
+                      std::to_string(map.nodes.at(from).lng()),
+                      std::to_string(map.nodes.at(to).lat()),
+                      std::to_string(map.nodes.at(to).lng()), speed_types,
+                      std::to_string(prioritize_bidirectional), date_time_type, date_time_value);
 }
 
 class RouteWithTraffic : public ::testing::Test {
@@ -532,10 +532,10 @@ std::string make_mapmatch_request(const gurka::map& map,
       "costing_options":{"auto":{"speed_types":[%s]}},
       "date_time":{"value":"%s","type":"1"}
     })";
-  return (boost::format(query_pattern_with_speeds) % std::to_string(map.nodes.at(from).lat()) %
-          std::to_string(map.nodes.at(from).lng()) % std::to_string(map.nodes.at(to).lat()) %
-          std::to_string(map.nodes.at(to).lng()) % speed_types % date_time_value)
-      .str();
+  return fmt::sprintf(query_pattern_with_speeds, std::to_string(map.nodes.at(from).lat()),
+                      std::to_string(map.nodes.at(from).lng()),
+                      std::to_string(map.nodes.at(to).lat()),
+                      std::to_string(map.nodes.at(to).lng()), speed_types, date_time_value);
 }
 
 class MapMatchWithTraffic : public ::testing::Test {

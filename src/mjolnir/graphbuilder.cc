@@ -21,7 +21,8 @@
 #include "scoped_timer.h"
 
 #include <boost/algorithm/string/case_conv.hpp>
-#include <boost/format.hpp>
+#include <fmt/format.h>
+#include <fmt/ostream.h>
 #include <boost/property_tree/ptree.hpp>
 
 #include <filesystem>
@@ -1363,14 +1364,13 @@ void BuildTileSet(const std::string& ways_file,
       graphtile.StoreTileData();
 
       // Made a tile
-      LOG_DEBUG((boost::format("Wrote tile %1%: %2% bytes") % tile.first %
-                 graphtile.header_builder().end_offset())
-                    .str());
+      LOG_DEBUG(fmt::format("Wrote tile {}: {} bytes", fmt::streamed(tile.first),
+                            graphtile.header_builder().end_offset()));
     } // Whatever happens in Vegas..
     catch (std::exception& e) {
       // ..gets sent back to the main thread
       result.set_exception(std::current_exception());
-      LOG_ERROR((boost::format("Failed tile %1%: %2%") % tile.first % e.what()).str());
+      LOG_ERROR(fmt::format("Failed tile {}: {}", fmt::streamed(tile.first), e.what()));
       return;
     }
   }

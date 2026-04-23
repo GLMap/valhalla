@@ -4,7 +4,7 @@
 #include "loki/worker.h"
 #include "thor/worker.h"
 
-#include <boost/format.hpp>
+#include <fmt/printf.h>
 #include <gtest/gtest.h>
 
 using namespace valhalla;
@@ -155,11 +155,10 @@ TEST_F(LinearFeatureTest, simple_high_factor) {
   }
   )";
 
-  auto json_str =
-      (boost::format(json_request) % std::to_string(map.nodes.at("3").lng()) %
-       std::to_string(map.nodes.at("3").lat()) % std::to_string(map.nodes.at("2").lng()) %
-       std::to_string(map.nodes.at("2").lat()) % encode_shape({"A", "B", "C"}, map.nodes) % "200")
-          .str();
+  auto json_str = fmt::sprintf(
+      json_request, std::to_string(map.nodes.at("3").lng()),
+      std::to_string(map.nodes.at("3").lat()), std::to_string(map.nodes.at("2").lng()),
+      std::to_string(map.nodes.at("2").lat()), encode_shape({"A", "B", "C"}, map.nodes), "200");
 
   Api request;
   ParseApi(json_str, Options::route, request);
@@ -225,11 +224,11 @@ TEST_F(LinearFeatureTest, simple_low_factor) {
   }
   )";
 
-  auto json_str = (boost::format(json_request) % std::to_string(map.nodes.at("4").lng()) %
-                   std::to_string(map.nodes.at("4").lat()) % std::to_string(map.nodes.at("1").lng()) %
-                   std::to_string(map.nodes.at("1").lat()) %
-                   encode_shape({"U", "V", "W", "X", "Y"}, map.nodes) % "0.01")
-                      .str();
+  auto json_str = fmt::sprintf(
+      json_request, std::to_string(map.nodes.at("4").lng()),
+      std::to_string(map.nodes.at("4").lat()), std::to_string(map.nodes.at("1").lng()),
+      std::to_string(map.nodes.at("1").lat()), encode_shape({"U", "V", "W", "X", "Y"}, map.nodes),
+      "0.01");
 
   std::cerr << "Valhalla request is: \n" << json_str << "\n";
 
@@ -284,11 +283,10 @@ TEST_F(LinearFeatureTest, partial_edges_shape) {
   }
   )";
 
-  auto json_str =
-      (boost::format(json_request) % std::to_string(map.nodes.at("T").lng()) %
-       std::to_string(map.nodes.at("T").lat()) % std::to_string(map.nodes.at("Z").lng()) %
-       std::to_string(map.nodes.at("Z").lat()) % encode_shape({"1", "Y", "5"}, map.nodes) % "100")
-          .str();
+  auto json_str = fmt::sprintf(
+      json_request, std::to_string(map.nodes.at("T").lng()),
+      std::to_string(map.nodes.at("T").lat()), std::to_string(map.nodes.at("Z").lng()),
+      std::to_string(map.nodes.at("Z").lat()), encode_shape({"1", "Y", "5"}, map.nodes), "100");
 
   std::cerr << "Valhalla request is: \n" << json_str << "\n";
 
@@ -354,12 +352,11 @@ TEST_F(LinearFeatureTest, multi_shape_geojson) {
     return std::string(writer.get_buffer());
   };
 
-  auto json_str =
-      (boost::format(json_request) % std::to_string(map.nodes.at("E").lng()) %
-       std::to_string(map.nodes.at("E").lat()) % std::to_string(map.nodes.at("Z").lng()) %
-       std::to_string(map.nodes.at("Z").lat()) % format_coordinates({"2", "E", "Z", "5"}) % "100" %
-       format_coordinates({"F", "b"}) % "0.1")
-          .str();
+  auto json_str = fmt::sprintf(
+      json_request, std::to_string(map.nodes.at("E").lng()),
+      std::to_string(map.nodes.at("E").lat()), std::to_string(map.nodes.at("Z").lng()),
+      std::to_string(map.nodes.at("Z").lat()), format_coordinates({"2", "E", "Z", "5"}), "100",
+      format_coordinates({"F", "b"}), "0.1");
 
   std::cerr << "Valhalla request is: \n" << json_str << "\n";
 

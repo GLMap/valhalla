@@ -6,7 +6,7 @@
 #include "test.h"
 #include "valhalla/worker.h"
 
-#include <boost/format.hpp>
+#include <fmt/format.h>
 
 #include <string>
 #include <vector>
@@ -283,7 +283,7 @@ TEST(StandAlone, Warnings) {
 
   // single leg route, disallowed customization
   std::string req = R"({
-      "locations":[{"lat":%s,"lon":%s},{"lat":%s,"lon":%s}],
+      "locations":[{"lat":{},"lon":{}},{"lat":{},"lon":{}}],
       "costing": "auto",
       "costing_options":{"auto":{"hierarchy_limits":{"1":{"max_up_transitions": 1000}}}}
     })";
@@ -291,28 +291,21 @@ TEST(StandAlone, Warnings) {
   std::string from = "A";
   std::string via = "B";
   std::string to = "C";
-  req =
-      (boost::format(req) % std::to_string(map_no_mod.nodes.at(from).lat()) %
-       std::to_string(map_no_mod.nodes.at(from).lng()) %
-       std::to_string(map_no_mod.nodes.at(to).lat()) % std::to_string(map_no_mod.nodes.at(to).lng()))
-          .str();
+  req = fmt::format(req, map_no_mod.nodes.at(from).lat(), map_no_mod.nodes.at(from).lng(),
+                    map_no_mod.nodes.at(to).lat(), map_no_mod.nodes.at(to).lng());
   result = gurka::do_action(valhalla::Options::route, map_no_mod, req);
   EXPECT_EQ(result.info().warnings().size(), 1);
 
   // double leg route, disallowed customization
   req = R"({
-      "locations":[{"lat":%s,"lon":%s},{"lat":%s,"lon":%s},{"lat":%s,"lon":%s}],
+      "locations":[{"lat":{},"lon":{}},{"lat":{},"lon":{}},{"lat":{},"lon":{}}],
       "costing": "auto",
       "costing_options":{"auto":{"hierarchy_limits":{"1":{"max_up_transitions": 1000}}}}
     })";
 
-  req =
-      (boost::format(req) % std::to_string(map_no_mod.nodes.at(from).lat()) %
-       std::to_string(map_no_mod.nodes.at(from).lng()) %
-       std::to_string(map_no_mod.nodes.at(via).lat()) %
-       std::to_string(map_no_mod.nodes.at(via).lng()) %
-       std::to_string(map_no_mod.nodes.at(to).lat()) % std::to_string(map_no_mod.nodes.at(to).lng()))
-          .str();
+  req = fmt::format(req, map_no_mod.nodes.at(from).lat(), map_no_mod.nodes.at(from).lng(),
+                    map_no_mod.nodes.at(via).lat(), map_no_mod.nodes.at(via).lng(),
+                    map_no_mod.nodes.at(to).lat(), map_no_mod.nodes.at(to).lng());
   result = gurka::do_action(valhalla::Options::route, map_no_mod, req);
   EXPECT_EQ(result.info().warnings().size(), 1);
   EXPECT_EQ(result.info().warnings(0).code(), 209);
@@ -334,61 +327,53 @@ TEST(StandAlone, Warnings) {
 
   // single leg route, clamped customization
   req = R"({
-      "locations":[{"lat":%s,"lon":%s},{"lat":%s,"lon":%s}],
+      "locations":[{"lat":{},"lon":{}},{"lat":{},"lon":{}}],
       "costing": "auto",
       "costing_options":{"auto":{"hierarchy_limits":{"1":{"max_up_transitions": 100000}}}}
     })";
 
-  req = (boost::format(req) % std::to_string(map_mod.nodes.at(from).lat()) %
-         std::to_string(map_mod.nodes.at(from).lng()) % std::to_string(map_mod.nodes.at(to).lat()) %
-         std::to_string(map_mod.nodes.at(to).lng()))
-            .str();
+  req = fmt::format(req, map_mod.nodes.at(from).lat(), map_mod.nodes.at(from).lng(),
+                    map_mod.nodes.at(to).lat(), map_mod.nodes.at(to).lng());
   result = gurka::do_action(valhalla::Options::route, map_mod, req);
   EXPECT_EQ(result.info().warnings().size(), 1);
   EXPECT_EQ(result.info().warnings(0).code(), 210);
 
   // double leg route, clamped customization
   req = R"({
-      "locations":[{"lat":%s,"lon":%s},{"lat":%s,"lon":%s},{"lat":%s,"lon":%s}],
+      "locations":[{"lat":{},"lon":{}},{"lat":{},"lon":{}},{"lat":{},"lon":{}}],
       "costing": "auto",
       "costing_options":{"auto":{"hierarchy_limits":{"1":{"max_up_transitions": 1000}}}}
     })";
 
-  req = (boost::format(req) % std::to_string(map_mod.nodes.at(from).lat()) %
-         std::to_string(map_mod.nodes.at(from).lng()) % std::to_string(map_mod.nodes.at(via).lat()) %
-         std::to_string(map_mod.nodes.at(via).lng()) % std::to_string(map_mod.nodes.at(to).lat()) %
-         std::to_string(map_mod.nodes.at(to).lng()))
-            .str();
+  req = fmt::format(req, map_mod.nodes.at(from).lat(), map_mod.nodes.at(from).lng(),
+                    map_mod.nodes.at(via).lat(), map_mod.nodes.at(via).lng(),
+                    map_mod.nodes.at(to).lat(), map_mod.nodes.at(to).lng());
   result = gurka::do_action(valhalla::Options::route, map_mod, req);
   EXPECT_EQ(result.info().warnings().size(), 1);
   EXPECT_EQ(result.info().warnings(0).code(), 210);
 
   // single leg route, allowed customization
   req = R"({
-      "locations":[{"lat":%s,"lon":%s},{"lat":%s,"lon":%s}],
+      "locations":[{"lat":{},"lon":{}},{"lat":{},"lon":{}}],
       "costing": "auto",
       "costing_options":{"auto":{"hierarchy_limits":{"1":{"max_up_transitions": 10, "expand_within_distance": 10}}}}
     })";
 
-  req = (boost::format(req) % std::to_string(map_mod.nodes.at(from).lat()) %
-         std::to_string(map_mod.nodes.at(from).lng()) % std::to_string(map_mod.nodes.at(to).lat()) %
-         std::to_string(map_mod.nodes.at(to).lng()))
-            .str();
+  req = fmt::format(req, map_mod.nodes.at(from).lat(), map_mod.nodes.at(from).lng(),
+                    map_mod.nodes.at(to).lat(), map_mod.nodes.at(to).lng());
   result = gurka::do_action(valhalla::Options::route, map_mod, req);
   EXPECT_EQ(result.info().warnings().size(), 0);
 
   // double leg route, allowed customization
   req = R"({
-      "locations":[{"lat":%s,"lon":%s},{"lat":%s,"lon":%s},{"lat":%s,"lon":%s}],
+      "locations":[{"lat":{},"lon":{}},{"lat":{},"lon":{}},{"lat":{},"lon":{}}],
       "costing": "auto",
       "costing_options":{"auto":{"hierarchy_limits":{"1":{"max_up_transitions": 10, "expand_within_distance": 10}}}}
     })";
 
-  req = (boost::format(req) % std::to_string(map_mod.nodes.at(from).lat()) %
-         std::to_string(map_mod.nodes.at(from).lng()) % std::to_string(map_mod.nodes.at(via).lat()) %
-         std::to_string(map_mod.nodes.at(via).lng()) % std::to_string(map_mod.nodes.at(to).lat()) %
-         std::to_string(map_mod.nodes.at(to).lng()))
-            .str();
+  req = fmt::format(req, map_mod.nodes.at(from).lat(), map_mod.nodes.at(from).lng(),
+                    map_mod.nodes.at(via).lat(), map_mod.nodes.at(via).lng(),
+                    map_mod.nodes.at(to).lat(), map_mod.nodes.at(to).lng());
   result = gurka::do_action(valhalla::Options::route, map_mod, req);
   EXPECT_EQ(result.info().warnings().size(), 0);
 }

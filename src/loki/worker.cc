@@ -5,9 +5,9 @@
 #include "midgard/logging.h"
 
 #include <boost/property_tree/ptree.hpp>
+#include <fmt/format.h>
 
 #include <cstdint>
-#include <format>
 #include <functional>
 #include <stdexcept>
 #include <string>
@@ -230,9 +230,9 @@ loki_worker_t::loki_worker_t(const boost::property_tree::ptree& config,
     ++i;
   }
   if (i != max_road_classes) {
-    throw std::runtime_error(
-        std::format("mvt_min_zoom_road_class out of bounds, expected {} elements but got {}",
-                    max_road_classes, i));
+    throw std::runtime_error(fmt::format(
+        "mvt_min_zoom_road_class out of bounds, expected {} elements but got {}", max_road_classes,
+        i));
   }
 
   // Build max_locations and max_distance maps

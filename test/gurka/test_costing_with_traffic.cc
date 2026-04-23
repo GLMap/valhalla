@@ -1,7 +1,7 @@
 #include "gurka.h"
 #include "test.h"
 
-#include <boost/format.hpp>
+#include <fmt/format.h>
 #include <gtest/gtest.h>
 
 #if !defined(VALHALLA_SOURCE_DIR)
@@ -53,6 +53,32 @@ void update_bidir_edges(baldr::GraphReader& reader,
 gurka::map map = {};
 const std::unordered_map<std::string, std::string> build_config{
     {"mjolnir.admin", {VALHALLA_SOURCE_DIR "test/data/netherlands_admin.sqlite"}}};
+
+std::string make_route_request(const gurka::map& route_map,
+                               std::string_view from,
+                               std::string_view to,
+                               std::string_view costing_name,
+                               std::string_view costing_options = {}) {
+  const auto& from_point = route_map.nodes.at(std::string(from));
+  const auto& to_point = route_map.nodes.at(std::string(to));
+
+  std::string request = fmt::format(
+      R"({{"locations":[{{"lat":{},"lon":{}}},{{"lat":{},"lon":{}}}],"costing":"{}")",
+      from_point.lat(),
+      from_point.lng(),
+      to_point.lat(),
+      to_point.lng(),
+      costing_name);
+
+  if (!costing_options.empty()) {
+    request += fmt::format(
+        R"(,"costing_options":{},"date_time":{{"type":3,"value":"current"}})",
+        costing_options);
+  }
+
+  request += "}";
+  return request;
+}
 
 TEST(Standalone, CostingWithTraffic) {
   constexpr double gridsize_metres = 10;
@@ -214,12 +240,7 @@ TEST(Standalone, CostingWithTraffic) {
     test::customize_live_traffic_data(map.config, edges_with_traffic);
 
     for (auto& c : costing) {
-      const std::string& req_no_traffic =
-          (boost::format(
-               R"({"locations":[{"lat":%s,"lon":%s},{"lat":%s,"lon":%s}],"costing":"%s"})") %
-           std::to_string(map.nodes.at("2").lat()) % std::to_string(map.nodes.at("2").lng()) %
-           std::to_string(map.nodes.at("1").lat()) % std::to_string(map.nodes.at("1").lng()) % c)
-              .str();
+      const std::string req_no_traffic = make_route_request(map, "2", "1", c);
       auto result = gurka::do_action(valhalla::Options::route, map, req_no_traffic, reader);
 
       if (c == "truck" ||
@@ -232,14 +253,15 @@ TEST(Standalone, CostingWithTraffic) {
                                          "DE", "CD", "BC", "ByYc", "ByYc", "YZ", "bZA"});
     }
 
-    std::string date_type = "3"; // invariant time
     for (auto& c : costing) {
-      const std::string& req_with_traffic =
-          (boost::format(
-               R"({"locations":[{"lat":%s,"lon":%s},{"lat":%s,"lon":%s}],"costing":"%s", "costing_options": {"%s": {"speed_types":["freeflow","constrained","predicted","current"]}}, "date_time":{"type":3, "value": "current"}})") %
-           std::to_string(map.nodes.at("2").lat()) % std::to_string(map.nodes.at("2").lng()) %
-           std::to_string(map.nodes.at("1").lat()) % std::to_string(map.nodes.at("1").lng()) % c % c)
-              .str();
+      const std::string req_with_traffic = make_route_request(
+          map,
+          "2",
+          "1",
+          c,
+          fmt::format(
+              R"({{"{}":{{"speed_types":["freeflow","constrained","predicted","current"]}}}})",
+              c));
       auto result = gurka::do_action(valhalla::Options::route, map, req_with_traffic, reader);
 
       // favor tertiary road - traffic in use

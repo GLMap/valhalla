@@ -14,7 +14,8 @@
 
 #include <boost/property_tree/ptree.hpp>
 #ifdef LOGGING_LEVEL_DEBUG
-#include <boost/format.hpp>
+#include <fmt/format.h>
+#include <fmt/ostream.h>
 #endif
 
 #include <string>
@@ -742,9 +743,8 @@ std::pair<uint32_t, uint32_t> FormShortcuts(GraphReader& reader, const TileLevel
 
     // Store the new tile
     tilebuilder.StoreTileData();
-    LOG_DEBUG((boost::format("ShortcutBuilder created tile %1%: %2% bytes") % tile %
-               tilebuilder.header_builder().end_offset())
-                  .str());
+    LOG_DEBUG(fmt::format("ShortcutBuilder created tile {}: {} bytes", fmt::streamed(tile),
+                          tilebuilder.header_builder().end_offset()));
 
     // Check if we need to clear the tile cache.
     if (reader.OverCommitted()) {

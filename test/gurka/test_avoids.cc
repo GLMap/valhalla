@@ -8,7 +8,7 @@
 #include "proto/options.pb.h"
 #include "sif/costfactory.h"
 
-#include <boost/format.hpp>
+#include <fmt/printf.h>
 #include <gtest/gtest.h>
 #include <test.h>
 
@@ -394,11 +394,10 @@ TEST_F(AvoidTest, TestInvalidAvoidPolygons) {
           ],
           "costing":"auto",
         )";
-  std::string req_base =
-      (boost::format(req) % std::to_string(avoid_map.nodes.at("A").lat()) %
-       std::to_string(avoid_map.nodes.at("A").lng()) % std::to_string(avoid_map.nodes.at("D").lat()) %
-       std::to_string(avoid_map.nodes.at("D").lng()))
-          .str();
+  std::string req_base = fmt::sprintf(
+      req, std::to_string(avoid_map.nodes.at("A").lat()),
+      std::to_string(avoid_map.nodes.at("A").lng()), std::to_string(avoid_map.nodes.at("D").lat()),
+      std::to_string(avoid_map.nodes.at("D").lng()));
   Api request;
 
   // empty polygon

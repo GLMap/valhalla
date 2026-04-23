@@ -55,6 +55,7 @@ function(valhalla_module)
       $<$<BOOL:${WIN32}>:NOGDI;WIN32_LEAN_AND_MEAN>
       $<$<BOOL:${MSVC}>:NOMINMAX>
       $<$<BOOL:${VALHALLA_VERSION_MODIFIER}>:VALHALLA_VERSION_MODIFIER=${VALHALLA_VERSION_MODIFIER}>
+      FMT_HEADER_ONLY=1
       HAS_REMOTE_API=0
       AUTO_DOWNLOAD=0
     PRIVATE
@@ -63,6 +64,7 @@ function(valhalla_module)
       VALHALLA_BUILD_DIR=${VALHALLA_BUILD_DIR})
   target_include_directories(${library} ${MODULE_INCLUDE_DIRECTORIES}
      PRIVATE
+       ${FMT_INCLUDE_DIR}
        ${VALHALLA_BINARY_DIR}
        ${VALHALLA_BINARY_DIR}/valhalla)
   if (MODULE_SYSTEM_INCLUDE_DIRECTORIES)
@@ -166,6 +168,7 @@ target_compile_definitions(valhalla
   PUBLIC
     $<$<BOOL:${WIN32}>:NOGDI;WIN32_LEAN_AND_MEAN>
     $<$<BOOL:${MSVC}>:NOMINMAX>
+    FMT_HEADER_ONLY=1
     HAS_REMOTE_API=0
     AUTO_DOWNLOAD=0
     $<$<BOOL:${VALHALLA_VERSION_MODIFIER}>:VALHALLA_VERSION_MODIFIER=${VALHALLA_VERSION_MODIFIER}>
@@ -190,6 +193,7 @@ target_include_directories(valhalla
     ${libvalhalla_include_directories}
 )
 target_include_directories(valhalla SYSTEM PUBLIC
+    ${FMT_INCLUDE_DIR}
     ${rapidjson_include_dir}
     ${date_include_dir}
     ${VALHALLA_SOURCE_DIR}/third_party/cpp-statsd-client/include

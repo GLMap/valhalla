@@ -7,11 +7,11 @@
 #include "proto_conversions.h"
 #include "test.h"
 
+#include <fmt/format.h>
 #include <gmock/gmock-matchers.h>
 #include <gtest/gtest.h>
 #include <vtzero/vector_tile.hpp>
 
-#include <format>
 #include <set>
 #include <span>
 
@@ -261,7 +261,7 @@ gurka::map VectorTiles::map = {};
 
 TEST_F(VectorTiles, LayerExclude) {
   auto test_tile = [](std::string_view exclude_layer_name, const bool expect_layer_present = true) {
-    SCOPED_TRACE(std::format("{} failed", exclude_layer_name));
+    SCOPED_TRACE(fmt::format("{} failed", exclude_layer_name));
     std::unordered_map<std::string, std::string> options = {
         {"/tile_options/exclude_layers/-", std::string(exclude_layer_name)},
     };
@@ -282,7 +282,7 @@ TEST_F(VectorTiles, LayerExclude) {
       ASSERT_EQ(api.info().warnings().size(), 1);
       EXPECT_EQ(api.info().warnings(0).code(), 212);
       EXPECT_STREQ(api.info().warnings(0).description().c_str(),
-                   std::format("Invalid layer name in exclude_layers array: {}", exclude_layer_name)
+                   fmt::format("Invalid layer name in exclude_layers array: {}", exclude_layer_name)
                        .c_str());
     }
   };
@@ -298,7 +298,7 @@ TEST_F(VectorTiles, TileRenderingDifferentZoomLevels) {
   auto test_tile = [&](const uint32_t z, const uint32_t exp_total_size, const uint32_t exp_edges,
                        const uint32_t exp_nodes, const uint32_t exp_shortcuts,
                        uint32_t& cache_count) {
-    SCOPED_TRACE(std::format("Zoom {} failed", z));
+    SCOPED_TRACE(fmt::format("Zoom {} failed", z));
     std::string tile_data;
     Api api = gurka::do_action(Options::tile, map, "x", z, "auto", {}, nullptr, &tile_data);
     const auto x = api.options().tile_xyz().x();
@@ -382,7 +382,7 @@ TEST_F(VectorTiles, TileRenderingDifferentZoomLevels) {
 TEST_F(VectorTiles, FilterIncludeExclude) {
   // edge_id:forward/backward are not defined in EdgeAttributeTile arrays
   assert(std::size(loki::detail::kEdgePropToAttributeFlag) == (kNumMVTEdgeAttrs + 2)),
-      std::format("");
+      fmt::format("");
   // same for iso_3166_1/2 not existing in NodeAttributeTile array
   assert(std::size(loki::detail::kNodePropToAttributeFlag) ==
          (std::size(loki::detail::kNodeAttributes) + 2));
@@ -400,7 +400,8 @@ TEST_F(VectorTiles, FilterIncludeExclude) {
   auto test_tile_filter = [&](const uint32_t z, const std::string& filter_attribute,
                               const valhalla::FilterAction& filter_action,
                               const gurka::map& current_map, uint32_t& cache_count) {
-    SCOPED_TRACE(std::format("Zoom {} failed, action: {}", z, FilterAction_Enum_Name(filter_action)));
+    SCOPED_TRACE(
+        fmt::format("Zoom {} failed, action: {}", z, FilterAction_Enum_Name(filter_action)));
 
     const std::unordered_map<std::string, std::string> options =
         {{"/verbose", "0"},

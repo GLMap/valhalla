@@ -120,6 +120,9 @@ add_definitions(-DBOOST_NO_CXX11_SCOPED_ENUMS)
 add_definitions(-DBOOST_ALLOW_DEPRECATED_HEADERS)
 add_definitions(-DBOOST_BIND_GLOBAL_PLACEHOLDERS)
 
+find_path(FMT_INCLUDE_DIR NAMES fmt/format.h REQUIRED)
+message(STATUS "Using fmt headers from ${FMT_INCLUDE_DIR}")
+
 find_package(PkgConfig REQUIRED)
 find_package(Threads REQUIRED)
 

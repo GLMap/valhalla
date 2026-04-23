@@ -20,8 +20,8 @@
 #include "thor/unidirectional_astar.h"
 #include "worker.h"
 
-#include <boost/format.hpp>
 #include <cxxopts.hpp>
+#include <fmt/format.h>
 
 #include <cmath>
 #include <cstdint>
@@ -97,12 +97,12 @@ public:
     elapsed_cost_cost = cost;
   }
   void log() {
-    valhalla::midgard::logging::Log((boost::format("%f,%f,%f,%f,%s,%d,%d,%d,%f,%f,%d,%f,%f") %
-                                     origin.first % origin.second % destination.first %
-                                     destination.second % success % passes % runtime % trip_time %
-                                     trip_dist % arc_dist % maneuvers % elapsed_cost_seconds %
-                                     elapsed_cost_cost)
-                                        .str(),
+    valhalla::midgard::logging::Log(fmt::format(
+                                        "{:f},{:f},{:f},{:f},{},{},{},{},{:f},{:f},{},{:f},{:f}",
+                                        origin.first, origin.second, destination.first,
+                                        destination.second, success, passes, runtime, trip_time,
+                                        trip_dist, arc_dist, maneuvers, elapsed_cost_seconds,
+                                        elapsed_cost_cost),
                                     " [STATISTICS] ");
   }
 };
@@ -314,22 +314,20 @@ valhalla::DirectionsLeg DirectionsTest(valhalla::Api& api,
 
     // Depart instruction
     if (!maneuver.depart_instruction().empty()) {
-      valhalla::midgard::logging::Log((boost::format("   %s") % maneuver.depart_instruction()).str(),
+      valhalla::midgard::logging::Log(fmt::format("   {}", maneuver.depart_instruction()),
                                       " [NARRATIVE] ");
     }
 
     // Verbal depart instruction
     if (!maneuver.verbal_depart_instruction().empty()) {
-      valhalla::midgard::logging::Log((boost::format("   VERBAL_DEPART: %s") %
-                                       maneuver.verbal_depart_instruction())
-                                          .str(),
+      valhalla::midgard::logging::Log(
+          fmt::format("   VERBAL_DEPART: {}", maneuver.verbal_depart_instruction()),
                                       " [NARRATIVE] ");
     }
 
     // Instruction
-    valhalla::midgard::logging::Log((boost::format("%d: %s | %.1f %s") % m %
-                                     maneuver.text_instruction() % maneuver.length() % units)
-                                        .str(),
+    valhalla::midgard::logging::Log(
+        fmt::format("{}: {} | {:.1f} {}", m, maneuver.text_instruction(), maneuver.length(), units),
                                     " [NARRATIVE] ");
 
     // Turn lanes
@@ -349,56 +347,52 @@ valhalla::DirectionsLeg DirectionsTest(valhalla::Api& api,
         } else if (!prev_edge->HasActiveTurnLane()) {
           turn_lane_status = "NO_ACTIVE_TURN_LANES";
         }
-        valhalla::midgard::logging::Log((boost::format("   %d: TURN_LANES: %s %s") % m %
-                                         prev_edge->TurnLanesToString() % turn_lane_status)
-                                            .str(),
+        valhalla::midgard::logging::Log(
+            fmt::format("   {}: TURN_LANES: {} {}", m, prev_edge->TurnLanesToString(),
+                        turn_lane_status),
                                         " [NARRATIVE] ");
       }
     }
 
     // Verbal succinct transition instruction
     if (!maneuver.verbal_succinct_transition_instruction().empty()) {
-      valhalla::midgard::logging::Log((boost::format("   VERBAL_SUCCINCT: %s") %
-                                       maneuver.verbal_succinct_transition_instruction())
-                                          .str(),
+      valhalla::midgard::logging::Log(
+          fmt::format("   VERBAL_SUCCINCT: {}",
+                      maneuver.verbal_succinct_transition_instruction()),
                                       " [NARRATIVE] ");
     }
 
     // Verbal transition alert instruction
     if (!maneuver.verbal_transition_alert_instruction().empty()) {
-      valhalla::midgard::logging::Log((boost::format("   VERBAL_ALERT: %s") %
-                                       maneuver.verbal_transition_alert_instruction())
-                                          .str(),
+      valhalla::midgard::logging::Log(
+          fmt::format("   VERBAL_ALERT: {}", maneuver.verbal_transition_alert_instruction()),
                                       " [NARRATIVE] ");
     }
 
     // Verbal pre transition instruction
     if (!maneuver.verbal_pre_transition_instruction().empty()) {
-      valhalla::midgard::logging::Log((boost::format("   VERBAL_PRE: %s") %
-                                       maneuver.verbal_pre_transition_instruction())
-                                          .str(),
+      valhalla::midgard::logging::Log(
+          fmt::format("   VERBAL_PRE: {}", maneuver.verbal_pre_transition_instruction()),
                                       " [NARRATIVE] ");
     }
 
     // Verbal post transition instruction
     if (!maneuver.verbal_post_transition_instruction().empty()) {
-      valhalla::midgard::logging::Log((boost::format("   VERBAL_POST: %s") %
-                                       maneuver.verbal_post_transition_instruction())
-                                          .str(),
+      valhalla::midgard::logging::Log(
+          fmt::format("   VERBAL_POST: {}", maneuver.verbal_post_transition_instruction()),
                                       " [NARRATIVE] ");
     }
 
     // Arrive instruction
     if (!maneuver.arrive_instruction().empty()) {
-      valhalla::midgard::logging::Log((boost::format("   %s") % maneuver.arrive_instruction()).str(),
+      valhalla::midgard::logging::Log(fmt::format("   {}", maneuver.arrive_instruction()),
                                       " [NARRATIVE] ");
     }
 
     // Verbal arrive instruction
     if (!maneuver.verbal_arrive_instruction().empty()) {
-      valhalla::midgard::logging::Log((boost::format("   VERBAL_ARRIVE: %s") %
-                                       maneuver.verbal_arrive_instruction())
-                                          .str(),
+      valhalla::midgard::logging::Log(
+          fmt::format("   VERBAL_ARRIVE: {}", maneuver.verbal_arrive_instruction()),
                                       " [NARRATIVE] ");
     }
 
@@ -416,9 +410,9 @@ valhalla::DirectionsLeg DirectionsTest(valhalla::Api& api,
           } else if (!prev_edge->HasActiveTurnLane()) {
             turn_lane_status = "NO_ACTIVE_TURN_LANES";
           }
-          valhalla::midgard::logging::Log((boost::format("   %d-%d: TURN_LANES: %s %s") % m % q %
-                                           prev_edge->TurnLanesToString() % turn_lane_status)
-                                              .str(),
+          valhalla::midgard::logging::Log(
+              fmt::format("   {}-{}: TURN_LANES: {} {}", m, q, prev_edge->TurnLanesToString(),
+                          turn_lane_status),
                                           " [NARRATIVE] ");
         }
       }
@@ -435,9 +429,8 @@ valhalla::DirectionsLeg DirectionsTest(valhalla::Api& api,
   valhalla::midgard::logging::Log("==============================================", " [NARRATIVE] ");
   valhalla::midgard::logging::Log("Total time: " + GetFormattedTime(trip_directions.summary().time()),
                                   " [NARRATIVE] ");
-  valhalla::midgard::logging::Log((boost::format("Total length: %.1f %s") %
-                                   trip_directions.summary().length() % units)
-                                      .str(),
+  valhalla::midgard::logging::Log(
+      fmt::format("Total length: {:.1f} {}", trip_directions.summary().length(), units),
                                   " [NARRATIVE] ");
   if (origin.date_time_) {
     valhalla::midgard::logging::Log("Departed at: " + *origin.date_time_, " [NARRATIVE] ");
