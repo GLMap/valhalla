@@ -481,9 +481,12 @@ std::vector<ConditionalSpeedLimit> EdgeInfo::conditional_speed_limits() const {
   std::vector<ConditionalSpeedLimit> limits;
   const auto cond_limits_range = GetTags().equal_range(TaggedValue::kConditionalSpeedLimits);
   for (auto it = cond_limits_range.first; it != cond_limits_range.second; ++it) {
-    const ConditionalSpeedLimit* l =
-        reinterpret_cast<const ConditionalSpeedLimit*>(it->second.data());
-    limits.push_back(*l);
+    // The tag bytes live at an arbitrary offset inside the tile, so the pointer is not
+    // guaranteed to be 8-byte aligned. Dereferencing it directly performs an unaligned
+    // 64-bit load, which faults with SIGBUS on armv7. Copy into an aligned local instead.
+    ConditionalSpeedLimit l = {};
+    std::memcpy(&l, it->second.data(), sizeof(l));
+    limits.push_back(l);
   }
   return limits;
 }
@@ -630,8 +633,11 @@ void EdgeInfo::json(rapidjson::writer_wrapper_t& writer) const {
         break;
       }
       case TaggedValue::kConditionalSpeedLimits: {
-        const ConditionalSpeedLimit* l = reinterpret_cast<const ConditionalSpeedLimit*>(value.data());
-        conditional_speed_limits.push_back({l->td_.to_string(), l->speed_});
+        // value.data() is not guaranteed to be 8-byte aligned; copy into an aligned local to
+        // avoid an unaligned 64-bit load that faults with SIGBUS on armv7.
+        ConditionalSpeedLimit l = {};
+        std::memcpy(&l, value.data(), sizeof(l));
+        conditional_speed_limits.emplace_back(l.td_.to_string(), uint64_t(l.speed_));
         break;
       }
       case TaggedValue::kTunnel:
