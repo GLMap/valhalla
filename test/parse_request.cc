@@ -1767,9 +1767,9 @@ TEST(ParseRequest, test_transport_type) {
   std::string transport_type_key = "type";
 
   Costing::Type costing = Costing::pedestrian;
-  auto lowered = std::vector<std::string>{"foot", "wheelchair", "blind"};
+  auto lowered = std::vector<std::string>{"foot", "wheelchair", "blind", "hiking"};
   auto expected = lowered.begin();
-  for (const auto& transport_type_value : {"Foot", "Wheelchair", "Blind"}) {
+  for (const auto& transport_type_value : {"Foot", "Wheelchair", "Blind", "Hiking"}) {
     test_transport_type_parsing(costing, transport_type_key, transport_type_value, *expected);
     ++expected;
   }

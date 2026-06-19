@@ -151,6 +151,31 @@ constexpr float kSacScaleCostFactor[] = {
     3.0f   // kDifficultAlpineHiking
 };
 
+const DirectedEdgeExt* GetDirectedEdgeExtForCosting(const DirectedEdge* edge,
+                                                    const GraphId& edgeid,
+                                                    const graph_tile_ptr& tile) {
+  if (!tile || !tile->header()->has_ext_directededge()) {
+    return nullptr;
+  }
+
+  const auto edge_count = tile->header()->directededgecount();
+  const auto tile_id = tile->header()->graphid();
+  if (edgeid && edgeid.tileid() == tile_id.tileid() && edgeid.level() == tile_id.level() &&
+      edgeid.id() < edge_count) {
+    return tile->ext_directededge(edgeid.id());
+  }
+
+  // PartialEdgeCost intentionally calls EdgeCost with an invalid GraphId.
+  // In that case, find the extension by the directed-edge pointer from this tile.
+  for (uint32_t edge_index = 0; edge_index < edge_count; ++edge_index) {
+    if (tile->directededge(edge_index) == edge) {
+      return tile->ext_directededge(edge_index);
+    }
+  }
+
+  return nullptr;
+}
+
 BaseCostingOptionsConfig GetBaseCostOptsConfig() {
   BaseCostingOptionsConfig cfg{};
   // override defaults
@@ -619,7 +644,13 @@ PedestrianCost::PedestrianCost(const Costing& costing)
     access_mask_ = kWheelchairAccess;
     minimal_allowed_surface_ = Surface::kCompacted;
   } else {
-    type_ = type == "blind" ? PedestrianType::kBlind : PedestrianType::kFoot;
+    if (type == "blind") {
+      type_ = PedestrianType::kBlind;
+    } else if (type == "hiking") {
+      type_ = PedestrianType::kHiking;
+    } else {
+      type_ = PedestrianType::kFoot;
+    }
     access_mask_ = kPedestrianAccess;
     minimal_allowed_surface_ = Surface::kPath;
   }
@@ -630,7 +661,7 @@ PedestrianCost::PedestrianCost(const Costing& costing)
   elevator_penalty_ = costing_options.elevator_penalty();
   max_grade_ = costing_options.max_grade();
 
-  if (type_ == PedestrianType::kFoot) {
+  if (type_ == PedestrianType::kFoot || type_ == PedestrianType::kHiking) {
     max_hiking_difficulty_ = static_cast<SacScale>(costing_options.max_hiking_difficulty());
   } else {
     max_hiking_difficulty_ = SacScale::kNone;
@@ -737,9 +768,21 @@ Cost PedestrianCost::EdgeCost(const baldr::DirectedEdge* edge,
     return {sec * ferry_factor_, sec};
   }
 
-  float sec = edge->length() * speedfactor_ *
-              kSacScaleSpeedFactor[static_cast<uint8_t>(edge->sac_scale())] *
-              kGradeBasedSpeedFactor[static_cast<uint8_t>(edge->weighted_grade())];
+  bool used_precomputed_hiking_seconds = false;
+  float sec = 0.0f;
+  if (type_ == PedestrianType::kHiking) {
+    const auto* edge_ext = GetDirectedEdgeExtForCosting(edge, edgeid, tile);
+    if (edge_ext && edge_ext->has_hiking_seconds()) {
+      sec = static_cast<float>(edge_ext->hiking_seconds());
+      used_precomputed_hiking_seconds = true;
+    }
+  }
+
+  if (!used_precomputed_hiking_seconds) {
+    sec = edge->length() * speedfactor_ *
+          kSacScaleSpeedFactor[static_cast<uint8_t>(edge->sac_scale())] *
+          kGradeBasedSpeedFactor[static_cast<uint8_t>(edge->weighted_grade())];
+  }
 
   if (shortest_) {
     return Cost(edge->length(), sec);
@@ -747,7 +790,7 @@ Cost PedestrianCost::EdgeCost(const baldr::DirectedEdge* edge,
 
   // TODO - consider using an array of "use factors" to avoid this conditional
   float factor = 1.0f + kSacScaleCostFactor[static_cast<uint8_t>(edge->sac_scale())] +
-                 grade_penalty[edge->weighted_grade()];
+                 (used_precomputed_hiking_seconds ? 0.0f : grade_penalty[edge->weighted_grade()]);
   if (edge->use() == Use::kFootway || edge->use() == Use::kSidewalk) {
     factor *= walkway_factor_;
   } else if (edge->use() == Use::kAlley) {
@@ -1205,6 +1248,44 @@ defaults.use_ferry_.max));
     EXPECT_THAT(ctorTester->service_factor_,
                 test::IsBetween(defaults.service_factor_.min, defaults.service_factor_.max));
   }
+}
+
+TEST(PedestrianCost, testHikingTypeIsDistinctFromFoot) {
+  Api request;
+  ParseApi(R"({"costing":"pedestrian","costing_options":{"pedestrian":{"type":"hiking"}}})",
+           valhalla::Options::route, request);
+
+  TestPedestrianCost cost(request.options().costings().find(Costing::pedestrian)->second);
+
+  EXPECT_EQ(cost.travel_type(), static_cast<uint8_t>(sif::PedestrianType::kHiking));
+}
+
+TEST(PedestrianCost, testHikingFallsBackToFootDurationWithoutStoredSeconds) {
+  Api foot_request;
+  ParseApi(R"({"costing":"pedestrian","costing_options":{"pedestrian":{"type":"foot"}}})",
+           valhalla::Options::route, foot_request);
+  TestPedestrianCost foot_cost(foot_request.options().costings().find(Costing::pedestrian)->second);
+
+  Api hiking_request;
+  ParseApi(R"({"costing":"pedestrian","costing_options":{"pedestrian":{"type":"hiking"}}})",
+           valhalla::Options::route, hiking_request);
+  TestPedestrianCost hiking_cost(
+      hiking_request.options().costings().find(Costing::pedestrian)->second);
+
+  DirectedEdge edge;
+  edge.set_length(1000);
+  edge.set_weighted_grade(6);
+
+  baldr::graph_tile_ptr empty_tile;
+  uint8_t flow_sources = 0;
+  const auto foot_edge_cost =
+      foot_cost.EdgeCost(&edge, GraphId(), empty_tile, TimeInfo::invalid(), flow_sources);
+  flow_sources = 0;
+  const auto hiking_edge_cost =
+      hiking_cost.EdgeCost(&edge, GraphId(), empty_tile, TimeInfo::invalid(), flow_sources);
+
+  EXPECT_FLOAT_EQ(hiking_edge_cost.secs, foot_edge_cost.secs);
+  EXPECT_FLOAT_EQ(hiking_edge_cost.cost, foot_edge_cost.cost);
 }
 } // namespace
 

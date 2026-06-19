@@ -1309,13 +1309,47 @@ protected:
 
 /**
  * Extended directed edge attribution. This structure provides the ability to add extra
- * attribution per directed edge without breaking backward compatibility. For now this structure
- * is unused.
+ * attribution per directed edge without breaking backward compatibility.
  */
 class DirectedEdgeExt {
+public:
+  DirectedEdgeExt() : hiking_seconds_(0), spare0_(0), has_hiking_seconds_(0) {
+  }
+
+  /**
+   * Returns true when precomputed hiking seconds are available for this directed edge orientation.
+   */
+  bool has_hiking_seconds() const {
+    return has_hiking_seconds_;
+  }
+
+  /**
+   * Gets precomputed hiking seconds for this directed edge orientation.
+   */
+  uint32_t hiking_seconds() const {
+    return hiking_seconds_;
+  }
+
+  /**
+   * Sets precomputed hiking seconds for this directed edge orientation.
+   */
+  void set_hiking_seconds(const uint32_t seconds) {
+    hiking_seconds_ = seconds > 65535 ? 65535 : seconds;
+    has_hiking_seconds_ = true;
+  }
+
+  /**
+   * Clears precomputed hiking seconds for this directed edge orientation.
+   */
+  void clear_hiking_seconds() {
+    hiking_seconds_ = 0;
+    has_hiking_seconds_ = false;
+  }
 
 protected:
-  uint64_t spare0_ : 64;
+  uint64_t hiking_seconds_ : 16;
+  uint64_t spare0_ : 47;
+  uint64_t has_hiking_seconds_ : 1;
 };
 
 } // namespace baldr

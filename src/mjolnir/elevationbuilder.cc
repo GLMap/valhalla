@@ -13,7 +13,12 @@
 
 #include <boost/property_tree/ptree.hpp>
 
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <cstdint>
 #include <filesystem>
+#include <limits>
 #include <random>
 #include <thread>
 #include <utility>
@@ -29,9 +34,124 @@ constexpr double POSTING_INTERVAL = 60;
 
 // Do not compute grade for intervals less than 10 meters.
 constexpr double kMinimumInterval = 10.0f;
+constexpr double kHikingSegmentLength = 150.0;
+constexpr uint32_t kMaxStoredHikingSeconds = std::numeric_limits<uint16_t>::max();
 
-using cache_t =
-    std::unordered_map<uint32_t, std::tuple<uint32_t, uint32_t, float, float, float, float>>;
+constexpr std::array<double, 8> kHikingSlopeKnots = {-0.4, -0.2, -0.08, -0.05, 0.03, 0.08, 0.2, 0.4};
+constexpr std::array<double, 8> kHikingSecondsPerKm = {2520.0, 1270.0, 1130.0, 880.0,
+                                                       1020.0, 1110.0, 2330.0, 4120.0};
+
+struct EdgeElevationAttributes {
+  uint32_t forward_grade;
+  uint32_t reverse_grade;
+  float forward_max_up_slope;
+  float forward_max_down_slope;
+  float reverse_max_up_slope;
+  float reverse_max_down_slope;
+  double forward_hiking_seconds;
+  double reverse_hiking_seconds;
+};
+
+using cache_t = std::unordered_map<uint32_t, EdgeElevationAttributes>;
+
+double hiking_seconds_per_km(const double slope) {
+  if (slope <= kHikingSlopeKnots.front()) {
+    return kHikingSecondsPerKm.front();
+  }
+  if (slope >= kHikingSlopeKnots.back()) {
+    return kHikingSecondsPerKm.back();
+  }
+
+  const auto upper = std::upper_bound(kHikingSlopeKnots.cbegin(), kHikingSlopeKnots.cend(), slope);
+  const auto upper_index = static_cast<size_t>(upper - kHikingSlopeKnots.cbegin());
+  const auto lower_index = upper_index - 1;
+  const double lower_slope = kHikingSlopeKnots[lower_index];
+  const double upper_slope = kHikingSlopeKnots[upper_index];
+  const double lower_seconds = kHikingSecondsPerKm[lower_index];
+  const double upper_seconds = kHikingSecondsPerKm[upper_index];
+  const double fraction = (slope - lower_slope) / (upper_slope - lower_slope);
+  return lower_seconds + (upper_seconds - lower_seconds) * fraction;
+}
+
+double
+height_at_distance(const std::vector<double>& heights, const double distance, const double length) {
+  if (heights.empty()) {
+    return valhalla::skadi::get_no_data_value();
+  }
+  if (distance <= 0.0 || heights.size() == 1) {
+    return heights.front();
+  }
+  if (distance >= length) {
+    return heights.back();
+  }
+
+  const double sample_index = distance / POSTING_INTERVAL;
+  size_t lower_index = static_cast<size_t>(std::floor(sample_index));
+  lower_index = std::min(lower_index, heights.size() - 2);
+  const size_t upper_index = lower_index + 1;
+
+  const double lower_distance = std::min(static_cast<double>(lower_index) * POSTING_INTERVAL, length);
+  const double upper_distance =
+      upper_index == heights.size() - 1
+          ? length
+          : std::min(static_cast<double>(upper_index) * POSTING_INTERVAL, length);
+  if (upper_distance <= lower_distance) {
+    return heights[lower_index];
+  }
+
+  const double lower_height = heights[lower_index];
+  const double upper_height = heights[upper_index];
+  if (lower_height == valhalla::skadi::get_no_data_value() ||
+      upper_height == valhalla::skadi::get_no_data_value()) {
+    return valhalla::skadi::get_no_data_value();
+  }
+
+  const double fraction = (distance - lower_distance) / (upper_distance - lower_distance);
+  return lower_height + (upper_height - lower_height) * fraction;
+}
+
+double hiking_seconds_from_heights(const std::vector<double>& heights, const uint32_t length) {
+  if (length == 0) {
+    return 0.0;
+  }
+
+  double seconds = 0.0;
+  for (double segment_start = 0.0; segment_start < length; segment_start += kHikingSegmentLength) {
+    const double segment_end =
+        std::min(segment_start + kHikingSegmentLength, static_cast<double>(length));
+    const double segment_length = segment_end - segment_start;
+    if (segment_length <= 0.0) {
+      continue;
+    }
+
+    const double start_height = height_at_distance(heights, segment_start, length);
+    const double end_height = height_at_distance(heights, segment_end, length);
+    const double slope = start_height == valhalla::skadi::get_no_data_value() ||
+                                 end_height == valhalla::skadi::get_no_data_value()
+                             ? 0.0
+                             : (end_height - start_height) / segment_length;
+    seconds += hiking_seconds_per_km(slope) * (segment_length * 0.001);
+  }
+  return seconds;
+}
+
+uint32_t clamp_hiking_seconds(const double seconds,
+                              const GraphId& tile_id,
+                              const uint32_t edge_index,
+                              const uint32_t edge_info_offset,
+                              const uint64_t wayid) {
+  const double rounded_seconds = std::round(std::max(0.0, seconds));
+  if (rounded_seconds <= kMaxStoredHikingSeconds) {
+    return static_cast<uint32_t>(rounded_seconds);
+  }
+
+  LOG_WARN("Hiking seconds exceeds 65535 and will be clamped: tile_id=" +
+           std::to_string(tile_id.tileid()) + " level=" + std::to_string(tile_id.level()) +
+           " edge_index=" + std::to_string(edge_index) + " edgeinfo_offset=" +
+           std::to_string(edge_info_offset) + " wayid=" + std::to_string(wayid) +
+           " seconds=" + std::to_string(static_cast<uint64_t>(rounded_seconds)));
+  return kMaxStoredHikingSeconds;
+}
 
 /**
  * Encode elevation along an edge to store in tiles.
@@ -128,6 +248,10 @@ void add_elevations_to_single_tile(GraphReader& graphreader,
   // Reserve twice the number of directed edges in the tile. We do not directly know
   // how many EdgeInfo records exist but it cannot be more than 2x the directed edge count.
   uint32_t count = tilebuilder.header()->directededgecount();
+  auto& directededges_ext = tilebuilder.directededges_ext();
+  if (count > 0 && directededges_ext.empty()) {
+    directededges_ext.resize(count);
+  }
   cache.clear();
   cache.reserve(2 * count);
 
@@ -161,6 +285,8 @@ void add_elevations_to_single_tile(GraphReader& graphreader,
       // Grade estimation and max slopes
       std::tuple<double, double, double, double> forward_grades(0.0, 0.0, 0.0, 0.0);
       std::tuple<double, double, double, double> reverse_grades(0.0, 0.0, 0.0, 0.0);
+      double forward_hiking_seconds = 0.0;
+      double reverse_hiking_seconds = 0.0;
 
       // Evenly sample the shape and add the last shape point. TODO - if close to the end do not!
       std::vector<PointLL> resampled =
@@ -192,23 +318,30 @@ void add_elevations_to_single_tile(GraphReader& graphreader,
         // Keep the default grades - but set the mean elevation
         forward_grades = std::make_tuple(0.0, 0.0, 0.0, std::get<3>(grades));
         reverse_grades = std::make_tuple(0.0, 0.0, 0.0, std::get<3>(grades));
+        forward_hiking_seconds = hiking_seconds_from_heights(heights, length);
+        std::reverse(heights.begin(), heights.end());
+        reverse_hiking_seconds = hiking_seconds_from_heights(heights, length);
       } else {
         // Set the forward grades. Reverse the path and compute the
         // weighted grade in reverse direction.
         forward_grades = grades;
+        forward_hiking_seconds = hiking_seconds_from_heights(heights, length);
         std::reverse(heights.begin(), heights.end());
         reverse_grades = valhalla::skadi::weighted_grade(heights, POSTING_INTERVAL);
+        reverse_hiking_seconds = hiking_seconds_from_heights(heights, length);
       }
 
       // Add elevation info to the geo attribute cache.
       float mean_elevation = std::get<3>(forward_grades);
       uint32_t forward_grade = static_cast<uint32_t>(std::get<0>(forward_grades) * .6 + 6.5);
       uint32_t reverse_grade = static_cast<uint32_t>(std::get<0>(reverse_grades) * .6 + 6.5);
-      auto inserted =
-          cache.insert({edge_info_offset,
-                        std::make_tuple(forward_grade, reverse_grade, std::get<1>(forward_grades),
-                                        std::get<2>(forward_grades), std::get<1>(reverse_grades),
-                                        std::get<2>(reverse_grades))});
+      auto inserted = cache.insert(
+          {edge_info_offset,
+           {forward_grade, reverse_grade, static_cast<float>(std::get<1>(forward_grades)),
+            static_cast<float>(std::get<2>(forward_grades)),
+            static_cast<float>(std::get<1>(reverse_grades)),
+            static_cast<float>(std::get<2>(reverse_grades)), forward_hiking_seconds,
+            reverse_hiking_seconds}});
       found = inserted.first;
 
       // Store the new edge info offset
@@ -229,12 +362,21 @@ void add_elevations_to_single_tile(GraphReader& graphreader,
     // Edge elevation information. If the edge is forward (with respect to the shape)
     // use the first value, otherwise use the second.
     bool forward = directededge.forward();
-    directededge.set_weighted_grade(forward ? std::get<0>(found->second)
-                                            : std::get<1>(found->second));
-    float max_up_slope = forward ? std::get<2>(found->second) : std::get<4>(found->second);
-    float max_down_slope = forward ? std::get<3>(found->second) : std::get<5>(found->second);
+    directededge.set_weighted_grade(forward ? found->second.forward_grade
+                                            : found->second.reverse_grade);
+    float max_up_slope =
+        forward ? found->second.forward_max_up_slope : found->second.reverse_max_up_slope;
+    float max_down_slope =
+        forward ? found->second.forward_max_down_slope : found->second.reverse_max_down_slope;
     directededge.set_max_up_slope(max_up_slope);
     directededge.set_max_down_slope(max_down_slope);
+
+    auto wayid = tilebuilder.edgeinfo(&directededge).wayid();
+    auto& directededge_ext = tilebuilder.directededge_ext_builder(elem.second);
+    const double hiking_seconds =
+        forward ? found->second.forward_hiking_seconds : found->second.reverse_hiking_seconds;
+    directededge_ext.set_hiking_seconds(
+        clamp_hiking_seconds(hiking_seconds, tile_id, elem.second, edge_info_offset, wayid));
   }
 
   // Iterate through all directed edges and update their edge info offsets

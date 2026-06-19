@@ -8,11 +8,13 @@ using namespace valhalla::baldr;
 // Expected size is 48 bytes. Since there are still "spare" bits
 // we want to alert if somehow any change grows this structure size
 constexpr size_t kDirectedEdgeExpectedSize = 48;
+constexpr size_t kDirectedEdgeExtExpectedSize = 8;
 
 namespace {
 
 TEST(DirectedEdge, test_sizeof) {
   EXPECT_EQ(sizeof(DirectedEdge), kDirectedEdgeExpectedSize);
+  EXPECT_EQ(sizeof(DirectedEdgeExt), kDirectedEdgeExtExpectedSize);
 }
 
 TEST(DirectedEdge, TestWriteRead) {
@@ -101,6 +103,25 @@ TEST(DirectedEdge, TestMaxSlope) {
 
   edge.set_max_down_slope(-15.7f);
   EXPECT_EQ(edge.max_down_slope(), -16);
+}
+
+TEST(DirectedEdgeExt, TestHikingSeconds) {
+  DirectedEdgeExt ext;
+
+  EXPECT_FALSE(ext.has_hiking_seconds());
+  EXPECT_EQ(ext.hiking_seconds(), 0);
+
+  ext.set_hiking_seconds(1234);
+  EXPECT_TRUE(ext.has_hiking_seconds());
+  EXPECT_EQ(ext.hiking_seconds(), 1234);
+
+  ext.set_hiking_seconds(65535);
+  EXPECT_TRUE(ext.has_hiking_seconds());
+  EXPECT_EQ(ext.hiking_seconds(), 65535);
+
+  ext.clear_hiking_seconds();
+  EXPECT_FALSE(ext.has_hiking_seconds());
+  EXPECT_EQ(ext.hiking_seconds(), 0);
 }
 
 } // namespace
