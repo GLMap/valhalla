@@ -145,26 +145,31 @@ bool should_store_hiking_seconds(const DirectedEdge& directededge) {
          use != Use::kEgressConnection && use != Use::kPlatformConnection;
 }
 
-uint32_t clamp_hiking_seconds(const double seconds,
-                              const GraphId& tile_id,
-                              const uint32_t edge_index,
-                              const uint32_t edge_info_offset,
-                              const uint32_t edge_length,
-                              const uint32_t forward_access,
-                              const uint64_t wayid) {
+bool try_get_storable_hiking_seconds(const double seconds,
+                                     uint32_t& stored_seconds,
+                                     const GraphId& tile_id,
+                                     const uint32_t edge_index,
+                                     const uint32_t edge_info_offset,
+                                     const uint32_t edge_length,
+                                     const uint32_t forward_access,
+                                     const Use use,
+                                     const RoadClass road_class,
+                                     const uint64_t wayid) {
   const double rounded_seconds = std::round(std::max(0.0, seconds));
   if (rounded_seconds <= kMaxStoredHikingSeconds) {
-    return static_cast<uint32_t>(rounded_seconds);
+    stored_seconds = static_cast<uint32_t>(rounded_seconds);
+    return true;
   }
 
-  LOG_WARN("Hiking seconds exceeds 65535 and will be clamped: tile_id=" +
+  LOG_WARN("Hiking seconds exceeds 65535 and will not be stored: tile_id=" +
            std::to_string(tile_id.tileid()) + " level=" + std::to_string(tile_id.level()) +
            " edge_index=" + std::to_string(edge_index) + " edgeinfo_offset=" +
-           std::to_string(edge_info_offset) + " wayid=" + std::to_string(wayid) +
+           std::to_string(edge_info_offset) + " osm_way_id=" + std::to_string(wayid) +
+           " use=" + to_string(use) + " road_class=" + to_string(road_class) +
            " length=" + std::to_string(edge_length) +
            " forward_access=" + std::to_string(forward_access) +
            " seconds=" + std::to_string(static_cast<uint64_t>(rounded_seconds)));
-  return kMaxStoredHikingSeconds;
+  return false;
 }
 
 /**
@@ -394,9 +399,15 @@ void add_elevations_to_single_tile(GraphReader& graphreader,
 
     const double hiking_seconds =
         forward ? found->second.forward_hiking_seconds : found->second.reverse_hiking_seconds;
-    directededge_ext.set_hiking_seconds(clamp_hiking_seconds(hiking_seconds, tile_id, elem.second,
-                                                             edge_info_offset, directededge.length(),
-                                                             directededge.forwardaccess(), wayid));
+    uint32_t stored_hiking_seconds = 0;
+    if (try_get_storable_hiking_seconds(hiking_seconds, stored_hiking_seconds, tile_id, elem.second,
+                                        edge_info_offset, directededge.length(),
+                                        directededge.forwardaccess(), directededge.use(),
+                                        directededge.classification(), wayid)) {
+      directededge_ext.set_hiking_seconds(stored_hiking_seconds);
+    } else {
+      directededge_ext.clear_hiking_seconds();
+    }
   }
 
   // Iterate through all directed edges and update their edge info offsets
@@ -489,11 +500,14 @@ void ElevationBuilder::Build(const boost::property_tree::ptree& pt,
 
   if (tile_ids.empty())
     tile_ids = get_tile_ids(pt);
+  const auto tile_count = tile_ids.size();
 
   std::vector<std::shared_ptr<std::thread>> threads(nthreads);
 
-  LOG_INFO("Adding elevation to " + std::to_string(tile_ids.size()) + " tiles with " +
-           std::to_string(nthreads) + " threads...");
+  LOG_INFO("Adding elevation data: tile_count=" + std::to_string(tile_count) +
+           " threads=" + std::to_string(nthreads) +
+           " tile_dir=" + pt.get<std::string>("mjolnir.tile_dir", "") +
+           " elevation_dir=" + *elevation);
   std::mutex lock;
   for (auto& thread : threads) {
     thread = std::make_shared<std::thread>(add_elevations_to_multiple_tiles, std::cref(pt),
@@ -504,7 +518,10 @@ void ElevationBuilder::Build(const boost::property_tree::ptree& pt,
     thread->join();
   }
 
-  LOG_INFO("Finished");
+  LOG_INFO("Finished adding elevation data: tile_count=" + std::to_string(tile_count) +
+           " threads=" + std::to_string(nthreads) +
+           " tile_dir=" + pt.get<std::string>("mjolnir.tile_dir", "") +
+           " elevation_dir=" + *elevation);
 }
 
 } // namespace mjolnir
