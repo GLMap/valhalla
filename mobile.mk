@@ -183,7 +183,7 @@ MICRO_LIB = libvalhalla_micro.a
 MICRO_DYNAMIC = libvalhalla_micro.dylib
 MICRO_TRACER = valhalla_tracer
 
-CXXFLAGS += -std=c++20 -D_LIBCPP_DISABLE_AVAILABILITY -DNDEBUG=1 -DUSE_STD_REGEX=1 -DRAPIDJSON_HAS_STDSTRING=1 -DVALHALLA_MOBILE=1 -DFMT_HEADER_ONLY=1 \
+CXXFLAGS += -std=c++20 -DNDEBUG=1 -DUSE_STD_REGEX=1 -DRAPIDJSON_HAS_STDSTRING=1 -DVALHALLA_MOBILE=1 -DFMT_HEADER_ONLY=1 \
  -I. -Ivalhalla -Igenfiles -Igenfiles/valhalla \
  -Ithird_party/cpp-statsd-client/include \
  -Ithird_party/robin-hood-hashing/src/include \
