@@ -135,10 +135,22 @@ double hiking_seconds_from_heights(const std::vector<double>& heights, const uin
   return seconds;
 }
 
+bool should_store_hiking_seconds(const DirectedEdge& directededge) {
+  if (!(directededge.forwardaccess() & kPedestrianAccess) || directededge.is_shortcut()) {
+    return false;
+  }
+
+  const auto use = directededge.use();
+  return use != Use::kFerry && use != Use::kRailFerry && use != Use::kTransitConnection &&
+         use != Use::kEgressConnection && use != Use::kPlatformConnection;
+}
+
 uint32_t clamp_hiking_seconds(const double seconds,
                               const GraphId& tile_id,
                               const uint32_t edge_index,
                               const uint32_t edge_info_offset,
+                              const uint32_t edge_length,
+                              const uint32_t forward_access,
                               const uint64_t wayid) {
   const double rounded_seconds = std::round(std::max(0.0, seconds));
   if (rounded_seconds <= kMaxStoredHikingSeconds) {
@@ -149,6 +161,8 @@ uint32_t clamp_hiking_seconds(const double seconds,
            std::to_string(tile_id.tileid()) + " level=" + std::to_string(tile_id.level()) +
            " edge_index=" + std::to_string(edge_index) + " edgeinfo_offset=" +
            std::to_string(edge_info_offset) + " wayid=" + std::to_string(wayid) +
+           " length=" + std::to_string(edge_length) +
+           " forward_access=" + std::to_string(forward_access) +
            " seconds=" + std::to_string(static_cast<uint64_t>(rounded_seconds)));
   return kMaxStoredHikingSeconds;
 }
@@ -373,10 +387,16 @@ void add_elevations_to_single_tile(GraphReader& graphreader,
 
     auto wayid = tilebuilder.edgeinfo(&directededge).wayid();
     auto& directededge_ext = tilebuilder.directededge_ext_builder(elem.second);
+    if (!should_store_hiking_seconds(directededge)) {
+      directededge_ext.clear_hiking_seconds();
+      continue;
+    }
+
     const double hiking_seconds =
         forward ? found->second.forward_hiking_seconds : found->second.reverse_hiking_seconds;
-    directededge_ext.set_hiking_seconds(
-        clamp_hiking_seconds(hiking_seconds, tile_id, elem.second, edge_info_offset, wayid));
+    directededge_ext.set_hiking_seconds(clamp_hiking_seconds(hiking_seconds, tile_id, elem.second,
+                                                             edge_info_offset, directededge.length(),
+                                                             directededge.forwardaccess(), wayid));
   }
 
   // Iterate through all directed edges and update their edge info offsets

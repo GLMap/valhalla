@@ -11,6 +11,8 @@
 #include <deque>
 #include <filesystem>
 #include <iostream>
+#include <string>
+#include <unordered_set>
 #include <vector>
 
 namespace opt = cxxopts;
@@ -31,12 +33,26 @@ std::deque<GraphId> get_tile_ids(const boost::property_tree::ptree& pt,
     return {};
   }
 
-  std::unordered_set<std::string> tiles_set{tiles.begin(), tiles.end()};
-
   std::deque<GraphId> tilequeue;
   GraphReader reader(pt.get_child("mjolnir"));
   std::for_each(std::begin(tiles), std::end(tiles), [&](const auto& tile) {
-    auto tile_id = GraphTile::GetTileId(*tile_dir + tile);
+    auto tile_path = std::filesystem::path(tile);
+    if (!std::filesystem::is_regular_file(tile_path)) {
+      auto relative_tile = tile;
+      while (!relative_tile.empty() &&
+             (relative_tile.front() == '/' ||
+              relative_tile.front() == std::filesystem::path::preferred_separator)) {
+        relative_tile.erase(relative_tile.begin());
+      }
+      tile_path = std::filesystem::path(*tile_dir) / relative_tile;
+    }
+
+    if (!std::filesystem::is_regular_file(tile_path)) {
+      LOG_WARN("Provided tile file does not exist: " + tile);
+      return;
+    }
+
+    auto tile_id = GraphTile::GetTileId(tile_path.string());
     GraphId local_tile_id(tile_id.tileid(), tile_id.level(), tile_id.id());
     if (!reader.DoesTileExist(local_tile_id)) {
       LOG_WARN("Provided tile doesn't belong to the tile directory from config file");
@@ -89,15 +105,8 @@ int main(int argc, char** argv) {
     if (!parse_common_args(program, options, result, &config, "mjolnir.logging", true))
       return EXIT_SUCCESS;
 
-    if (!result.count("tiles")) {
+    if (!result.count("tiles") || tiles.empty()) {
       std::cerr << "Tile file is required\n\n" << options.help() << "\n\n";
-      return EXIT_FAILURE;
-    } else {
-      for (const auto& tile : result["concurrency"].as<std::vector<std::string>>()) {
-        if (std::filesystem::exists(tile) && std::filesystem::is_regular_file(tile))
-          return EXIT_FAILURE;
-      }
-      std::cerr << "All tile files are invalid\n\n" << options.help() << "\n\n";
       return EXIT_FAILURE;
     }
   } catch (cxxopts::exceptions::exception& e) {
