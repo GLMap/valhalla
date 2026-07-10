@@ -1312,6 +1312,13 @@ void GraphTileBuilder::UpdatePredictedSpeeds(const std::vector<DirectedEdge>& di
     file.write(reinterpret_cast<const char*>(directededges.data()),
                directededges.size() * sizeof(DirectedEdge));
 
+    // Preserve extended directed edge attributes. Predicted traffic updates do not change the
+    // directed edge count, so extension records remain aligned by edge index.
+    if (header_->has_ext_directededge()) {
+      file.write(reinterpret_cast<const char*>(ext_directededges_),
+                 header_->directededgecount() * sizeof(DirectedEdgeExt));
+    }
+
     // Write out data from access restrictions to the end of lane connectivity data.
     auto begin = reinterpret_cast<const char*>(&access_restrictions_[0]);
     auto end = reinterpret_cast<const char*>(header()) + offset;
