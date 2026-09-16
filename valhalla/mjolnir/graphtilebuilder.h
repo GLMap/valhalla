@@ -598,6 +598,9 @@ protected:
   // Admin info offset
   std::unordered_map<std::string, size_t> admin_info_offset_map_;
 
+  // Spatial lookup bins from an existing tile, preserved during attribute updates.
+  std::array<std::vector<baldr::GraphId>, baldr::kBinCount> bins_builder_;
+
   // The forward complex restriction list
   std::vector<ComplexRestrictionBuilder> complex_restriction_forward_builder_;
 

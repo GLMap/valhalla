@@ -159,7 +159,20 @@ GraphTileBuilder::GraphTileBuilder(const std::string& tile_dir,
     name_info.insert({admins_[i].state_offset()});
   }
 
-  // Edge bins are gotten by parent
+  // Preserve the spatial index when rewriting finalized tiles (e.g. adding elevation).
+  for (size_t i = 0; i < kBinCount; ++i) {
+    const auto bin = GetBin(i % kBinsDim, i / kBinsDim);
+    bins_builder_[i].assign(bin.begin(), bin.end());
+  }
+
+  if (header_->predictedspeeds_count()) {
+    const auto* offsets = reinterpret_cast<const uint32_t*>(
+        reinterpret_cast<const char*>(header_) + header_->predictedspeeds_offset());
+    speed_profile_offset_builder_.assign(offsets, offsets + header_->directededgecount());
+    const auto* profiles = reinterpret_cast<const int16_t*>(offsets + header_->directededgecount());
+    speed_profile_builder_.assign(
+        profiles, profiles + header_->predictedspeeds_count() * kCoefficientCount);
+  }
 
   // Create an ordered map with edge info offsets as the key and the edge length
   // as the value. Length is needed so elevation data can be read (if present).
@@ -167,14 +180,6 @@ GraphTileBuilder::GraphTileBuilder(const std::string& tile_dir,
   for (auto& diredge : directededges_builder_) {
     edge_info_offsets[diredge.edgeinfo_offset()] = diredge.length();
   }
-
-  // At this time, complex restrictions are created AFTER all need for
-  // serializing and adding to a tile - so we assume they are both empty.
-
-  // Serializing complex restrictions would be difficult since they require a
-  // temporary vector of the via graphIds to be constructed for the ComplexRestrictionBuilder.
-  // This is possible, but non-trivial since the complex restriction data has a fixed size
-  // structure plus the variable sized data (the via Ids).
 
   // EdgeInfo. Create list of EdgeInfoBuilders. Add to text offset set.
   edge_info_offset_ = 0;
@@ -355,22 +360,20 @@ void GraphTileBuilder::StoreTileData() {
     in_mem.write(reinterpret_cast<const char*>(admins_builder_.data()),
                  admins_builder_.size() * sizeof(Admin));
 
-    // Edge bins can only be added after you've stored the tile
+    // Write spatial lookup bins before the complex restrictions.
+    uint32_t bin_offsets[kBinCount] = {};
+    uint32_t bin_count = 0;
+    for (size_t i = 0; i < kBinCount; ++i) {
+      const auto& bin = bins_builder_[i];
+      in_mem.write(reinterpret_cast<const char*>(bin.data()), bin.size() * sizeof(GraphId));
+      bin_count += bin.size();
+      bin_offsets[i] = bin_count;
+    }
+    header_builder_.set_edge_bin_offsets(bin_offsets);
 
-    // Write the forward complex restriction data
+    // Write the forward complex restriction data.
     header_builder_.set_complex_restriction_forward_offset(
-        (sizeof(GraphTileHeader)) + (nodes_builder_.size() * sizeof(NodeInfo)) +
-        (transitions_builder_.size() * sizeof(NodeTransition)) +
-        (directededges_builder_.size() * sizeof(DirectedEdge)) +
-        (directededges_ext_builder_.size() * sizeof(DirectedEdgeExt)) +
-        (access_restriction_builder_.size() * sizeof(AccessRestriction)) +
-        (departure_builder_.size() * sizeof(TransitDeparture)) +
-        (stop_builder_.size() * sizeof(TransitStop)) +
-        (route_builder_.size() * sizeof(TransitRoute)) +
-        (schedule_builder_.size() * sizeof(TransitSchedule)) +
-        // TODO - once transit transfers are added need to update here
-        (signs_builder_.size() * sizeof(Sign)) + (turnlanes_builder_.size() * sizeof(TurnLanes)) +
-        (admins_builder_.size() * sizeof(Admin)));
+        sizeof(GraphTileHeader) + static_cast<uint32_t>(in_mem.tellp()));
     uint32_t forward_restriction_size = 0;
     for (auto& complex_restriction : complex_restriction_forward_builder_) {
       in_mem << complex_restriction;
@@ -415,9 +418,25 @@ void GraphTileBuilder::StoreTileData() {
     in_mem.write(reinterpret_cast<const char*>(lane_connectivity_builder_.data()),
                  lane_connectivity_builder_.size() * sizeof(LaneConnectivity));
 
-    // Set the end offset
+    // Predicted profiles follow lane connectivity. Their offset changes when
+    // elevation profiles or names grow, even though edge indexes stay fixed.
+    header_builder_.set_predictedspeeds_count(speed_profile_builder_.size() / kCoefficientCount);
+    header_builder_.set_predictedspeeds_offset(0);
+    if (!speed_profile_builder_.empty()) {
+      if (speed_profile_offset_builder_.size() != directededges_builder_.size()) {
+        throw std::runtime_error("Cannot preserve predicted speeds after changing edge count");
+      }
+      header_builder_.set_predictedspeeds_offset(
+          sizeof(GraphTileHeader) + static_cast<uint32_t>(in_mem.tellp()));
+      in_mem.write(reinterpret_cast<const char*>(speed_profile_offset_builder_.data()),
+                   speed_profile_offset_builder_.size() * sizeof(uint32_t));
+      in_mem.write(reinterpret_cast<const char*>(speed_profile_builder_.data()),
+                   speed_profile_builder_.size() * sizeof(int16_t));
+    }
     header_builder_.set_end_offset(header_builder_.lane_connectivity_offset() +
-                                   (lane_connectivity_builder_.size() * sizeof(LaneConnectivity)));
+                                   lane_connectivity_builder_.size() * sizeof(LaneConnectivity) +
+                                   speed_profile_offset_builder_.size() * sizeof(uint32_t) +
+                                   speed_profile_builder_.size() * sizeof(int16_t));
 
     // Sanity check for the end offset
     uint32_t curr =

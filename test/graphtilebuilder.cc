@@ -6,6 +6,7 @@
 
 #include <gtest/gtest.h>
 
+#include <cstring>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -288,24 +289,25 @@ public:
     auto id = GraphId(tiles.TileId(s.front()), l, 0);
     auto o_id = GraphId(tiles.TileId(s.front()), l, tiles.TileId(s.back()));
     o_id.set_id(o_id == id);
-    header_ = new GraphTileHeader();
-    header_->set_graphid(id);
-    header_->set_directededgecount(1 + (id.tileid() == o_id.tileid()) * 1);
+    auto* header = new GraphTileHeader();
+    header->set_graphid(id);
+    header->set_directededgecount(1 + (id.tileid() == o_id.tileid()) * 1);
+    header_ = header;
 
     auto ei_size = sizeof(EdgeInfo::EdgeInfoInner) + e.size();
-    edgeinfo_ = new char[ei_size];
+    auto* edgeinfo = new char[ei_size];
+    edgeinfo_ = edgeinfo;
     EdgeInfo::EdgeInfoInner pi{0, 0, 0, 0, 0, 0, static_cast<uint32_t>(e.size()), 0, 0, 0, 0};
-    std::memcpy(static_cast<void*>(edgeinfo_), static_cast<void*>(&pi),
+    std::memcpy(static_cast<void*>(edgeinfo), static_cast<void*>(&pi),
                 sizeof(EdgeInfo::EdgeInfoInner));
     textlist_ = edgeinfo_;
     textlist_size_ = 0;
-    std::memcpy(static_cast<void*>(edgeinfo_ + sizeof(EdgeInfo::EdgeInfoInner)),
+    std::memcpy(static_cast<void*>(edgeinfo + sizeof(EdgeInfo::EdgeInfoInner)),
                 static_cast<void*>(&e[0]), e.size());
 
-    directededges_ = new DirectedEdge[2];
-    std::memset(static_cast<void*>(&directededges_[0]), 0,
-                sizeof(DirectedEdge) * header_->directededgecount());
-    directededges_[0].set_forward(true);
+    auto* directededges = new DirectedEdge[2]{};
+    directededges[0].set_forward(true);
+    directededges_ = directededges;
   }
   ~fake_tile() {
     delete header_;
@@ -340,4 +342,96 @@ TEST(GraphTileBuilder, TestBinEdges) {
 int main(int argc, char* argv[]) {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
+}
+
+TEST(GraphTileBuilder, PreserveSpatialIndexAndTrafficWhenRewriting) {
+  const GraphId id(818660, 2, 0);
+  const std::string source_dir = "test/data/rewrite_source";
+  {
+    // Build the fixture here; generated gurka tiles are not present in a clean checkout.
+    GraphTileBuilder fixture(source_dir, id, false);
+    fixture.header_builder() = GraphTileHeader();
+    fixture.header_builder().set_graphid(id);
+    fixture.nodes().resize(2);
+    fixture.directededges().resize(2);
+    bool added = false;
+    const auto offset = fixture.AddEdgeInfo(
+        0, id, GraphId(id.tileid(), id.level(), 1), 1234, 0, 0, 80,
+        std::vector<PointLL>{{0, 0}, {0.001, 0}}, {"test road"}, {}, {}, 0, added);
+    for (uint32_t i = 0; i < 2; ++i) {
+      fixture.nodes()[i].set_edge_index(i);
+      fixture.nodes()[i].set_edge_count(1);
+      auto& edge = fixture.directededges()[i];
+      edge.set_endnode(GraphId(id.tileid(), id.level(), 1 - i));
+      edge.set_edgeinfo_offset(offset);
+      edge.set_forward(i == 0);
+      edge.set_length(111);
+    }
+    fixture.StoreTileData();
+  }
+  const auto source = GraphTile::Create(source_dir, id);
+  ASSERT_TRUE(source);
+  ASSERT_EQ(source->header()->directededgecount(), 2u);
+
+  for (const bool predicted : {false, true}) {
+    const std::string tile_dir = predicted ? "test/data/rewrite_predicted" : "test/data/rewrite_scalar";
+    std::array<std::vector<GraphId>, kBinCount> bins;
+    bins.front() = {GraphId(818660, 2, 0), GraphId(818661, 2, 7)};
+    bins.back() = {GraphId(818660, 2, 1)};
+    GraphTileBuilder::AddBins(tile_dir, source, bins);
+    {
+      GraphTileBuilder traffic(tile_dir, id, false);
+      std::vector<DirectedEdge> edges(traffic.GetDirectedEdges().begin(),
+                                       traffic.GetDirectedEdges().end());
+      edges[0].set_free_flow_speed(81);
+      edges[0].set_constrained_flow_speed(43);
+      if (predicted) {
+        std::array<int16_t, kCoefficientCount> coefficients{};
+        coefficients[0] = 8301;
+        coefficients[1] = -12;
+        traffic.AddPredictedSpeed(0, coefficients, 1);
+        edges[0].set_has_predicted_speed(true);
+      }
+      traffic.UpdatePredictedSpeeds(edges);
+    }
+    const auto before = GraphTile::Create(tile_dir, id);
+    ASSERT_TRUE(before);
+    // Rewrite twice to catch index duplication and stale offsets on retry.
+    for (size_t pass = 0; pass < 2; ++pass) {
+      GraphTileBuilder rewrite(tile_dir, id, true);
+      rewrite.node_builder(0).set_elevation(123);
+      rewrite.set_elevation(rewrite.directededge(0).edgeinfo_offset(), 322, {});
+      // Grow the variable-length section so predicted offsets must move.
+      rewrite.AddName(std::string(80 + pass, 'x'));
+      rewrite.StoreTileData();
+      const auto after = GraphTile::Create(tile_dir, id);
+      ASSERT_TRUE(after);
+      EXPECT_EQ(after->header()->graphid(), before->header()->graphid());
+      EXPECT_EQ(after->header()->nodecount(), before->header()->nodecount());
+      EXPECT_EQ(after->header()->directededgecount(), before->header()->directededgecount());
+      EXPECT_EQ(after->node(0)->elevation(), 123);
+      EXPECT_EQ(after->edgeinfo(after->directededge(0)).mean_elevation(), 322);
+      EXPECT_EQ(after->directededge(0)->free_flow_speed(), 81);
+      EXPECT_EQ(after->directededge(0)->constrained_flow_speed(), 43);
+      EXPECT_EQ(after->header()->predictedspeeds_count(), predicted ? 1 : 0);
+      if (predicted) {
+        uint8_t flow_sources = 0;
+        EXPECT_EQ(after->GetSpeed(after->directededge(0), kPredictedFlowMask, 0, false,
+                                   &flow_sources), 185);
+        EXPECT_EQ(flow_sources, kPredictedFlowMask);
+      }
+      for (size_t i = 0; i < kBinCount; ++i) {
+        const auto a = before->GetBin(i % kBinsDim, i / kBinsDim);
+        const auto b = after->GetBin(i % kBinsDim, i / kBinsDim);
+        ASSERT_EQ(a.size(), b.size());
+        EXPECT_TRUE(std::equal(a.begin(), a.end(), b.begin()));
+      }
+      for (uint32_t i = 0; i < before->header()->directededgecount(); ++i) {
+        EXPECT_EQ(std::memcmp(before->directededge(i), after->directededge(i),
+                              sizeof(DirectedEdge)), 0);
+        EXPECT_EQ(before->edgeinfo(before->directededge(i)).encoded_shape(),
+                  after->edgeinfo(after->directededge(i)).encoded_shape());
+      }
+    }
+  }
 }
