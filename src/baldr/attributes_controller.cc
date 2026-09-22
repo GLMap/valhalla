@@ -142,6 +142,8 @@ constexpr std::pair<std::string_view, bool> kDefaultAttributesData[] = {
     {kEdgeYieldFwd, false},
     {kEdgeAccessFwd, false},
     {kEdgeLiveSpeedFwd, false},
+    {kEdgeFreeflowSpeedFwd, false},
+    {kEdgeConstrainedSpeedFwd, false},
 
     {kEdgeSpeedBwd, false},
     {kEdgeDeadendBwd, false},
@@ -152,6 +154,8 @@ constexpr std::pair<std::string_view, bool> kDefaultAttributesData[] = {
     {kEdgeYieldBwd, false},
     {kEdgeAccessBwd, false},
     {kEdgeLiveSpeedBwd, false},
+    {kEdgeFreeflowSpeedBwd, false},
+    {kEdgeConstrainedSpeedBwd, false},
 
     // Node keys
     {kIncidents, false},
@@ -222,8 +226,27 @@ constexpr std::pair<std::string_view, bool> kDefaultAttributesData[] = {
     {kShapeAttributesSpeedLimit, false},
     {kShapeAttributesClosure, false},
     {kShapeAttributesCongestion, false},
+
+    // Incidents properties
+    {kIncidentId, false},
+    {kIncidentType, false},
+    {kIncidentDescription, false},
+    {kIncidentSubType, false},
+    {kIncidentSubTypeDescription, false},
+    {kIncidentStartTime, false},
+    {kIncidentEndTime, false},
+    {kIncidentImpact, false},
+    {kIncidentRoadClosed, false},
+    {kIncidentCongestionValue, false},
+    {kIncidentCreationTime, false},
+    {kIncidentLongDescription, false},
+    {kIncidentClearLanes, false},
+    {kIncidentNumLanesBlocked, false},
+    {kIncidentLength, false},
+    {kIncidentIso31661Alpha2, false},
+    {kIncidentIso31661Alpha3, false},
 };
-const midgard::ConstFlatMap<176, std::string_view, bool>
+const midgard::ConstFlatMap<197, std::string_view, bool>
     AttributesController::kDefaultAttributes(kDefaultAttributesData);
 
 std::unordered_set<std::string_view> AttributesController::ComputeDefaultEnabledCategories() {

@@ -1,4 +1,4 @@
-FROM ubuntu:24.04 AS builder
+FROM ubuntu:24.04 AS dependencies
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -20,6 +20,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libprotobuf-dev \
     libsqlite3-dev \
     libspatialite-dev \
+    spatialite-bin \
+    curl \
+    unzip \
+    python3 \
+    locales \
     libluajit-5.1-dev \
     libgeos-dev \
     liblz4-dev \
@@ -46,6 +51,7 @@ RUN cd prime_server && \
   make install
 
 # valhalla from local source (includes tracer target in CMakeLists.txt)
+FROM dependencies AS builder
 COPY . /usr/src/valhalla
 
 ARG version

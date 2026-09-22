@@ -4,6 +4,7 @@
 #include "midgard/pointll.h"
 #include "mjolnir/util.h"
 #include "test.h"
+#include "skadi/sample.h"
 
 #include <gtest/gtest.h>
 
@@ -69,6 +70,7 @@ TEST(Standalone, ElevationCompareToSkadi) {
       {"DH", {{"highway", "service"}, {"service", "alley"}}},
       {"HIJ", {{"highway", "secondary"}, {"name", "East Main Street"}}},
       {"EABC", {{"highway", "service"}, {"service", "driveway"}}},
+      {"T3U", {{"highway", "service"}}},
   };
 
   // Create our layout based on real world data.
@@ -97,6 +99,9 @@ TEST(Standalone, ElevationCompareToSkadi) {
   layout.insert({"Q", {-76.4957235, 40.6502434}});
   layout.insert({"R", {-76.4950865, 40.6501919}});
   layout.insert({"S", {-76.4944069, 40.6502916}});
+  layout.insert({"T", {-76.8, 40.2}});
+  layout.insert({"3", {-76.79, 40.21}});
+  layout.insert({"U", {-76.78, 40.22}});
 
   // create a fake elevation tile over the gurka map area
   midgard::PointLL bottom_left(-77, 40), upper_right(-76, 41);
@@ -150,6 +155,47 @@ TEST(Standalone, ElevationCompareToSkadi) {
   std::vector<std::string> input_files = {pbf_filename};
   build_tile_set(pt, input_files, mjolnir::BuildStage::kInitialize, mjolnir::BuildStage::kValidate);
 
+  for (const auto& waypoints : std::vector<std::vector<std::string>>{
+           {"T", "3", "U"},
+           {"U", "3", "T"},
+       }) {
+    SCOPED_TRACE(waypoints.front() + " through " + waypoints[1] + " to " + waypoints.back());
+
+    std::string through_json;
+    gurka::do_action(valhalla::Options::route, map, waypoints, "bicycle",
+                     {
+                         {"/locations/0/type", "break"},
+                         {"/locations/1/type", "through"},
+                         {"/locations/2/type", "break"},
+                         {"/elevation_interval", "30"},
+                     },
+                     {}, &through_json);
+
+    rapidjson::Document through_result;
+    through_result.Parse(through_json.c_str());
+    auto through_elevation = rapidjson::get_child_optional(through_result, "/trip/legs/0/elevation");
+    auto through_shape = rapidjson::get_child_optional(through_result, "/trip/legs/0/shape");
+
+    ASSERT_TRUE(through_elevation && through_elevation->IsArray());
+    ASSERT_TRUE(through_shape && through_shape->IsString());
+
+    std::string height_json;
+    std::string request = R"({"height_precision":1,"resample_distance":30,"encoded_polyline":")" +
+                          json_escape(through_shape->GetString()) + R"("})";
+    gurka::do_action(valhalla::Options::height, map, request, {}, &height_json);
+
+    rapidjson::Document height_result;
+    height_result.Parse(height_json.c_str());
+    auto height_elevation = rapidjson::get_child_optional(height_result, "/height");
+    ASSERT_TRUE(height_elevation && height_elevation->IsArray());
+
+    ASSERT_EQ(through_elevation->Size(), height_elevation->Size());
+
+    for (rapidjson::SizeType i = 0; i < through_elevation->Size(); ++i) {
+      EXPECT_NEAR((*through_elevation)[i].GetFloat(), (*height_elevation)[i].GetFloat(), 0.5f);
+    }
+  }
+
   // try a bunch of routes
   for (const auto& waypoints : std::vector<std::vector<std::string>>{
            {"S", "F"},
@@ -158,8 +204,9 @@ TEST(Standalone, ElevationCompareToSkadi) {
 
     // get a route with elevation included
     std::string route_json;
-    auto route = gurka::do_action(valhalla::Options::route, map, waypoints, "bicycle",
-                                  {{"/elevation_interval", "30"}}, {}, &route_json);
+    [[maybe_unused]] auto route =
+        gurka::do_action(valhalla::Options::route, map, waypoints, "bicycle",
+                         {{"/elevation_interval", "30"}}, {}, &route_json);
     rapidjson::Document result;
     result.Parse(route_json.c_str());
 
@@ -175,7 +222,8 @@ TEST(Standalone, ElevationCompareToSkadi) {
       std::string height_json;
       std::string request =
           R"({"height_precision":1,"resample_distance":30,"encoded_polyline":")" + shape + R"("})";
-      auto height = gurka::do_action(valhalla::Options::height, map, request, {}, &height_json);
+      [[maybe_unused]] auto height =
+          gurka::do_action(valhalla::Options::height, map, request, {}, &height_json);
 
       // pull out the elevation from the route result leg
       auto elevation =
@@ -213,7 +261,7 @@ TEST(Standalone, ElevationCompareToSkadi) {
            {"C", "N"},
        }) {
     std::string route_json;
-    auto route =
+    [[maybe_unused]] auto route =
         gurka::do_action(valhalla::Options::route, map, {"S", "F"}, "bicycle", {}, {}, &route_json);
     rapidjson::Document result;
     result.Parse(route_json.c_str());
@@ -230,4 +278,48 @@ TEST(Standalone, ElevationCompareToSkadi) {
       EXPECT_FALSE(elevation && elevation->IsArray());
     }
   }
+}
+
+// A 200 m edge has elevation samples at 0, 60, 120, 180, 200 m.
+// Reversing the heights alone incorrectly moves the short interval to the other end.
+TEST(Standalone, HikingSecondsWithShortLastSampleInterval) {
+  const std::string dir = "test/data/gurka_hiking_short_interval";
+  const std::string elevation_dir = dir + "/elevation";
+  std::filesystem::create_directories(elevation_dir);
+  std::vector<int16_t> heights(3601 * 3601);
+  for (size_t row = 0; row <= 3600; ++row) {
+    const uint16_t height = (3600 - row) * 3;
+    const int16_t big_endian = ((height & 0xff) << 8) | (height >> 8);
+    std::fill_n(heights.begin() + row * 3601, 3601, big_endian);
+  }
+  std::ofstream file(elevation_dir + "/N00E000.hgt", std::ios::binary | std::ios::trunc);
+  file.write(reinterpret_cast<const char*>(heights.data()), heights.size() * sizeof(int16_t));
+  ASSERT_TRUE(file.good());
+  file.close();
+
+  const gurka::nodelayout layout = {{"A", {0.5, 0.5}}, {"B", {0.5, 0.5018}}};
+  const gurka::ways ways = {{"AB", {{"highway", "footway"}}}};
+  auto config = test::make_config(dir + "/tiles", {{"additional_data.elevation", elevation_dir}});
+  const auto map = gurka::buildtiles(layout, ways, {}, {}, config);
+  baldr::GraphReader reader(map.config.get_child("mjolnir"));
+  auto [forward_id, forward, reverse_id, reverse] = gurka::findEdge(reader, map.nodes, "AB", "B");
+  ASSERT_NE(forward, nullptr);
+  ASSERT_NE(reverse, nullptr);
+  ASSERT_EQ(forward->length(), 200);
+
+  skadi::sample sample(elevation_dir);
+  const double slope = (sample.get(layout.at("B")) - sample.get(layout.at("A"))) / forward->length();
+  ASSERT_GT(slope, 0.08);
+  ASSERT_LT(slope, 0.2);
+  // Independent expectation for a constant slope, using the reference curve knots.
+  const double uphill = (1110 + (slope - 0.08) / 0.12 * (2330 - 1110)) * 0.2;
+  const double downhill = (1270 + (0.20 - slope) / 0.12 * (1130 - 1270)) * 0.2;
+  const auto* forward_ext = reader.GetGraphTile(forward_id)->ext_directededge(forward_id);
+  const auto* reverse_ext = reader.GetGraphTile(reverse_id)->ext_directededge(reverse_id);
+  ASSERT_NE(forward_ext, nullptr);
+  ASSERT_NE(reverse_ext, nullptr);
+  ASSERT_TRUE(forward_ext->has_hiking_seconds());
+  ASSERT_TRUE(reverse_ext->has_hiking_seconds());
+  EXPECT_NEAR(forward_ext->hiking_seconds(), uphill, 1.0);
+  EXPECT_NEAR(reverse_ext->hiking_seconds(), downhill, 1.0);
 }

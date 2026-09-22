@@ -8,7 +8,9 @@
 
 #include <sys/stat.h>
 
+#include <cstring>
 #include <filesystem>
+#include <fstream>
 #include <span>
 #include <string>
 #include <utility>
@@ -55,6 +57,42 @@ std::string build_extract_cache_key(const std::string& tile_extract,
   return key;
 }
 
+// Loads tiles from a tar extract into the target map.
+// If the tar contains an index.bin entry, uses it for fast offset-based loading.
+// Otherwise falls back to scanning all entries and parsing filenames as GraphIds.
+// Returns the number of corrupt blocks encountered.
+size_t load_tiles(valhalla::midgard::tar& tar,
+                  std::unordered_map<uint64_t, std::pair<char*, size_t>>& tiles) {
+  return tar.for_each([&](const std::string& name, const char* data, size_t size) {
+    // if it's our specially named index.bin file - load all entries from it
+    if (name == "index.bin") {
+      auto entries =
+          std::span<tile_index_entry>(reinterpret_cast<tile_index_entry*>(const_cast<char*>(data)),
+                                      size / sizeof(tile_index_entry));
+      tiles.clear(); // just in case if somehow index.bin is not the first one
+      tiles.reserve(entries.size());
+      for (const auto& entry : entries) {
+        tiles.emplace(std::piecewise_construct, std::forward_as_tuple(entry.tile_id),
+                      std::forward_as_tuple(const_cast<char*>(tar.mm.get() + entry.offset),
+                                            entry.size));
+      }
+      return false; // index loaded, stop scanning
+    }
+
+    try {
+      auto id = valhalla::baldr::GraphId::FromTilePath(name);
+      tiles[id] = std::make_pair(const_cast<char*>(data), size);
+    } catch (...) {
+      // It's possible to put non-tile files inside the tarfile.  As we're only
+      // parsing the file *name* as a GraphId here, we will just silently skip
+      // any file paths that can't be parsed by GraphId::FromTilePath()
+      // If we end up with *no* recognizable tile files in the tarball at all,
+      // checks lower down will warn on that.
+    }
+    return true;
+  });
+}
+
 } // namespace
 
 namespace valhalla {
@@ -91,13 +129,6 @@ public:
       ::close(fd);
       return;
     }
-
-    struct stat stat;
-    if (::fstat(fd, &stat) < 0) {
-      ::close(fd);
-      return;
-    }
-    _mtime = stat.st_mtime;
 
     auto fileSize = ::lseek(fd, 0, SEEK_END);
     if (fileSize < 0) {
@@ -269,16 +300,6 @@ public:
     return std::make_pair(nullptr, (uint32_t)0);
   }
 
-  bool changed() {
-    struct stat stat;
-    auto fd = _fileOpenFunction();
-    auto errc = ::fstat(fd, &stat);
-    ::close(fd);
-    if (errc < 0) 
-      return true;
-    return stat.st_mtime != _mtime;
-  }
-
   bool empty() {
     return !_mmap;
   }
@@ -289,30 +310,8 @@ private:
   int64_t _tileEndOffset;
   uint32_t _tileCount;
   uint8_t _version;
-  time_t _mtime;
 };
 
-std::shared_ptr<GraphReader::tile_source_rt_t> GraphReader::getSourceForRT(const std::string& path, std::function<int(void)> fileOpenFunction) {
-  static std::mutex mutex;
-  static std::map<std::string, std::shared_ptr<tile_source_rt_t>> cachedSources;
-
-  std::shared_ptr<tile_source_rt_t> rv;
-  mutex.lock();
-  auto it = cachedSources.find(path);
-  if (it != cachedSources.end() && !it->second->changed()) {
-    rv = it->second;
-  } else {
-    rv = std::make_shared<GraphReader::tile_source_rt_t>(fileOpenFunction);
-    // Does something readed from tar ?
-    if (!rv->empty()) {
-      cachedSources[path] = rv;
-    } else {
-      rv = nullptr;
-    }
-  }
-  mutex.unlock();
-  return rv;
-}
 
 tile_gone_error_t::tile_gone_error_t(const std::string& errormessage)
     : std::runtime_error(errormessage) {
@@ -325,62 +324,14 @@ tile_gone_error_t::tile_gone_error_t(std::string prefix, baldr::GraphId edgeid)
 
 GraphReader::tile_extract_t::tile_extract_t(const boost::property_tree::ptree& pt,
                                             bool traffic_readonly) {
-  // A lambda for loading the contents of a graph tile tar from an index file
-  bool traffic_from_index = false;
-  auto index_loader = [this, &traffic_from_index](const std::string& filename,
-                                                  const char* index_begin, const char* file_begin,
-                                                  size_t size) -> decltype(midgard::tar::contents) {
-    // has to be our specially named index.bin file
-    if (filename != "index.bin")
-      return {};
-
-    // get the info
-    decltype(midgard::tar::contents) contents;
-    auto entries = std::span<tile_index_entry>(reinterpret_cast<tile_index_entry*>(
-                                                   const_cast<char*>(index_begin)),
-                                               size / sizeof(tile_index_entry));
-    for (const auto& entry : entries) {
-      contents.insert(
-          std::make_pair(std::to_string(entry.tile_id),
-                         std::make_pair(const_cast<char*>(file_begin + entry.offset), entry.size)));
-      if (!traffic_from_index) {
-        tiles.emplace(std::piecewise_construct, std::forward_as_tuple(entry.tile_id),
-                      std::forward_as_tuple(const_cast<char*>(file_begin + entry.offset),
-                                            entry.size));
-      } else {
-        traffic_tiles.emplace(std::piecewise_construct, std::forward_as_tuple(entry.tile_id),
-                              std::forward_as_tuple(const_cast<char*>(file_begin + entry.offset),
-                                                    entry.size));
-      }
-    }
-    // hand it back to the tar parser
-    return contents;
-  };
-
   bool scan_tar = pt.get<bool>("data_processing.scan_tar", false);
 
   // if you really meant to load it
   if (pt.get_optional<std::string>("tile_extract")) {
     try {
-      // load the tar
-      // TODO: use the "scan" to iterate over tar
-      archive = std::make_shared<midgard::tar>(pt.get<std::string>("tile_extract"), true, true,
-                                               index_loader);
-      // map files to graph ids
-      if (tiles.empty()) {
-        for (const auto& c : archive->contents) {
-          try {
-            auto id = GraphTile::GetTileId(c.first);
-            tiles[id] = std::make_pair(const_cast<char*>(c.second.first), c.second.second);
-          } catch (...) {
-            // It's possible to put non-tile files inside the tarfile.  As we're only
-            // parsing the file *name* as a GraphId here, we will just silently skip
-            // any file paths that can't be parsed by GraphId::GetTileId()
-            // If we end up with *no* recognizable tile files in the tarball at all,
-            // checks lower down will warn on that.
-          }
-        }
-      } else if (scan_tar) {
+      archive = std::make_shared<midgard::tar>(pt.get<std::string>("tile_extract"));
+      auto corrupt_blocks = load_tiles(*archive, tiles);
+      if (scan_tar) {
         checksum = 0;
         for (const auto& kv : tiles) {
           checksum += *const_cast<char*>(kv.second.first);
@@ -393,8 +344,8 @@ GraphReader::tile_extract_t::tile_extract_t(const boost::property_tree::ptree& p
       } // loaded ok but with possibly bad blocks
       else {
         LOG_INFO("Tile extract successfully loaded with tile count: {}", tiles.size());
-        if (archive->corrupt_blocks) {
-          LOG_WARN("Tile extract had {} corrupt blocks", archive->corrupt_blocks);
+        if (corrupt_blocks) {
+          LOG_WARN("Tile extract had {} corrupt blocks", corrupt_blocks);
         }
       }
     } catch (const std::exception& e) {
@@ -406,36 +357,19 @@ GraphReader::tile_extract_t::tile_extract_t(const boost::property_tree::ptree& p
   if (pt.get_optional<std::string>("traffic_extract")) {
     try {
       // load the tar
-      traffic_from_index = true;
-      traffic_archive = std::make_shared<midgard::tar>(pt.get<std::string>("traffic_extract"),
-                                                       traffic_readonly, true, index_loader);
-      if (traffic_tiles.empty()) {
-        LOG_WARN(
-            "Traffic extract contained no index file, expect degraded performance for tile (re-)loading.");
-        // map files to graph ids
-        for (auto& c : traffic_archive->contents) {
-          try {
-            auto id = GraphTile::GetTileId(c.first);
-            traffic_tiles[id] = std::make_pair(const_cast<char*>(c.second.first), c.second.second);
-          } catch (...) {
-            // It's possible to put non-tile files inside the tarfile.  As we're only
-            // parsing the file *name* as a GraphId here, we will just silently skip
-            // any file paths that can't be parsed by GraphId::GetTileId()
-            // If we end up with *no* recognizable tile files in the tarball at all,
-            // checks lower down will warn on that.
-          }
-        }
-      }
+      traffic_archive =
+          std::make_shared<midgard::tar>(pt.get<std::string>("traffic_extract"), traffic_readonly);
+      auto corrupt_blocks = load_tiles(*traffic_archive, traffic_tiles);
       // couldn't load it
       if (traffic_tiles.empty()) {
         LOG_WARN("Traffic tile extract contained no usable tiles");
-        archive.reset();
+        traffic_archive.reset();
       } // loaded ok but with possibly bad blocks
       else {
         LOG_INFO("Traffic tile extract successfully loaded with tile count: {}",
                  traffic_tiles.size());
-        if (traffic_archive->corrupt_blocks) {
-          LOG_WARN("Traffic tile extract had {} corrupt blocks", traffic_archive->corrupt_blocks);
+        if (corrupt_blocks) {
+          LOG_WARN("Traffic tile extract had {} corrupt blocks", corrupt_blocks);
         }
       }
     } catch (const std::exception& e) {
@@ -829,12 +763,11 @@ GraphReader::GraphReader(const boost::property_tree::ptree& pt,
       static std::mutex mutex;
       std::lock_guard lock{mutex};
       if (!std::filesystem::exists(url_id_txt_path_)) {
-        // no id.txt, then create it in the current tile_dir
+        // no id.txt, then create it in the current tile_dir; the build id line is added once the
+        // first tile is downloaded
         std::filesystem::create_directories(tile_dir_);
         std::ofstream out_url_file(url_id_txt_path_, std::ios::binary);
         out_url_file << tile_url_ << std::endl;
-        // we write 0 so the next thread will find a valid MD5 hash
-        out_url_file << url_id_txt_checksum_ << std::endl;
       }
     }
   }
@@ -1035,6 +968,47 @@ graph_tile_ptr GraphReader::GetGraphTile(const GraphId& graphid) {
   // Keep a copy in the cache and return it
   const size_t size = tile->header()->end_offset();
   return cache_->Put(base, std::move(tile), size);
+}
+
+std::optional<GraphTileHeader> GraphReader::GetGraphTileHeader(const GraphId& graphid) {
+  if (!graphid.is_valid()) {
+    return std::nullopt;
+  }
+
+  auto base = graphid.tile_base();
+  if (const auto& cached = cache_->Get(base)) {
+    return *cached->header();
+  }
+
+  // straight out of the mmapped extract, without constructing or caching the tile
+  if (!tile_extract_->tiles.empty()) {
+    auto t = tile_extract_->tiles.find(base);
+    if (t == tile_extract_->tiles.cend() || t->second.second < sizeof(GraphTileHeader)) {
+      return std::nullopt;
+    }
+    GraphTileHeader header;
+    memcpy(&header, t->second.first, sizeof(GraphTileHeader));
+    return header;
+  }
+
+  // just the header span of the file in tile_dir
+  if (!tile_dir_.empty()) {
+    std::string file_location = tile_dir_;
+    file_location += std::filesystem::path::preferred_separator;
+    file_location += GraphTile::FileSuffix(base);
+    std::ifstream file(file_location, std::ios::in | std::ios::binary);
+    GraphTileHeader header;
+    if (file.read(reinterpret_cast<char*>(&header), sizeof(GraphTileHeader)) &&
+        file.gcount() == sizeof(GraphTileHeader)) {
+      return header;
+    }
+  }
+
+  // gzipped and remote tiles require materializing the whole tile
+  if (auto tile = GetGraphTile(base)) {
+    return *tile->header();
+  }
+  return std::nullopt;
 }
 
 // Convenience method to get an opposing directed edge graph Id.
@@ -1306,7 +1280,7 @@ std::unordered_set<GraphId> GraphReader::GetTileSet() const {
           if (i->is_regular_file() || i->is_symlink()) {
             // add it if it can be parsed as a valid tile file name
             try {
-              tiles.emplace(GraphTile::GetTileId(i->path().string()));
+              tiles.emplace(GraphId::FromTilePath(i->path()));
             } catch (...) {}
           }
         }
@@ -1341,7 +1315,7 @@ std::unordered_set<GraphId> GraphReader::GetTileSet(const uint8_t level) const {
         if (i->is_regular_file() || i->is_symlink()) {
           // add it if it can be parsed as a valid tile file name
           try {
-            tiles.emplace(GraphTile::GetTileId(i->path().string()));
+            tiles.emplace(GraphId::FromTilePath(i->path()));
           } catch (...) {}
         }
       }
@@ -1447,27 +1421,27 @@ IncidentResult GraphReader::GetIncidents(const GraphId& edge_id, graph_tile_ptr&
   return {itile, begin_index, end_index};
 }
 
-uint64_t GraphReader::load_id_txt_checksum(const std::filesystem::path& id_txt_path,
-                                           const std::string& tile_url) {
+std::optional<uint64_t> GraphReader::load_id_txt_checksum(const std::filesystem::path& id_txt_path,
+                                                          const std::string& tile_url) {
   std::ifstream in_id_txt_file(id_txt_path);
-  std::string file_checksum = "0";
-  // if no cache wanted, never mind
-  if (!tile_dir_.empty() && in_id_txt_file) {
-    std::string file_url;
-    // validate that the expected lines and values are present
-    if (!std::getline(in_id_txt_file, file_url)) {
-      throw std::runtime_error("Couldn't find a valid HTTP URL on the first line in " +
-                               id_txt_path.string());
-    } else if (file_url != tile_url) {
-      throw std::runtime_error("Tile URL changed, configure a different mjolnir.tile_dir");
-    }
-
-    if (!std::getline(in_id_txt_file, file_checksum)) {
-      throw std::runtime_error("Couldn't find MD5 hash on the second line in " +
-                               id_txt_path.string());
-    }
+  // if no cache wanted or no id.txt yet, there's no build id to compare against
+  if (tile_dir_.empty() || !in_id_txt_file) {
+    return std::nullopt;
   }
 
+  std::string file_url;
+  if (!std::getline(in_id_txt_file, file_url)) {
+    throw std::runtime_error("Couldn't find a valid HTTP URL on the first line in " +
+                             id_txt_path.string());
+  } else if (file_url != tile_url) {
+    throw std::runtime_error("Tile URL changed, configure a different mjolnir.tile_dir");
+  }
+
+  // the build id is only written once the first tile has been downloaded
+  std::string file_checksum;
+  if (!std::getline(in_id_txt_file, file_checksum) || file_checksum.empty()) {
+    return std::nullopt;
+  }
   return std::stoull(file_checksum);
 };
 

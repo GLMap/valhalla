@@ -32,7 +32,7 @@ std::string odin_worker_t::narrate(Api& request) const {
   // get some annotated directions
   try {
     odin::DirectionsBuilder().Build(request, markup_formatter_);
-  } catch (...) { throw valhalla_exception_t{202}; }
+  } catch (const std::exception& e) { throw valhalla_exception_t{202, e.what()}; }
 
   // serialize those to the proper format
   return tyr::serializeDirections(request);
@@ -108,10 +108,9 @@ void run_service(const boost::property_tree::ptree& config) {
   auto interrupt_endpoint = config.get<std::string>("httpd.service.interrupt");
 
   // listen for requests
-  zmq::context_t context;
   odin_worker_t odin_worker(config);
-  prime_server::worker_t worker(context, upstream_endpoint, "ipc:///dev/null", loopback_endpoint,
-                                interrupt_endpoint,
+  prime_server::worker_t worker(zmq_context(), upstream_endpoint, "inproc:///dev/null",
+                                loopback_endpoint, interrupt_endpoint,
                                 std::bind(&odin_worker_t::work, std::ref(odin_worker),
                                           std::placeholders::_1, std::placeholders::_2,
                                           std::placeholders::_3),

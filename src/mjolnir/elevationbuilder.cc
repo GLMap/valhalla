@@ -7,6 +7,7 @@
 #include "midgard/pointll.h"
 #include "midgard/util.h"
 #include "mjolnir/graphtilebuilder.h"
+#include "mjolnir/util.h"
 #include "scoped_timer.h"
 #include "skadi/sample.h"
 #include "skadi/util.h"
@@ -110,7 +111,9 @@ height_at_distance(const std::vector<double>& heights, const double distance, co
   return lower_height + (upper_height - lower_height) * fraction;
 }
 
-double hiking_seconds_from_heights(const std::vector<double>& heights, const uint32_t length) {
+double hiking_seconds_from_heights(const std::vector<double>& heights,
+                                   const uint32_t length,
+                                   const bool reverse) {
   if (length == 0) {
     return 0.0;
   }
@@ -124,8 +127,11 @@ double hiking_seconds_from_heights(const std::vector<double>& heights, const uin
       continue;
     }
 
-    const double start_height = height_at_distance(heights, segment_start, length);
-    const double end_height = height_at_distance(heights, segment_end, length);
+    // Samples stay in their original positions: the last interval may be shorter than 60 m.
+    const double start_height =
+        height_at_distance(heights, reverse ? length - segment_start : segment_start, length);
+    const double end_height =
+        height_at_distance(heights, reverse ? length - segment_end : segment_end, length);
     const double slope = start_height == valhalla::skadi::get_no_data_value() ||
                                  end_height == valhalla::skadi::get_no_data_value()
                              ? 0.0
@@ -198,8 +204,9 @@ std::vector<int8_t> encode_edge_elevation(const std::unique_ptr<valhalla::skadi:
       diff = d < diff ? diff : d;
       LOG_DEBUG("  " + std::to_string(heights[i]));
     }
-    LOG_WARN("edge elevation wayid = " + std::to_string(wayid) + " exceeds difference with " +
-             std::to_string(diff) + " meters.");
+    LOG_DEBUG("edge elevation wayid = " + std::to_string(wayid) + " exceeds difference with " +
+              std::to_string(diff) + " meters.");
+    build_stats::get().increment(build_stats::kExceededElevationDiff);
   }
   return encoded;
 }
@@ -238,8 +245,9 @@ std::vector<int8_t> encode_btf_elevation(const std::unique_ptr<valhalla::skadi::
       diff = d < diff ? diff : d;
       LOG_DEBUG("  " + std::to_string(heights[i]));
     }
-    LOG_WARN("BTF edge elevation wayid = " + std::to_string(wayid) + " exceeds difference with " +
-             std::to_string(diff) + " meters.");
+    LOG_DEBUG("BTF edge elevation wayid = " + std::to_string(wayid) + " exceeds difference with " +
+              std::to_string(diff) + " meters.");
+    build_stats::get().increment(build_stats::kExceededElevationDiff);
   }
   return e;
 }
@@ -332,22 +340,19 @@ void add_elevations_to_single_tile(GraphReader& graphreader,
       // Compute "weighted" grades as well as max grades in both directions. Valid range
       // for weighted grades is between -10 and +15 which is then mapped to a value
       // between 0 to 15 for use in costing.
+      forward_hiking_seconds = hiking_seconds_from_heights(heights, length, false);
+      reverse_hiking_seconds = hiking_seconds_from_heights(heights, length, true);
       auto grades = valhalla::skadi::weighted_grade(heights, POSTING_INTERVAL);
       if (length < kMinimumInterval) {
         // Keep the default grades - but set the mean elevation
         forward_grades = std::make_tuple(0.0, 0.0, 0.0, std::get<3>(grades));
         reverse_grades = std::make_tuple(0.0, 0.0, 0.0, std::get<3>(grades));
-        forward_hiking_seconds = hiking_seconds_from_heights(heights, length);
-        std::reverse(heights.begin(), heights.end());
-        reverse_hiking_seconds = hiking_seconds_from_heights(heights, length);
       } else {
         // Set the forward grades. Reverse the path and compute the
         // weighted grade in reverse direction.
         forward_grades = grades;
-        forward_hiking_seconds = hiking_seconds_from_heights(heights, length);
         std::reverse(heights.begin(), heights.end());
         reverse_grades = valhalla::skadi::weighted_grade(heights, POSTING_INTERVAL);
-        reverse_hiking_seconds = hiking_seconds_from_heights(heights, length);
       }
 
       // Add elevation info to the geo attribute cache.
@@ -381,12 +386,22 @@ void add_elevations_to_single_tile(GraphReader& graphreader,
     // Edge elevation information. If the edge is forward (with respect to the shape)
     // use the first value, otherwise use the second.
     bool forward = directededge.forward();
-    directededge.set_weighted_grade(forward ? found->second.forward_grade
-                                            : found->second.reverse_grade);
     float max_up_slope =
         forward ? found->second.forward_max_up_slope : found->second.reverse_max_up_slope;
     float max_down_slope =
         forward ? found->second.forward_max_down_slope : found->second.reverse_max_down_slope;
+    auto weighted_grade = forward ? found->second.forward_grade : found->second.reverse_grade;
+
+    // Clamp grade on tunnels/bridges. Successive, connected bridge/tunnel edges can
+    // lead to high grades. Note - elevation along a route is "fixed" for these cases
+    // but weighted grade can cause route issues.
+    if (directededge.bridge() || directededge.tunnel()) {
+      // Clamp grades to +/- 3% (weighted grade values between 4 and 8)
+      weighted_grade = std::clamp(weighted_grade, 4u, 8u);
+      max_up_slope = std::min(3.0f, max_up_slope);
+      max_down_slope = std::max(-3.0f, max_down_slope);
+    }
+    directededge.set_weighted_grade(weighted_grade);
     directededge.set_max_up_slope(max_up_slope);
     directededge.set_max_down_slope(max_down_slope);
 

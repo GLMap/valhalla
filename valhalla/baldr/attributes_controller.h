@@ -117,6 +117,8 @@ constexpr std::string_view kEdgeStopSignFwd = "edge.stop_sign_forward";
 constexpr std::string_view kEdgeYieldFwd = "edge.yield_sign_forward";
 constexpr std::string_view kEdgeAccessFwd = "edge.access_forward";
 constexpr std::string_view kEdgeLiveSpeedFwd = "edge.live_speed_forward";
+constexpr std::string_view kEdgeFreeflowSpeedFwd = "edge.freeflow_speed_forward";
+constexpr std::string_view kEdgeConstrainedSpeedFwd = "edge.freeflow_speed_forward";
 
 constexpr std::string_view kEdgeSpeedBwd = "edge.speed_backward";
 constexpr std::string_view kEdgeDeadendBwd = "edge.deadend_backward";
@@ -127,6 +129,8 @@ constexpr std::string_view kEdgeStopSignBwd = "edge.stop_sign_backward";
 constexpr std::string_view kEdgeYieldBwd = "edge.yield_sign_backward";
 constexpr std::string_view kEdgeAccessBwd = "edge.access_backward";
 constexpr std::string_view kEdgeLiveSpeedBwd = "edge.live_speed_backward";
+constexpr std::string_view kEdgeFreeflowSpeedBwd = "edge.freeflow_speed_backward";
+constexpr std::string_view kEdgeConstrainedSpeedBwd = "edge.freeflow_speed_backward";
 
 // Node keys
 constexpr std::string_view kNodeIntersectingEdgeBeginHeading = "node.intersecting_edge.begin_heading";
@@ -217,13 +221,32 @@ constexpr std::string_view kAdminCategory = "admin.";
 constexpr std::string_view kMatchedCategory = "matched.";
 constexpr std::string_view kShapeAttributesCategory = "shape_attributes.";
 
+// Incident attributes (used by MVT)
+constexpr std::string_view kIncidentId = "incident.id";
+constexpr std::string_view kIncidentType = "incident.type";
+constexpr std::string_view kIncidentDescription = "incident.description";
+constexpr std::string_view kIncidentSubType = "incident.sub_type";
+constexpr std::string_view kIncidentSubTypeDescription = "incident.sub_type_description";
+constexpr std::string_view kIncidentStartTime = "incident.start_time";
+constexpr std::string_view kIncidentEndTime = "incident.end_time";
+constexpr std::string_view kIncidentImpact = "incident.impact";
+constexpr std::string_view kIncidentRoadClosed = "incident.road_closed";
+constexpr std::string_view kIncidentCongestionValue = "incident.congestion_value";
+constexpr std::string_view kIncidentCreationTime = "incident.creation_time";
+constexpr std::string_view kIncidentLongDescription = "incident.long_description";
+constexpr std::string_view kIncidentClearLanes = "incident.clear_lanes";
+constexpr std::string_view kIncidentNumLanesBlocked = "incident.num_lanes_blocked";
+constexpr std::string_view kIncidentLength = "incident.length";
+constexpr std::string_view kIncidentIso31661Alpha2 = "incident.iso_3166_1_alpha2";
+constexpr std::string_view kIncidentIso31661Alpha3 = "incident.iso_3166_1_alpha3";
+
 /**
  * Trip path controller for attributes
  */
 struct AttributesController {
 
   // Attributes that are required by the route action to make guidance instructions.
-  static const midgard::ConstFlatMap<176, std::string_view, bool> kDefaultAttributes;
+  static const midgard::ConstFlatMap<197, std::string_view, bool> kDefaultAttributes;
 
   static std::unordered_set<std::string_view> ComputeDefaultEnabledCategories();
 

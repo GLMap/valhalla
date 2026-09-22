@@ -22,6 +22,10 @@ constexpr uint32_t kMaxGraphTileId = 4194303;
 // Maximum id/index within a tile. 21 bits
 constexpr uint32_t kMaxGraphId = 2097151;
 
+// GraphTileHeader::checksum_ packs a 16-bit tileset build id in its high bits and a 48-bit per-tile
+// data hash in its low bits, used for remote tileset change detection/cache validation
+constexpr uint64_t kTileHashBits = 48;
+
 // Invalid edge label index
 constexpr uint32_t kInvalidLabel = std::numeric_limits<uint32_t>::max();
 
@@ -184,6 +188,9 @@ constexpr uint8_t kMaxBicycleNetwork = 15;
 // Maximum offset to edge information
 constexpr uint32_t kMaxEdgeInfoOffset = 33554431; // 2^25 bytes
 
+// Minimum length of an edge
+constexpr uint32_t kMinEdgeLength = 1;
+
 // Maximum length of an edge
 constexpr uint32_t kMaxEdgeLength = 16777215; // 2^24 meters
 
@@ -215,6 +222,7 @@ constexpr uint32_t kMaxAddedTime = 255;
 constexpr float kNoElevationData = -500.0f;
 
 constexpr uint32_t kDefaultIndoorSearchCutoff = 300;
+constexpr uint32_t kDefaultSearchCutoff = 35000;
 constexpr uint32_t kMaxIndoorSearchCutoff = 1000;
 
 // (building) level constants
@@ -346,7 +354,10 @@ enum class Use : uint8_t {
   kEgressConnection = 52,   // Connection egress <-> station
   kPlatformConnection = 53, // Connection station <-> platform
   kTransitConnection = 54,  // Connection osm <-> egress
+
+  kSize = 64
 };
+
 inline std::string to_string(Use u) {
   static const std::unordered_map<uint8_t, std::string> UseStrings = {
       {static_cast<uint8_t>(Use::kRoad), "road"},
@@ -370,6 +381,7 @@ inline std::string to_string(Use u) {
       {static_cast<uint8_t>(Use::kEscalator), "escalator"},
       {static_cast<uint8_t>(Use::kPath), "path"},
       {static_cast<uint8_t>(Use::kPedestrian), "pedestrian"},
+      {static_cast<uint8_t>(Use::kPlatform), "platform"},
       {static_cast<uint8_t>(Use::kBridleway), "bridleway"},
       {static_cast<uint8_t>(Use::kPedestrianCrossing), "pedestrian_crossing"},
       {static_cast<uint8_t>(Use::kRestArea), "rest_area"},

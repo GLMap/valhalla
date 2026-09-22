@@ -47,14 +47,12 @@
 		C1B3015025ECE67500B02D4A /* graphtileheader.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B91625DBC210001B4BFB /* graphtileheader.cc */; };
 		C1B3015125ECE67500B02D4A /* laneconnectivity.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B92825DBC210001B4BFB /* laneconnectivity.cc */; };
 		C1B3015225ECE67500B02D4A /* merge.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B93E25DBC210001B4BFB /* merge.cc */; };
-		C1B3015325ECE67500B02D4A /* pathlocation.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B91025DBC210001B4BFB /* pathlocation.cc */; };
 		C1B3015425ECE67500B02D4A /* verbal_text_formatter_us_co.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B93D25DBC210001B4BFB /* verbal_text_formatter_us_co.cc */; };
 		C1B3015525ECE67500B02D4A /* compression_utils.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B93225DBC210001B4BFB /* compression_utils.cc */; };
 		C1B3015625ECE67500B02D4A /* connectivity_map.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B95025DBC210001B4BFB /* connectivity_map.cc */; };
 		C1B3015725ECE67500B02D4A /* directededge.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B91E25DBC210001B4BFB /* directededge.cc */; };
 		C1B3015825ECE67500B02D4A /* predictedspeeds.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B300E625ECE0B400B02D4A /* predictedspeeds.cc */; };
 		C1B3015925ECE67500B02D4A /* edgeinfo.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B94525DBC210001B4BFB /* edgeinfo.cc */; };
-		C1B3015A25ECE67500B02D4A /* location.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B92025DBC210001B4BFB /* location.cc */; };
 		C1B3015B25ECE67500B02D4A /* streetname.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B92D25DBC210001B4BFB /* streetname.cc */; };
 		C1B3015C25ECE67500B02D4A /* transitschedule.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B94825DBC210001B4BFB /* transitschedule.cc */; };
 		C1B3015D25ECE67500B02D4A /* edgetracker.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B93B25DBC210001B4BFB /* edgetracker.cc */; };
@@ -130,9 +128,9 @@
 		C1B301AB25ECE69700B02D4A /* matrix_action.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B97025DBC210001B4BFB /* matrix_action.cc */; };
 		C1B301AC25ECE69700B02D4A /* route_matcher.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B97225DBC210001B4BFB /* route_matcher.cc */; };
 		C1B301AD25ECE69700B02D4A /* timedistancematrix.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B98E25DBC210001B4BFB /* timedistancematrix.cc */; };
-		C1B301AE25ECE69700B02D4A /* multimodal.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B98925DBC210001B4BFB /* multimodal.cc */; };
+		C1B301AE25ECE69700B02D4A /* multimodal_transit.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B98925DBC210001B4BFB /* multimodal_transit.cc */; };
 		C1B301B025ECE69700B02D4A /* worker.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B99325DBC210001B4BFB /* worker.cc */; };
-		C1B301B125ECE69700B02D4A /* astar_bss.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B300F425ECE10500B02D4A /* astar_bss.cc */; };
+		C1B301B125ECE69700B02D4A /* multimodal_astar.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B300F425ECE10500B02D4A /* multimodal_astar.cc */; };
 		C1B301B225ECE69700B02D4A /* optimized_route_action.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B98C25DBC210001B4BFB /* optimized_route_action.cc */; };
 		C1B301B325ECE69700B02D4A /* isochrone_action.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B98025DBC210001B4BFB /* isochrone_action.cc */; };
 		C1B301B425ECE69700B02D4A /* route_action.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B99425DBC210001B4BFB /* route_action.cc */; };
@@ -153,6 +151,7 @@
 		C1B301C625ECE69C00B02D4A /* trace_serializer.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B8CC25DBC210001B4BFB /* trace_serializer.cc */; };
 		C1B301C725ECE69C00B02D4A /* route_serializer_osrm.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B8D525DBC210001B4BFB /* route_serializer_osrm.cc */; };
 		C1B301C825ECE69C00B02D4A /* route_serializer.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1B9B8CA25DBC210001B4BFB /* route_serializer.cc */; };
+		F09922260000000000000001 /* boundingcircle.cc in Sources */ = {isa = PBXBuildFile; fileRef = F09922260000000000000002 /* boundingcircle.cc */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -219,7 +218,7 @@
 		C1B300ED25ECE0DD00B02D4A /* nocost.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = nocost.cc; sourceTree = "<group>"; };
 		C1B300EE25ECE0DD00B02D4A /* recost.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = recost.cc; sourceTree = "<group>"; };
 		C1B300EF25ECE0DD00B02D4A /* hierarchylimits.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = hierarchylimits.cc; sourceTree = "<group>"; };
-		C1B300F425ECE10500B02D4A /* astar_bss.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = astar_bss.cc; sourceTree = "<group>"; };
+		C1B300F425ECE10500B02D4A /* multimodal_astar.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = multimodal_astar.cc; sourceTree = "<group>"; };
 		C1B300F525ECE10500B02D4A /* centroid.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = centroid.cc; sourceTree = "<group>"; };
 		C1B300F625ECE10500B02D4A /* timedistancebssmatrix.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = timedistancebssmatrix.cc; sourceTree = "<group>"; };
 		C1B300F725ECE10500B02D4A /* triplegbuilder.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = triplegbuilder.cc; sourceTree = "<group>"; };
@@ -270,7 +269,6 @@
 		C1B9B90625DBC210001B4BFB /* locate_action.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = locate_action.cc; sourceTree = "<group>"; };
 		C1B9B90925DBC210001B4BFB /* datetime.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = datetime.cc; sourceTree = "<group>"; };
 		C1B9B90C25DBC210001B4BFB /* verbal_text_formatter_us.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = verbal_text_formatter_us.cc; sourceTree = "<group>"; };
-		C1B9B91025DBC210001B4BFB /* pathlocation.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pathlocation.cc; sourceTree = "<group>"; };
 		C1B9B91225DBC210001B4BFB /* streetnames_us.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = streetnames_us.cc; sourceTree = "<group>"; };
 		C1B9B91425DBC210001B4BFB /* graphtile.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = graphtile.cc; sourceTree = "<group>"; };
 		C1B9B91625DBC210001B4BFB /* graphtileheader.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = graphtileheader.cc; sourceTree = "<group>"; };
@@ -278,7 +276,6 @@
 		C1B9B91A25DBC210001B4BFB /* verbal_text_formatter_factory.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = verbal_text_formatter_factory.cc; sourceTree = "<group>"; };
 		C1B9B91D25DBC210001B4BFB /* admin.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = admin.cc; sourceTree = "<group>"; };
 		C1B9B91E25DBC210001B4BFB /* directededge.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = directededge.cc; sourceTree = "<group>"; };
-		C1B9B92025DBC210001B4BFB /* location.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = location.cc; sourceTree = "<group>"; };
 		C1B9B92125DBC210001B4BFB /* transitdeparture.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = transitdeparture.cc; sourceTree = "<group>"; };
 		C1B9B92825DBC210001B4BFB /* laneconnectivity.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = laneconnectivity.cc; sourceTree = "<group>"; };
 		C1B9B92925DBC210001B4BFB /* transitroute.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = transitroute.cc; sourceTree = "<group>"; };
@@ -321,7 +318,7 @@
 		C1B9B97925DBC210001B4BFB /* map_matcher.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = map_matcher.cc; sourceTree = "<group>"; };
 		C1B9B98025DBC210001B4BFB /* isochrone_action.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = isochrone_action.cc; sourceTree = "<group>"; };
 		C1B9B98225DBC210001B4BFB /* optimizer.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = optimizer.cc; sourceTree = "<group>"; };
-		C1B9B98925DBC210001B4BFB /* multimodal.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = multimodal.cc; sourceTree = "<group>"; };
+		C1B9B98925DBC210001B4BFB /* multimodal_transit.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = multimodal_transit.cc; sourceTree = "<group>"; };
 		C1B9B98C25DBC210001B4BFB /* optimized_route_action.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = optimized_route_action.cc; sourceTree = "<group>"; };
 		C1B9B98D25DBC210001B4BFB /* isochrone.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = isochrone.cc; sourceTree = "<group>"; };
 		C1B9B98E25DBC210001B4BFB /* timedistancematrix.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = timedistancematrix.cc; sourceTree = "<group>"; };
@@ -341,6 +338,7 @@
 		C1B9BB2625DBC49F001B4BFB /* tz.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tz.cpp; path = third_party/date/src/tz.cpp; sourceTree = "<group>"; };
 		C1EE536A25DBC7E800F4C8D3 /* worker.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = worker.cc; path = src/worker.cc; sourceTree = SOURCE_ROOT; };
 		C1EE536D25DBC80100F4C8D3 /* ios.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = ios.mm; path = third_party/date/src/ios.mm; sourceTree = "<group>"; };
+		F09922260000000000000002 /* boundingcircle.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = boundingcircle.cc; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -513,6 +511,7 @@
 				C1B9B91D25DBC210001B4BFB /* admin.cc */,
 				6C5C28542A8177B400CA0B04 /* attributes_controller.cc */,
 				C1B9B93225DBC210001B4BFB /* compression_utils.cc */,
+				F09922260000000000000002 /* boundingcircle.cc */,
 				C1B9B95025DBC210001B4BFB /* connectivity_map.cc */,
 				C1B9B93925DBC210001B4BFB /* curler.cc */,
 				C1B9B90925DBC210001B4BFB /* datetime.cc */,
@@ -524,10 +523,8 @@
 				C1B9B91425DBC210001B4BFB /* graphtile.cc */,
 				C1B9B91625DBC210001B4BFB /* graphtileheader.cc */,
 				C1B9B92825DBC210001B4BFB /* laneconnectivity.cc */,
-				C1B9B92025DBC210001B4BFB /* location.cc */,
 				C1B9B93E25DBC210001B4BFB /* merge.cc */,
 				C1B9B93325DBC210001B4BFB /* nodeinfo.cc */,
-				C1B9B91025DBC210001B4BFB /* pathlocation.cc */,
 				C1B300E625ECE0B400B02D4A /* predictedspeeds.cc */,
 				C1B9B92B25DBC210001B4BFB /* streetname_us.cc */,
 				C1B9B92D25DBC210001B4BFB /* streetname.cc */,
@@ -583,7 +580,7 @@
 			isa = PBXGroup;
 			children = (
 				C1B300F825ECE10500B02D4A /* alternates.cc */,
-				C1B300F425ECE10500B02D4A /* astar_bss.cc */,
+				C1B300F425ECE10500B02D4A /* multimodal_astar.cc */,
 				C1B9B97525DBC210001B4BFB /* bidirectional_astar.cc */,
 				C1B300F525ECE10500B02D4A /* centroid.cc */,
 				C1B9B99625DBC210001B4BFB /* costmatrix.cc */,
@@ -592,7 +589,7 @@
 				C1B9B98D25DBC210001B4BFB /* isochrone.cc */,
 				C1B9B97925DBC210001B4BFB /* map_matcher.cc */,
 				C1B9B97025DBC210001B4BFB /* matrix_action.cc */,
-				C1B9B98925DBC210001B4BFB /* multimodal.cc */,
+				C1B9B98925DBC210001B4BFB /* multimodal_transit.cc */,
 				C1B9B98C25DBC210001B4BFB /* optimized_route_action.cc */,
 				C1B9B98225DBC210001B4BFB /* optimizer.cc */,
 				C1B9B99425DBC210001B4BFB /* route_action.cc */,
@@ -856,9 +853,9 @@
 				C1B3014125ECE67000B02D4A /* worker.cc in Sources */,
 				C1B3016225ECE67500B02D4A /* admin.cc in Sources */,
 				C1B3015525ECE67500B02D4A /* compression_utils.cc in Sources */,
+				F09922260000000000000001 /* boundingcircle.cc in Sources */,
 				C1B3014A25ECE67500B02D4A /* transittransfer.cc in Sources */,
 				C1B3018C25ECE68900B02D4A /* enhancedtrippath.cc in Sources */,
-				C1B3015A25ECE67500B02D4A /* location.cc in Sources */,
 				C1B301B325ECE69700B02D4A /* isochrone_action.cc in Sources */,
 				C1B3017125ECE67B00B02D4A /* trace_route_action.cc in Sources */,
 				6C5C284E2A8176FB00CA0B04 /* transit.pb.cc in Sources */,
@@ -868,7 +865,6 @@
 				C1B3017925ECE67F00B02D4A /* map_matcher.cc in Sources */,
 				C1B3017F25ECE68400B02D4A /* tiles.cc in Sources */,
 				C1B3017825ECE67F00B02D4A /* config.cc in Sources */,
-				C1B3015325ECE67500B02D4A /* pathlocation.cc in Sources */,
 				C1B3019A25ECE68E00B02D4A /* motorscootercost.cc in Sources */,
 				C1B3014425ECE67500B02D4A /* streetnames_us.cc in Sources */,
 				C1B3014C25ECE67500B02D4A /* graphid.cc in Sources */,
@@ -880,7 +876,7 @@
 				C1B3014525ECE67500B02D4A /* datetime.cc in Sources */,
 				C1B3018F25ECE68900B02D4A /* maneuver.cc in Sources */,
 				C1B3019725ECE68E00B02D4A /* recost.cc in Sources */,
-				C1B301B125ECE69700B02D4A /* astar_bss.cc in Sources */,
+				C1B301B125ECE69700B02D4A /* multimodal_astar.cc in Sources */,
 				C1B301C525ECE69C00B02D4A /* height_serializer.cc in Sources */,
 				C1B3014925ECE67500B02D4A /* turn.cc in Sources */,
 				6C5BC3B725F68209001FC3DD /* ios.mm in Sources */,
@@ -890,7 +886,7 @@
 				C1B3012C25ECE5CB00B02D4A /* info.pb.cc in Sources */,
 				C1B3016525ECE67500B02D4A /* transitroute.cc in Sources */,
 				C1B3016B25ECE67B00B02D4A /* matrix_action.cc in Sources */,
-				C1B301AE25ECE69700B02D4A /* multimodal.cc in Sources */,
+				C1B301AE25ECE69700B02D4A /* multimodal_transit.cc in Sources */,
 				C1B301B425ECE69700B02D4A /* route_action.cc in Sources */,
 				C1B301A725ECE69700B02D4A /* map_matcher.cc in Sources */,
 				C1B3019025ECE68900B02D4A /* transitrouteinfo.cc in Sources */,

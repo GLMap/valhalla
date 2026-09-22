@@ -92,6 +92,7 @@ uint32_t GetOpposingEdgeIndex(const GraphId& startnode,
   uint32_t opp_index = absurd_index;
   const DirectedEdge* directededge = end_tile->directededge(nodeinfo->edge_index());
   for (uint32_t i = 0; i < nodeinfo->edge_count(); i++, directededge++) {
+
     // Reject edge if access does not match or the edge does not point
     // back to the startnode
     if (directededge->endnode() != startnode ||
@@ -146,7 +147,11 @@ uint32_t GetOpposingEdgeIndex(const GraphId& startnode,
       if (edge.is_shortcut()) {
         // Shortcut edges - use must match (or both are links)
         if ((directededge->link() && edge.link()) || (directededge->use() == edge.use())) {
-          match = true;
+          auto shape1 = tile->edgeinfo(&edge).shape();
+          auto shape2 = end_tile->edgeinfo(directededge).shape();
+          if (shapes_match(shape1, shape2)) {
+            match = true;
+          }
         }
       } else {
         // Regular edges - match wayids and edge info offset (if in same tile)
@@ -266,6 +271,11 @@ void validate(
   auto numLevels = TileHierarchy::levels().size() + 1; // To account for transit
   auto transit_level = TileHierarchy::GetTransitLevel().level;
 
+  // default to false if the config does not contain any value
+  // TODO(chris): enable this line once bounding circle computation is
+  // finalized
+  bool build_bounding_circles = pt.get<bool>("mjolnir.data_processing.build_bounding_circles", true);
+
   // vector to hold densities for each level
   std::vector<std::vector<float>> densities(numLevels);
 
@@ -351,7 +361,7 @@ void validate(
         uint32_t ar_modes = de->access_restriction();
         if (ar_modes) {
           // since only truck restrictions exist, we can still get all restrictions
-          auto res = tile->GetAccessRestrictions(idx);
+          auto res = tile->GetAccessRestrictions(idx).first;
           if (res.empty()) {
             LOG_ERROR(
                 "Directed edge marked as having access restriction but none found ; tile level = " +
@@ -459,7 +469,7 @@ void validate(
     tilebuilder.header_builder().set_density(relative_density);
 
     // Bin the edges
-    auto bins = GraphTileBuilder::BinEdges(tile, tweeners);
+    auto bins = GraphTileBuilder::BinEdges(tile, tweeners, build_bounding_circles);
 
     // Write the new tile
     lock.lock();
@@ -472,9 +482,12 @@ void validate(
       // deterministic
       for (auto& bin : bins) {
         std::sort(bin.begin(), bin.end(),
-                  [](uint64_t a, uint64_t b) { return graphid_less(GraphId(a), GraphId(b)); });
+                  [](std::pair<GraphId, DiscretizedBoundingCircle>& a,
+                     std::pair<GraphId, DiscretizedBoundingCircle>& b) {
+                    return graphid_less(a.first, b.first);
+                  });
       }
-      GraphTileBuilder::AddBins(graph_reader.tile_dir(), reloaded, bins);
+      GraphTileBuilder::AddBins(graph_reader.tile_dir(), reloaded, bins, build_bounding_circles);
     }
 
     // Check if we need to clear the tile cache
@@ -482,6 +495,9 @@ void validate(
       graph_reader.Trim();
     }
     lock.unlock();
+
+    build_stats::get().increment(build_stats::kCountNodes, nodes.size());
+    build_stats::get().increment(build_stats::kCountEdges, directededges.size());
 
     // Add possible duplicates to return class
     duplicates[level] += dupcount;
@@ -518,8 +534,8 @@ void bin_tweeners(const std::string& tile_dir,
                   tweeners_t::iterator& start,
                   const tweeners_t::iterator& end,
                   uint64_t dataset_id,
-                  uint64_t checksum,
-                  std::mutex& lock) {
+                  std::mutex& lock,
+                  bool build_bounding_circles) {
   // go while we have tiles to update
   while (true) {
     lock.lock();
@@ -538,7 +554,6 @@ void bin_tweeners(const std::string& tile_dir,
     if (!tile) {
       GraphTileBuilder empty(tile_dir, tile_bin.first, false);
       empty.header_builder().set_dataset_id(dataset_id);
-      empty.header_builder().set_checksum(checksum);
       empty.StoreTileData();
       tile = GraphTile::Create(tile_dir, tile_bin.first);
     }
@@ -547,11 +562,14 @@ void bin_tweeners(const std::string& tile_dir,
     // deterministic
     for (auto& bin : tile_bin.second) {
       std::sort(bin.begin(), bin.end(),
-                [](uint64_t a, uint64_t b) { return graphid_less(GraphId(a), GraphId(b)); });
+                [](std::pair<GraphId, DiscretizedBoundingCircle>& a,
+                   std::pair<GraphId, DiscretizedBoundingCircle>& b) {
+                  return graphid_less(a.first, b.first);
+                });
     }
 
     // keep the extra binned edges
-    GraphTileBuilder::AddBins(tile_dir, tile, tile_bin.second);
+    GraphTileBuilder::AddBins(tile_dir, tile, tile_bin.second, build_bounding_circles);
   }
 }
 } // namespace
@@ -564,6 +582,9 @@ void GraphValidator::Validate(const boost::property_tree::ptree& pt) {
   LOG_INFO("Validating, finishing and binning tiles...");
   auto hierarchy_properties = pt.get_child("mjolnir");
   std::string tile_dir = hierarchy_properties.get<std::string>("tile_dir");
+  // TODO(chris): enable this line once bounding circle computation is
+  // finalized
+  bool build_bounding_circles = pt.get<bool>("mjolnir.data_processing.build_bounding_circles", true);
 
   // Create a randomized queue of tiles (at all levels) to work from
   std::deque<GraphId> tilequeue;
@@ -572,6 +593,9 @@ void GraphValidator::Validate(const boost::property_tree::ptree& pt) {
   for (const auto& id : tileset) {
     tilequeue.emplace_back(id);
   }
+  // log before creating empty tiles
+  build_stats::get().increment(build_stats::kCountTiles, tilequeue.size());
+
   // fixed seed for reproducible tile build
   std::shuffle(tilequeue.begin(), tilequeue.end(), std::mt19937(3));
 
@@ -579,7 +603,6 @@ void GraphValidator::Validate(const boost::property_tree::ptree& pt) {
   graph_tile_ptr first_tile = GraphTile::Create(tile_dir, *tilequeue.begin());
   assert(tilequeue.size() && first_tile);
   auto dataset_id = first_tile->header()->dataset_id();
-  auto checksum = first_tile->header()->checksum();
 
   // An mutex we can use to do the synchronization
   std::mutex lock;
@@ -629,7 +652,8 @@ void GraphValidator::Validate(const boost::property_tree::ptree& pt) {
   auto end = tweeners.end();
   for (auto& thread : threads) {
     thread = std::make_shared<std::thread>(bin_tweeners, std::cref(tile_dir), std::ref(start),
-                                           std::cref(end), dataset_id, checksum, std::ref(lock));
+                                           std::cref(end), dataset_id, std::ref(lock),
+                                           build_bounding_circles);
   }
   for (auto& thread : threads) {
     thread->join();

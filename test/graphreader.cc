@@ -3,11 +3,11 @@
 #include "baldr/tilehierarchy.h"
 
 #include <boost/property_tree/ptree.hpp>
-#include <fcntl.h>
 #include <gtest/gtest.h>
 
 #include <cstdint>
 #include <filesystem>
+#include <fstream>
 
 using namespace valhalla::baldr;
 
@@ -69,9 +69,7 @@ void touch_tile(const uint32_t tile_id, const std::string& tile_dir, uint8_t lev
   std::filesystem::path fullpath{tile_dir};
   fullpath.append(suffix);
   std::filesystem::create_directories(fullpath.parent_path());
-  int fd = open(fullpath.c_str(), O_CREAT | O_WRONLY, 0644);
-  if (fd >= 0)
-    close(fd);
+  std::ofstream{fullpath, std::ios::binary | std::ios::app};
 }
 
 TEST(ConnectivityMap, Basic) {
@@ -137,21 +135,22 @@ TEST(ConnectivityMap, Basic) {
 
 class TestGraphMemory final : public GraphMemory {
 public:
-  TestGraphMemory() : memory_(sizeof(GraphTileHeader)) {
-    data = const_cast<char*>(memory_.data());
+  TestGraphMemory(GraphId id, size_t tile_size) : memory_(sizeof(GraphTileHeader)) {
+    auto* header = reinterpret_cast<GraphTileHeader*>(memory_.data());
+    header->set_graphid(id);
+    header->set_end_offset(tile_size);
+    data = memory_.data();
     size = memory_.size();
   }
 
 private:
-  const std::vector<char> memory_;
+  std::vector<char> memory_;
 };
 
 struct TestGraphTile : public GraphTile {
   TestGraphTile(GraphId id, size_t size) {
-    memory_ = std::make_unique<const TestGraphMemory>();
-    header_ = reinterpret_cast<GraphTileHeader*>(memory_->data);
-    header_->set_graphid(id);
-    header_->set_end_offset(size);
+    memory_ = std::make_unique<const TestGraphMemory>(id, size);
+    header_ = reinterpret_cast<const GraphTileHeader*>(memory_->data);
   }
 };
 

@@ -1,13 +1,17 @@
 # be aware: the python modules that need testing, need to be symlinked to the test/scripts folder with a .py extension
+find_package(Python COMPONENTS Interpreter QUIET)
 if (Python_FOUND)
   add_custom_command(OUTPUT scripts.log
       COMMAND
+        ${CMAKE_COMMAND} -E env
         LOCPATH=${VALHALLA_SOURCE_DIR}/locales
         ASAN_OPTIONS=verify_asan_link_order=0:detect_leaks=0
-        /bin/bash -cx "${Python_EXECUTABLE} -m unittest discover -s ${VALHALLA_SOURCE_DIR}/test/scripts -v > ${CMAKE_BINARY_DIR}/test/scripts.log 2>&1 || (cat ${CMAKE_BINARY_DIR}/test/scripts.log && exit 1)"
+        bash -cx "${Python_EXECUTABLE} -m unittest discover -s ${VALHALLA_SOURCE_DIR}/test/scripts -v > ${CMAKE_BINARY_DIR}/test/scripts.log 2>&1 || (cat ${CMAKE_BINARY_DIR}/test/scripts.log && exit 1)"
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
       DEPENDS
         utrecht_tiles
+        valhalla_add_elevation
+        ${VALHALLA_SOURCE_DIR}/test/scripts/test_valhalla_add_elevation.py
         ${VALHALLA_SOURCE_DIR}/test/scripts/test_valhalla_build_config.py
         ${VALHALLA_SOURCE_DIR}/test/scripts/test_valhalla_build_extract.py
         ${VALHALLA_SOURCE_DIR}/test/scripts/test_valhalla_build_elevation.py

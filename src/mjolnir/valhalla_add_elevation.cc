@@ -3,6 +3,7 @@
 #include "baldr/graphreader.h"
 #include "baldr/graphtile.h"
 #include "mjolnir/elevationbuilder.h"
+#include "mjolnir/util.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <cxxopts.hpp>
@@ -52,7 +53,7 @@ std::deque<GraphId> get_tile_ids(const boost::property_tree::ptree& pt,
       return;
     }
 
-    auto tile_id = GraphTile::GetTileId(tile_path.string());
+    auto tile_id = GraphId::FromTilePath(tile_path.string());
     GraphId local_tile_id(tile_id.tileid(), tile_id.level(), tile_id.id());
     if (!reader.DoesTileExist(local_tile_id)) {
       LOG_WARN("Provided tile doesn't belong to the tile directory from config file");
@@ -102,7 +103,7 @@ int main(int argc, char** argv) {
     // clang-format on
 
     const auto result = options.parse(argc, argv);
-    if (!parse_common_args(program, options, result, &config, "mjolnir.logging", true))
+    if (!parse_common_args(program, options, result, &config, true))
       return EXIT_SUCCESS;
 
     if (!result.count("tiles") || tiles.empty()) {
@@ -125,6 +126,13 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
 
+  // we don't want this executable to emit statsd
+  config.erase("statsd");
   ElevationBuilder::Build(config, tile_ids);
+  build_stats::get().log_stage(BuildStage::kElevation, config);
+
+  // the builder refreshed each touched tile's data hash
+  set_tileset_build_id(config.get<std::string>("mjolnir.tile_dir"));
+
   return EXIT_SUCCESS;
 }

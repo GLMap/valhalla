@@ -3,7 +3,7 @@
 #include "gurka.h"
 #include "test.h"
 
-#include <fmt/printf.h>
+#include <boost/format.hpp>
 
 using namespace valhalla;
 using LiveTrafficCustomize = test::LiveTrafficCustomize;
@@ -163,12 +163,14 @@ TEST_P(ClosurePenalty, AvoidClosure) {
 
   // Route from closed edge to an open one
   {
-    const std::string req_include_closures = fmt::sprintf(
-        R"({"locations":[{"lat":%s,"lon":%s,"search_filter":{"exclude_closures":false}},{"lat":%s,"lon":%s}],"costing":"%s", "costing_options": {"%s": {"speed_types":["freeflow","constrained","predicted","current"]}}, "date_time":{"type":"3", "value": "current"}})",
-        std::to_string(closure_map.nodes.at("1").lat()),
-        std::to_string(closure_map.nodes.at("1").lng()),
-        std::to_string(closure_map.nodes.at("C").lat()),
-        std::to_string(closure_map.nodes.at("C").lng()), costing, costing);
+    const std::string& req_include_closures =
+        (boost::format(
+             R"({"locations":[{"lat":%s,"lon":%s,"search_filter":{"exclude_closures":false}},{"lat":%s,"lon":%s}],"costing":"%s", "costing_options": {"%s": {"speed_types":["freeflow","constrained","predicted","current"]}}, "date_time":{"type":"3", "value": "current"}})") %
+         std::to_string(closure_map.nodes.at("1").lat()) %
+         std::to_string(closure_map.nodes.at("1").lng()) %
+         std::to_string(closure_map.nodes.at("C").lat()) %
+         std::to_string(closure_map.nodes.at("C").lng()) % costing % costing)
+            .str();
 
     std::vector<std::string> expected_path = {"QT", "TU", "RU", "OR", "LO", "IL", "FI", "CF"};
     auto result =
@@ -178,12 +180,14 @@ TEST_P(ClosurePenalty, AvoidClosure) {
 
   // Route from & to closed edge
   {
-    const std::string req_include_closures = fmt::sprintf(
-        R"({"locations":[{"lat":%s,"lon":%s,"search_filter":{"exclude_closures":false}},{"lat":%s,"lon":%s,"search_filter":{"exclude_closures":false}}],"costing":"%s", "costing_options": {"%s": {"speed_types":["freeflow","constrained","predicted","current"]}}, "date_time":{"type":"3", "value": "current"}})",
-        std::to_string(closure_map.nodes.at("1").lat()),
-        std::to_string(closure_map.nodes.at("1").lng()),
-        std::to_string(closure_map.nodes.at("2").lat()),
-        std::to_string(closure_map.nodes.at("2").lng()), costing, costing);
+    const std::string& req_include_closures =
+        (boost::format(
+             R"({"locations":[{"lat":%s,"lon":%s,"search_filter":{"exclude_closures":false}},{"lat":%s,"lon":%s,"search_filter":{"exclude_closures":false}}],"costing":"%s", "costing_options": {"%s": {"speed_types":["freeflow","constrained","predicted","current"]}}, "date_time":{"type":"3", "value": "current"}})") %
+         std::to_string(closure_map.nodes.at("1").lat()) %
+         std::to_string(closure_map.nodes.at("1").lng()) %
+         std::to_string(closure_map.nodes.at("2").lat()) %
+         std::to_string(closure_map.nodes.at("2").lng()) % costing % costing)
+            .str();
 
     std::vector<std::string> expected_path = {"QT", "TU", "RU", "OR", "LO",
                                               "IL", "FI", "CF", "BC", "BE"};
@@ -193,12 +197,14 @@ TEST_P(ClosurePenalty, AvoidClosure) {
   }
 
   {
-    const std::string req_include_closures = fmt::sprintf(
-        R"({"locations":[{"lat":%s,"lon":%s,"search_filter":{"exclude_closures":false}},{"lat":%s,"lon":%s}],"costing":"%s", "costing_options": {"%s": {"speed_types":["freeflow","constrained","predicted","current"]}}, "date_time":{"type":"3", "value": "current"}})",
-        std::to_string(closure_map.nodes.at("1").lat()),
-        std::to_string(closure_map.nodes.at("1").lng()),
-        std::to_string(closure_map.nodes.at("A").lat()),
-        std::to_string(closure_map.nodes.at("A").lng()), costing, costing);
+    const std::string& req_include_closures =
+        (boost::format(
+             R"({"locations":[{"lat":%s,"lon":%s,"search_filter":{"exclude_closures":false}},{"lat":%s,"lon":%s}],"costing":"%s", "costing_options": {"%s": {"speed_types":["freeflow","constrained","predicted","current"]}}, "date_time":{"type":"3", "value": "current"}})") %
+         std::to_string(closure_map.nodes.at("1").lat()) %
+         std::to_string(closure_map.nodes.at("1").lng()) %
+         std::to_string(closure_map.nodes.at("A").lat()) %
+         std::to_string(closure_map.nodes.at("A").lng()) % costing % costing)
+            .str();
 
     std::vector<std::string> expected_path = {"QT", "ST", "PS", "MP", "JM", "GJ", "DG", "AD"};
     auto result =
@@ -208,12 +214,14 @@ TEST_P(ClosurePenalty, AvoidClosure) {
 
   // Change closure factor to 1.0, this means no added penalty to closed edges
   {
-    const std::string req_include_closures = fmt::sprintf(
-        R"({"locations":[{"lat":%s,"lon":%s,"search_filter":{"exclude_closures":false}},{"lat":%s,"lon":%s,"search_filter":{"exclude_closures":false}}],"costing":"%s", "costing_options": {"%s": {"closure_factor": 1.0, "speed_types":["freeflow","constrained","predicted","current"]}}, "date_time":{"type":"3", "value": "current"}})",
-        std::to_string(closure_map.nodes.at("1").lat()),
-        std::to_string(closure_map.nodes.at("1").lng()),
-        std::to_string(closure_map.nodes.at("2").lat()),
-        std::to_string(closure_map.nodes.at("2").lng()), costing, costing);
+    const std::string& req_include_closures =
+        (boost::format(
+             R"({"locations":[{"lat":%s,"lon":%s,"search_filter":{"exclude_closures":false}},{"lat":%s,"lon":%s,"search_filter":{"exclude_closures":false}}],"costing":"%s", "costing_options": {"%s": {"closure_factor": 1.0, "speed_types":["freeflow","constrained","predicted","current"]}}, "date_time":{"type":"3", "value": "current"}})") %
+         std::to_string(closure_map.nodes.at("1").lat()) %
+         std::to_string(closure_map.nodes.at("1").lng()) %
+         std::to_string(closure_map.nodes.at("2").lat()) %
+         std::to_string(closure_map.nodes.at("2").lng()) % costing % costing)
+            .str();
     auto result =
         gurka::do_action(valhalla::Options::route, closure_map, req_include_closures, reader);
     gurka::assert::raw::expect_path(result, {"QT", "NQ", "KN", "HK", "EH", "BE"});

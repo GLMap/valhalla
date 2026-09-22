@@ -138,6 +138,9 @@ void TimeDistanceMatrix::Expand(GraphReader& graphreader,
                                                   pred.internal_turn());
     newcost += pred.cost() + transition_cost;
     uint32_t path_distance = pred.path_distance() + directededge->length();
+    if (max_expansion_distance_ > 0 && path_distance > max_expansion_distance_) {
+      continue;
+    }
 
     // Check if edge is temporarily labeled and this path has less cost. If
     // less cost the cost and predecessor are updated.
@@ -614,6 +617,7 @@ void TimeDistanceMatrix::FormTimeDistanceMatrix(Api& request,
     matrix.mutable_to_indices()->Set(pbf_idx, forward ? i : origin_index);
     matrix.mutable_distances()->Set(pbf_idx, dest.distance);
     matrix.mutable_times()->Set(pbf_idx, dest.best_cost.secs);
+    matrix.mutable_costs()->Set(pbf_idx, dest.best_cost.cost);
 
     auto dt_info =
         DateTime::offset_date(origin_dt, origin_tz, reader.GetTimezoneFromEdge(edge_ids[i], tile),

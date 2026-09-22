@@ -1,6 +1,7 @@
 SRC = \
 	src/baldr/accessrestriction.cc \
 	src/baldr/admin.cc \
+	src/baldr/boundingcircle.cc \
 	src/baldr/attributes_controller.cc \
 	src/baldr/compression_utils.cc \
 	src/baldr/connectivity_map.cc \
@@ -14,10 +15,8 @@ SRC = \
 	src/baldr/graphtile.cc \
 	src/baldr/graphtileheader.cc \
 	src/baldr/laneconnectivity.cc \
-	src/baldr/location.cc \
 	src/baldr/merge.cc \
 	src/baldr/nodeinfo.cc \
-	src/baldr/pathlocation.cc \
 	src/baldr/predictedspeeds.cc \
 	src/baldr/streetname_us.cc \
 	src/baldr/streetname.cc \
@@ -100,7 +99,7 @@ SRC = \
 	src/skadi/sample.cc \
 	src/skadi/util.cc \
 	src/thor/alternates.cc \
-	src/thor/astar_bss.cc \
+	src/thor/multimodal_astar.cc \
 	src/thor/bidirectional_astar.cc \
 	src/thor/centroid.cc \
 	src/thor/costmatrix.cc \
@@ -110,7 +109,7 @@ SRC = \
 	src/thor/isochrone.cc \
 	src/thor/map_matcher.cc \
 	src/thor/matrix_action.cc \
-	src/thor/multimodal.cc \
+	src/thor/multimodal_transit.cc \
 	src/thor/optimized_route_action.cc \
 	src/thor/optimizer.cc \
 	src/thor/route_action.cc \
@@ -191,7 +190,8 @@ CXXFLAGS += -std=c++20 -DNDEBUG=1 -DUSE_STD_REGEX=1 -DRAPIDJSON_HAS_STDSTRING=1 
  -Ithird_party/date/include \
  -Ithird_party/protozero/include \
  -Ithird_party/vtzero/include \
- -Ithird_party/unordered_dense/include
+ -Ithird_party/unordered_dense/include \
+ -Ithird_party/flatbush
 PROTOC = ../build/macOS/arm64/bin/protoc
 
 .SUFFIXES: .cc .cpp .mm .proto
@@ -238,8 +238,8 @@ genfiles/admin_lua_proc.h: genfiles lua/admin.lua
 	cmake -P cmake/ValhallaBin2Header.cmake lua/admin.lua genfiles/admin_lua_proc.h --variable-name lua_admin_lua
 genfiles/graph_lua_proc.h: genfiles lua/graph.lua
 	cmake -P cmake/ValhallaBin2Header.cmake lua/graph.lua genfiles/graph_lua_proc.h --variable-name lua_graph_lua
-genfiles/locales.h: genfiles locales/*.json
-	-cd locales && ./make_locales.sh *.json > ../genfiles/locales.h
+genfiles/locales.h: genfiles locales/*.json cmake/ValhallaBin2Header.cmake
+	cmake -P cmake/ValhallaBin2Header.cmake locales $@ --locales
 genfiles/config.h: genfiles
 	touch genfiles/config.h
 
